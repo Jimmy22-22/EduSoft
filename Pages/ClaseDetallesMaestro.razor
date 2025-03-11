@@ -1,0 +1,84 @@
+﻿@page "/clase-maestro/{ClaseId:int}"
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@inject NavigationManager Navigation
+
+<h3 class="text-center mt-4">📚 Gestión de la Clase</h3>
+
+@if (ClaseSeleccionada != null)
+{
+    <div class="card shadow-lg p-4">
+        <h4 class="text-primary"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h4>
+        <p><i class="fas fa-user"></i> Profesor: @ClaseSeleccionada.Profesor</p>
+        <p><i class="fas fa-clock"></i> Horario: @ClaseSeleccionada.Horario.ToShortTimeString()</p>
+        <p><strong>Código de Clase:</strong> @ClaseSeleccionada.CodigoClase</p>
+
+        <h5 class="mt-4">👥 Estudiantes Inscritos</h5>
+        <ul class="list-group">
+            @if (Estudiantes.Count > 0)
+            {
+                @foreach (var estudiante in Estudiantes)
+                {
+                    <li class="list-group-item">
+                        <i class="fas fa-user"></i> @estudiante.Nombre - @estudiante.Email
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="list-group-item text-center text-muted">No hay estudiantes inscritos.</li>
+            }
+        </ul>
+
+        <h5 class="mt-4">📝 Crear Nueva Tarea</h5>
+        <div class="mb-3">
+            <label>Descripción de la Tarea</label>
+            <input type="text" @bind="NuevaTareaDescripcion" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Fecha de Entrega</label>
+            <input type="date" @bind="NuevaTareaFechaEntrega" class="form-control" />
+        </div>
+        <button @onclick="CrearTarea" class="btn btn-success w-100">Crear Tarea</button>
+
+        <button @onclick="VolverAlDashboard" class="btn btn-secondary mt-4">🔙 Volver</button>
+    </div>
+}
+else
+{
+    <p class="text-danger text-center">No se encontró la clase.</p>
+    <button @onclick="VolverAlDashboard" class="btn btn-primary d-block mx-auto">🔙 Volver</button>
+}
+
+@code {
+    [Parameter] public int ClaseId { get; set; }
+    private Clase? ClaseSeleccionada;
+    private List<Usuario> Estudiantes = new();
+    private string NuevaTareaDescripcion = "";
+    private DateTime NuevaTareaFechaEntrega = DateTime.Now.AddDays(7);
+
+    protected override async Task OnInitializedAsync()
+    {
+        ClaseSeleccionada = await ClaseService.GetClasePorIdAsync(ClaseId);
+        if (ClaseSeleccionada != null)
+        {
+            Estudiantes = await ClaseService.GetEstudiantesPorClaseAsync(ClaseId);
+        }
+    }
+
+    private async Task CrearTarea()
+    {
+        if (!string.IsNullOrEmpty(NuevaTareaDescripcion))
+        {
+            await ClaseService.CrearTarea(ClaseId, NuevaTareaDescripcion, NuevaTareaFechaEntrega);
+            NuevaTareaDescripcion = "";
+            NuevaTareaFechaEntrega = DateTime.Now.AddDays(7);
+        }
+    }
+
+    private void VolverAlDashboard()
+    {
+        Navigation.NavigateTo("/dashboard-maestro");
+    }
+}

@@ -1,0 +1,61 @@
+﻿@page "/clase-estudiante/{ClaseId:int}"
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@inject NavigationManager Navigation
+
+<h3 class="text-center mt-4">📚 Detalles de la Clase</h3>
+
+@if (ClaseSeleccionada != null)
+{
+    <div class="card shadow-lg p-4">
+        <h4 class="text-primary"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h4>
+        <p><i class="fas fa-user"></i> Profesor: @ClaseSeleccionada.Profesor</p>
+        <p><i class="fas fa-clock"></i> Horario: @ClaseSeleccionada.Horario.ToShortTimeString()</p>
+        <p><strong>Código de Clase:</strong> @ClaseSeleccionada.CodigoClase</p>
+
+        <h5 class="mt-4">📝 Tareas Asignadas</h5>
+        <ul class="list-group">
+            @if (Tareas.Count > 0)
+            {
+                @foreach (var tarea in Tareas)
+                {
+                    <li class="list-group-item">
+                        <i class="fas fa-tasks"></i> @tarea.Descripcion - <strong>Entrega: @tarea.FechaEntrega.ToShortDateString()</strong>
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="list-group-item text-center text-muted">No hay tareas asignadas.</li>
+            }
+        </ul>
+
+        <button @onclick="VolverAlDashboard" class="btn btn-secondary mt-4">🔙 Volver</button>
+    </div>
+}
+else
+{
+    <p class="text-danger text-center">No se encontró la clase.</p>
+    <button @onclick="VolverAlDashboard" class="btn btn-primary d-block mx-auto">🔙 Volver</button>
+}
+
+@code {
+    [Parameter] public int ClaseId { get; set; }
+    private Clase? ClaseSeleccionada;
+    private List<Tarea> Tareas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ClaseSeleccionada = await ClaseService.GetClasePorIdAsync(ClaseId);
+        if (ClaseSeleccionada != null)
+        {
+            Tareas = await ClaseService.GetTareasPorClaseAsync(ClaseId);
+        }
+    }
+
+    private void VolverAlDashboard()
+    {
+        Navigation.NavigateTo("/dashboard-estudiante");
+    }
+}

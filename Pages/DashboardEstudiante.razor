@@ -1,0 +1,98 @@
+﻿@page "/dashboard-estudiante"
+@using EduSoft.Data
+@using EduSoft.Services
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject AuthService AuthService
+@inject DashboardEstudianteService DashboardEstudianteService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage ProtectedSessionStorage
+
+<h3 class="text-center mt-4">🎓 Dashboard Estudiante</h3>
+
+@if (UsuarioAutenticado != null)
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <p class="mb-0">Hola, <strong>@UsuarioAutenticado.Nombre</strong></p>
+        <button @onclick="AbrirModal" class="btn btn-primary"><i class="fas fa-plus"></i> Unirse a Clase</button>
+    </div>
+
+    <button @onclick="CerrarSesion" class="btn btn-danger mb-4">Cerrar Sesión</button>
+
+    <div class="container mt-4">
+        <h4 class="text-center">📚 Clases Inscritas</h4>
+        <div class="row">
+            @foreach (var clase in Clases)
+            {
+                <div class="col-md-4">
+                    <div class="card shadow-lg mb-4" @onclick="() => IrAClase(clase.Id)">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">@clase.Nombre</h5>
+                            <p class="card-text"><i class="fas fa-user"></i> Prof. @clase.Profesor</p>
+                            <button class="btn btn-outline-primary w-100">Ver Detalles</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (MostrarModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Unirse a una Clase</h5>
+                    <button type="button" class="close" @onclick="CerrarModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" @bind="CodigoClaseIngresado" class="form-control" placeholder="Código de Clase" />
+                    <button @onclick="UnirseAClase" class="btn btn-primary w-100 mt-2">Unirse</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<Clase> Clases = new();
+    private bool MostrarModal = false;
+    private string CodigoClaseIngresado = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ProtectedSessionStorage.GetAsync<string>("authToken");
+        if (result.Success && result.Value != null)
+        {
+            var claims = AuthService.ValidateToken(result.Value);
+            if (claims != null)
+            {
+                int userId = int.Parse(claims.FindFirst("id")?.Value ?? "0");
+                UsuarioAutenticado = await AuthService.GetUserById(userId);
+                Clases = await DashboardEstudianteService.GetClasesPorEstudianteAsync(userId);
+            }
+        }
+    }
+
+    private async Task UnirseAClase()
+    {
+        bool exito = await DashboardEstudianteService.UnirseAClaseAsync(UsuarioAutenticado.Id, CodigoClaseIngresado);
+        if (exito)
+        {
+            Clases = await DashboardEstudianteService.GetClasesPorEstudianteAsync(UsuarioAutenticado.Id);
+        }
+        CerrarModal();
+    }
+
+    private void AbrirModal() => MostrarModal = true;
+    private void CerrarModal() => MostrarModal = false;
+    private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-estudiante/{claseId}");
+    private async Task CerrarSesion()
+    {
+        await ProtectedSessionStorage.DeleteAsync("authToken");
+        UsuarioAutenticado = null;
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

@@ -1,0 +1,60 @@
+﻿@page "/register"
+@using EduSoft.Services
+@using EduSoft.Data
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Registro de Usuario</h3>
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <p class="text-info">@Message</p>
+}
+
+<div class="form-group">
+    <label>Nombre:</label>
+    <input type="text" @bind="Nombre" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label>Email:</label>
+    <input type="email" @bind="Email" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label>Contraseña:</label>
+    <input type="password" @bind="Password" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label>Rol:</label>
+    <select @bind="Rol" class="form-control">
+        <option value="@RolUsuario.Estudiante">Estudiante</option>
+        <option value="@RolUsuario.Maestro">Maestro</option>
+    </select>
+</div>
+
+<button @onclick="PerformRegister" class="btn btn-success">Registrar</button>
+
+@code {
+    private string Nombre { get; set; } = string.Empty;
+    private string Email { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private RolUsuario Rol { get; set; } = RolUsuario.Estudiante;
+    private string Message { get; set; } = string.Empty;
+
+    private async Task PerformRegister()
+    {
+        var result = await AuthService.RegisterUser(Nombre, Email, Password, Rol);
+
+        if (result)
+        {
+            Message = "Usuario registrado con éxito.";
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Message = "El email ya está en uso.";
+        }
+    }
+}

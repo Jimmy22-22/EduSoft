@@ -1,0 +1,70 @@
+﻿@page "/"
+@using EduSoft.Data
+@using EduSoft.Services
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage ProtectedSessionStorage
+
+<h3>Iniciar Sesión</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p class="text-danger">@ErrorMessage</p>
+}
+
+<div class="form-group">
+    <label>Email:</label>
+    <input type="email" @bind="Email" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label>Contraseña:</label>
+    <input type="password" @bind="Password" class="form-control" />
+</div>
+
+<button @onclick="PerformLogin" class="btn btn-primary">Iniciar Sesión</button>
+
+<p class="mt-3">
+    ¿No tienes una cuenta? <a href="javascript:void(0);" @onclick="IrARegistro">Regístrate aquí</a>
+</p>
+
+@code {
+    private string Email { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    private async Task PerformLogin()
+    {
+        var token = await AuthService.Login(Email, Password);
+
+        if (token != null)
+        {
+            await ProtectedSessionStorage.SetAsync("authToken", token);
+
+            var claims = AuthService.ValidateToken(token);
+            if (claims != null)
+            {
+                int userId = int.Parse(claims.FindFirst("id")?.Value ?? "0");
+                var usuario = await AuthService.GetUserById(userId);
+
+                if (usuario != null)
+                {
+                    if (usuario.Rol == RolUsuario.Estudiante)
+                        Navigation.NavigateTo("/dashboard-estudiante");
+                    else if (usuario.Rol == RolUsuario.Maestro)
+                        Navigation.NavigateTo("/dashboard-maestro");
+                }
+            }
+        }
+        else
+        {
+            ErrorMessage = "❌ Credenciales incorrectas. Inténtalo de nuevo.";
+        }
+    }
+
+    private void IrARegistro()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}
