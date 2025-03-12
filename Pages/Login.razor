@@ -1,10 +1,8 @@
 ﻿@page "/"
-@using EduSoft.Data
 @using EduSoft.Services
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using EduSoft.Data
 @inject AuthService AuthService
 @inject NavigationManager Navigation
-@inject ProtectedSessionStorage ProtectedSessionStorage
 
 <h3>Iniciar Sesión</h3>
 
@@ -34,33 +32,35 @@
     private string Password { get; set; } = string.Empty;
     private string ErrorMessage { get; set; } = string.Empty;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var usuario = await AuthService.VerificarSesion(1); 
+        if (usuario != null)
+        {
+            RedirigirSegunRol(usuario);
+        }
+    }
+
     private async Task PerformLogin()
     {
-        var token = await AuthService.Login(Email, Password);
+        var usuario = await AuthService.Login(Email, Password);
 
-        if (token != null)
+        if (usuario != null)
         {
-            await ProtectedSessionStorage.SetAsync("authToken", token);
-
-            var claims = AuthService.ValidateToken(token);
-            if (claims != null)
-            {
-                int userId = int.Parse(claims.FindFirst("id")?.Value ?? "0");
-                var usuario = await AuthService.GetUserById(userId);
-
-                if (usuario != null)
-                {
-                    if (usuario.Rol == RolUsuario.Estudiante)
-                        Navigation.NavigateTo("/dashboard-estudiante");
-                    else if (usuario.Rol == RolUsuario.Maestro)
-                        Navigation.NavigateTo("/dashboard-maestro");
-                }
-            }
+            RedirigirSegunRol(usuario);
         }
         else
         {
             ErrorMessage = "❌ Credenciales incorrectas. Inténtalo de nuevo.";
         }
+    }
+
+    private void RedirigirSegunRol(Usuario usuario)
+    {
+        if (usuario.Rol == RolUsuario.Estudiante)
+            Navigation.NavigateTo("/dashboard-estudiante", true);
+        else if (usuario.Rol == RolUsuario.Maestro)
+            Navigation.NavigateTo("/dashboard-maestro", true);
     }
 
     private void IrARegistro()

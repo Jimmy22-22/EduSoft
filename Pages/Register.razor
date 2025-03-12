@@ -34,7 +34,9 @@
     </select>
 </div>
 
-<button @onclick="PerformRegister" class="btn btn-success">Registrar</button>
+<button @onclick="PerformRegister" class="btn btn-success" disabled="@IsLoading">
+    @(IsLoading ? "Registrando..." : "Registrar")
+</button>
 
 @code {
     private string Nombre { get; set; } = string.Empty;
@@ -42,19 +44,25 @@
     private string Password { get; set; } = string.Empty;
     private RolUsuario Rol { get; set; } = RolUsuario.Estudiante;
     private string Message { get; set; } = string.Empty;
+    private bool IsLoading { get; set; } = false;
 
     private async Task PerformRegister()
     {
-        var result = await AuthService.RegisterUser(Nombre, Email, Password, Rol);
+        if (IsLoading) return;
+        IsLoading = true;
 
+        var result = await AuthService.RegisterUser(Nombre, Email, Password, Rol);
         if (result)
         {
             Message = "Usuario registrado con éxito.";
+            await Task.Delay(100); 
             Navigation.NavigateTo("/");
         }
         else
         {
             Message = "El email ya está en uso.";
         }
+
+        IsLoading = false;
     }
 }

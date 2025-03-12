@@ -1,11 +1,10 @@
 ﻿@page "/dashboard-maestro"
 @using EduSoft.Data
 @using EduSoft.Services
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject AuthService AuthService
 @inject DashboardMaestroService DashboardMaestroService
 @inject NavigationManager Navigation
-@inject ProtectedSessionStorage ProtectedSessionStorage
+@inject IJSRuntime JS
 
 <h3 class="text-center mt-4">🎓 Dashboard Maestro</h3>
 
@@ -64,16 +63,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await ProtectedSessionStorage.GetAsync<string>("authToken");
-        if (result.Success && result.Value != null)
+        var usuario = await AuthService.VerificarSesion(1);
+
+        if (usuario != null)
         {
-            var claims = AuthService.ValidateToken(result.Value);
-            if (claims != null)
-            {
-                int userId = int.Parse(claims.FindFirst("id")?.Value ?? "0");
-                UsuarioAutenticado = await AuthService.GetUserById(userId);
-                Clases = await DashboardMaestroService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
-            }
+            UsuarioAutenticado = usuario;
+            Clases = await DashboardMaestroService.GetClasesPorProfesorAsync(usuario.Nombre);
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
         }
     }
 
@@ -87,10 +86,13 @@
     private void AbrirModal() => MostrarModal = true;
     private void CerrarModal() => MostrarModal = false;
     private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-maestro/{claseId}");
+
     private async Task CerrarSesion()
     {
-        await ProtectedSessionStorage.DeleteAsync("authToken");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "usuarioId");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "usuarioRol");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "sesionToken");
         UsuarioAutenticado = null;
-        Navigation.NavigateTo("/", forceLoad: true);
+        Navigation.NavigateTo("/", true);
     }
 }

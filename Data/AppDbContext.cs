@@ -46,6 +46,8 @@ namespace EduSoft.Data
         public string Nombre { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
+        public string? SesionToken { get; set; }
+        public bool SesionActiva { get; set; }
         public RolUsuario Rol { get; set; }
         public List<UsuarioClase> UsuarioClases { get; set; } = new();
     }
