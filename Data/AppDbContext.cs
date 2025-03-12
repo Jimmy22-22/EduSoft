@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+
 namespace EduSoft.Data
 {
     public class AppDbContext : DbContext
