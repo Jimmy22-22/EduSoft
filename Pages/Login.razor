@@ -4,34 +4,41 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-<div class="login-container">
-    <div class="login-box">
-        <h2><i class="fas fa-user-graduate"></i> Bienvenido a EduSoft</h2>
+@if (isLoading)
+{
+    <div class="body2"></div>
+}
+else
+{
+    <div class="login-container">
+        <div class="login-box">
+            <h2><i class="fas fa-user-graduate"></i> Bienvenido a EduSoft</h2>
 
-        @if (!string.IsNullOrEmpty(ErrorMessage))
-        {
-            <p class="error-message"><i class="fas fa-exclamation-circle"></i> @ErrorMessage</p>
-        }
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <p class="error-message"><i class="fas fa-exclamation-circle"></i> @ErrorMessage</p>
+            }
 
-        <div class="input-group">
-            <label for="email"><i class="fas fa-envelope"></i> Email:</label>
-            <input type="email" id="email" @bind="Email" class="input-field" placeholder="Ingresa tu email" />
+            <div class="input-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email:</label>
+                <input type="email" id="email" @bind="Email" class="input-field" placeholder="Ingresa tu email" />
+            </div>
+
+            <div class="input-group">
+                <label for="password"><i class="fas fa-lock"></i> Contraseña:</label>
+                <input type="password" id="password" @bind="Password" class="input-field" placeholder="Ingresa tu contraseña" />
+            </div>
+
+            <button @onclick="PerformLogin" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+
+            <p class="register-link">
+                ¿No tienes una cuenta? <a href="javascript:void(0);" @onclick="IrARegistro"><i class="fas fa-user-plus"></i> Regístrate aquí</a>
+            </p>
         </div>
-
-        <div class="input-group">
-            <label for="password"><i class="fas fa-lock"></i> Contraseña:</label>
-            <input type="password" id="password" @bind="Password" class="input-field" placeholder="Ingresa tu contraseña" />
-        </div>
-
-        <button @onclick="PerformLogin" class="btn-login">
-            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-        </button>
-
-        <p class="register-link">
-            ¿No tienes una cuenta? <a href="javascript:void(0);" @onclick="IrARegistro"><i class="fas fa-user-plus"></i> Regístrate aquí</a>
-        </p>
     </div>
-</div>
+}
 
 <style>
     body {
@@ -42,6 +49,12 @@
         align-items: center;
         height: 100vh;
         margin: 0;
+    }
+
+    .body2 {
+        background: #ffffff;
+        width: 100vw;
+        height: 100vh;
     }
 
     .login-container {
