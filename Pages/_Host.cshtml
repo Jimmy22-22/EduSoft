@@ -16,21 +16,6 @@
     <link href="EduSoft.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var usuarioId = localStorage.getItem("usuarioId");
-            var usuarioRol = localStorage.getItem("usuarioRol");
-
-            if (usuarioId && usuarioRol) {
-                if (usuarioRol === "Estudiante" && window.location.pathname !== "/dashboard-estudiante") {
-                    window.location.href = "/dashboard-estudiante";
-                } else if (usuarioRol === "Maestro" && window.location.pathname !== "/dashboard-maestro") {
-                    window.location.href = "/dashboard-maestro";
-                }
-            }
-        });
-    </script>
-
     <component type="typeof(HeadOutlet)" render-mode="Server" />
 </head>
 <body>

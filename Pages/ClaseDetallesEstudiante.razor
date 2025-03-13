@@ -1,44 +1,177 @@
 ﻿@page "/clase-estudiante/{ClaseId:int}"
+@layout LayoutEstudiante
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
 @inject NavigationManager Navigation
 
-<h3 class="text-center mt-4">📚 Detalles de la Clase</h3>
+<div class="class-details-container">
+    @if (ClaseSeleccionada != null)
+    {
+        <div class="class-card">
+            <h2 class="class-title"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h2>
+            <div class="class-info">
+                <p><i class="fas fa-user-tie"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
+                <p><i class="fas fa-clock"></i> Horario: <strong>@ClaseSeleccionada.Horario.ToShortTimeString()</strong></p>
+                <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
+            </div>
 
-@if (ClaseSeleccionada != null)
-{
-    <div class="card shadow-lg p-4">
-        <h4 class="text-primary"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h4>
-        <p><i class="fas fa-user"></i> Profesor: @ClaseSeleccionada.Profesor</p>
-        <p><i class="fas fa-clock"></i> Horario: @ClaseSeleccionada.Horario.ToShortTimeString()</p>
-        <p><strong>Código de Clase:</strong> @ClaseSeleccionada.CodigoClase</p>
-
-        <h5 class="mt-4">📝 Tareas Asignadas</h5>
-        <ul class="list-group">
-            @if (Tareas.Count > 0)
-            {
-                @foreach (var tarea in Tareas)
+            <h3 class="task-title"><i class="fas fa-tasks"></i> Tareas Asignadas</h3>
+            <div class="task-container">
+                @if (Tareas.Count > 0)
                 {
-                    <li class="list-group-item">
-                        <i class="fas fa-tasks"></i> @tarea.Descripcion - <strong>Entrega: @tarea.FechaEntrega.ToShortDateString()</strong>
-                    </li>
+                    @foreach (var tarea in Tareas)
+                    {
+                        <div class="task-card">
+                            <p><i class="fas fa-file-alt"></i> @tarea.Descripcion</p>
+                            <span class="due-date"><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToShortDateString()</span>
+                        </div>
+                    }
                 }
-            }
-            else
-            {
-                <li class="list-group-item text-center text-muted">No hay tareas asignadas.</li>
-            }
-        </ul>
+                else
+                {
+                    <p class="no-tasks"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
+                }
+            </div>
 
-        <button @onclick="VolverAlDashboard" class="btn btn-secondary mt-4">🔙 Volver</button>
-    </div>
-}
-else
-{
-    <p class="text-danger text-center">No se encontró la clase.</p>
-    <button @onclick="VolverAlDashboard" class="btn btn-primary d-block mx-auto">🔙 Volver</button>
-}
+            <button @onclick="VolverAlDashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="error-container">
+            <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
+            <button @onclick="VolverAlDashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #e2f4ff, #95d6ff);
+        margin: 0;
+        padding: 20px;
+    }
+
+    .class-details-container {
+        max-width: 800px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .class-card {
+        text-align: center;
+    }
+
+    .class-title {
+        color: #1E40AF;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .class-info {
+        background: #E3F2FD;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+        .class-info p {
+            font-size: 1rem;
+            color: #2C5282;
+            margin: 5px 0;
+        }
+
+    .task-title {
+        color: #1E3A8A;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    .task-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .task-card {
+        background: #E3F2FD;
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1rem;
+        color: #2C5282;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .due-date {
+        font-size: 0.9rem;
+        color: #E53E3E;
+        font-weight: bold;
+    }
+
+    .no-tasks {
+        font-size: 1rem;
+        color: #A0AEC0;
+    }
+
+    .btn-back {
+        background: #3182CE;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s, transform 0.2s;
+        width: 100%;
+    }
+
+        .btn-back:hover {
+            background: #2B6CB0;
+            transform: scale(1.05);
+        }
+
+    .error-container {
+        text-align: center;
+        background: #FFE4E1;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .error-message {
+        color: #E53E3E;
+        font-size: 1rem;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
 
 @code {
     [Parameter] public int ClaseId { get; set; }

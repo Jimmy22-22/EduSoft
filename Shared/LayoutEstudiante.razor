@@ -1,0 +1,292 @@
+﻿@inherits LayoutComponentBase
+@using EduSoft.Data
+@using EduSoft.Services
+@inject AuthService AuthService
+@inject DashboardEstudianteService DashboardEstudianteService
+@inject NavigationManager Navigation
+
+<div class="layout-container">
+    <header class="top-bar">
+        <h2>EduSoft</h2>
+        <div class="top-buttons">
+            <button class="btn-action home-btn" @onclick="IrDashboardGeneral">
+                <i class="fas fa-home"></i>
+            </button>
+            <button class="btn-action logout-btn" @onclick="CerrarSesion">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="content-container">
+        <main class="main-content">
+            @Body
+        </main>
+
+        <aside class="sidebar">
+            <h4>📚 Mis Cursos</h4>
+            <button class="btn-add-class" @onclick="AbrirModal">
+                <i class="fas fa-plus"></i> Unirse a Clase
+            </button>
+            <ul class="course-list">
+                @foreach (var clase in Clases)
+                {
+                    <li class="course-item">
+                        <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
+                            <i class="fas fa-book"></i> @clase.Nombre
+                        </a>
+                    </li>
+                }
+            </ul>
+        </aside>
+    </div>
+</div>
+
+@if (MostrarModal)
+{
+    <div class="modal-background">
+        <div class="modal-content">
+            <h4><i class="fas fa-sign-in-alt"></i> Unirse a una Clase</h4>
+            <input type="text" @bind="CodigoClaseIngresado" class="modal-input" placeholder="Código de Clase" />
+            <button @onclick="UnirseAClase" class="modal-button">
+                <i class="fas fa-check"></i> Unirse
+            </button>
+            <button @onclick="CerrarModal" class="modal-close"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+}
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 0;
+    }
+
+    .layout-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .top-bar {
+        background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .top-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.4rem;
+        cursor: pointer;
+        transition: transform 0.2s ease, color 0.3s;
+    }
+
+        .btn-action:hover {
+            transform: scale(1.1);
+        }
+
+    .logout-btn:hover {
+        color: #ff4d4d;
+    }
+
+    .home-btn:hover {
+        color: #ffcc00;
+    }
+
+    .content-container {
+        display: flex;
+        flex: 1;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .main-content {
+        flex: 3;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar {
+        flex: 1;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+        .sidebar h4 {
+            color: #0052D4;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+    .btn-add-class {
+        background: #329fff;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom: 15px;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-add-class:hover {
+            background: #0088ff;
+            transform: scale(1.05);
+        }
+
+    .course-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .course-item {
+        background: #eef1f7;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+
+        .course-item a {
+            text-decoration: none;
+            color: #0052D4;
+            font-weight: bold;
+            display: block;
+        }
+
+        .course-item:hover {
+            background: #d0e0fc;
+        }
+
+    .modal-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #CBD5E0;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 1rem;
+    }
+
+    .modal-button {
+        margin-top: 10px;
+        background: #329fff;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .modal-button:hover {
+            background: #0088ff;
+        }
+
+    .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #E53E3E;
+    }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<Clase> Clases = new();
+    private bool MostrarModal = false;
+    private string CodigoClaseIngresado = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            Clases = await DashboardEstudianteService.GetClasesPorEstudianteAsync(UsuarioAutenticado.Id);
+            StateHasChanged();
+        }
+    }
+
+    private void IrAClase(int claseId)
+    {
+        Navigation.NavigateTo($"/clase-estudiante/{claseId}");
+    }
+
+    private void IrDashboardGeneral()
+    {
+        Navigation.NavigateTo("/dashboard-general");
+    }
+
+    private async Task UnirseAClase()
+    {
+        bool exito = await DashboardEstudianteService.UnirseAClaseAsync(UsuarioAutenticado.Id, CodigoClaseIngresado);
+        if (exito)
+        {
+            Clases = await DashboardEstudianteService.GetClasesPorEstudianteAsync(UsuarioAutenticado.Id);
+        }
+        CerrarModal();
+    }
+
+    private void AbrirModal() => MostrarModal = true;
+    private void CerrarModal() => MostrarModal = false;
+
+    private async Task CerrarSesion()
+    {
+        await AuthService.EliminarSesion(UsuarioAutenticado.Id);
+        UsuarioAutenticado = null;
+        Navigation.NavigateTo("/", true);
+    }
+}

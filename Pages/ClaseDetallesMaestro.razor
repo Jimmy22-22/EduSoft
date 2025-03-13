@@ -1,55 +1,209 @@
 ﻿@page "/clase-maestro/{ClaseId:int}"
+@layout LayoutMaestro
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
 @inject NavigationManager Navigation
 
-<h3 class="text-center mt-4">📚 Gestión de la Clase</h3>
+<div class="class-container">
+    <h2 class="class-title">
+        <i class="fas fa-chalkboard-teacher"></i> Gestión de la Clase
+    </h2>
 
-@if (ClaseSeleccionada != null)
-{
-    <div class="card shadow-lg p-4">
-        <h4 class="text-primary"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h4>
-        <p><i class="fas fa-user"></i> Profesor: @ClaseSeleccionada.Profesor</p>
-        <p><i class="fas fa-clock"></i> Horario: @ClaseSeleccionada.Horario.ToShortTimeString()</p>
-        <p><strong>Código de Clase:</strong> @ClaseSeleccionada.CodigoClase</p>
+    @if (ClaseSeleccionada != null)
+    {
+        <div class="class-info">
+            <h3><i class="fas fa-book"></i> @ClaseSeleccionada.Nombre</h3>
+            <p><i class="fas fa-user"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
+            <p><i class="fas fa-clock"></i> Horario: <strong>@ClaseSeleccionada.Horario.ToShortTimeString()</strong></p>
+            <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
+        </div>
 
-        <h5 class="mt-4">👥 Estudiantes Inscritos</h5>
-        <ul class="list-group">
-            @if (Estudiantes.Count > 0)
-            {
-                @foreach (var estudiante in Estudiantes)
+        <div class="students-section">
+            <h4><i class="fas fa-users"></i> Estudiantes Inscritos</h4>
+            <ul class="student-list">
+                @if (Estudiantes.Count > 0)
                 {
-                    <li class="list-group-item">
-                        <i class="fas fa-user"></i> @estudiante.Nombre - @estudiante.Email
-                    </li>
+                    @foreach (var estudiante in Estudiantes)
+                    {
+                        <li>
+                            <i class="fas fa-user"></i> @estudiante.Nombre - @estudiante.Email
+                        </li>
+                    }
                 }
-            }
-            else
-            {
-                <li class="list-group-item text-center text-muted">No hay estudiantes inscritos.</li>
-            }
-        </ul>
-
-        <h5 class="mt-4">📝 Crear Nueva Tarea</h5>
-        <div class="mb-3">
-            <label>Descripción de la Tarea</label>
-            <input type="text" @bind="NuevaTareaDescripcion" class="form-control" />
+                else
+                {
+                    <li class="no-students"><i class="fas fa-exclamation-circle"></i> No hay estudiantes inscritos.</li>
+                }
+            </ul>
         </div>
-        <div class="mb-3">
-            <label>Fecha de Entrega</label>
-            <input type="date" @bind="NuevaTareaFechaEntrega" class="form-control" />
-        </div>
-        <button @onclick="CrearTarea" class="btn btn-success w-100">Crear Tarea</button>
 
-        <button @onclick="VolverAlDashboard" class="btn btn-secondary mt-4">🔙 Volver</button>
-    </div>
-}
-else
-{
-    <p class="text-danger text-center">No se encontró la clase.</p>
-    <button @onclick="VolverAlDashboard" class="btn btn-primary d-block mx-auto">🔙 Volver</button>
-}
+        <div class="task-section">
+            <h4><i class="fas fa-tasks"></i> Crear Nueva Tarea</h4>
+            <div class="task-input">
+                <label for="taskDesc"><i class="fas fa-pencil-alt"></i> Descripción de la Tarea</label>
+                <input type="text" id="taskDesc" @bind="NuevaTareaDescripcion" placeholder="Escribe la tarea aquí..." />
+            </div>
+            <div class="task-input">
+                <label for="taskDate"><i class="fas fa-calendar-alt"></i> Fecha de Entrega</label>
+                <input type="date" id="taskDate" @bind="NuevaTareaFechaEntrega" />
+            </div>
+            <button @onclick="CrearTarea" class="btn-task">
+                <i class="fas fa-plus"></i> Crear Tarea
+            </button>
+        </div>
+
+        <button @onclick="VolverAlDashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    }
+    else
+    {
+        <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
+        <button @onclick="VolverAlDashboard" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    }
+</div>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #e0f7fa, #80deea);
+        margin: 0;
+        padding: 20px;
+    }
+
+    .class-container {
+        max-width: 900px;
+        margin: auto;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .class-title {
+        color: #00796b;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .class-info {
+        background: #e0f2f1;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+        .class-info p {
+            font-size: 1rem;
+            color: #004d40;
+            margin: 5px 0;
+        }
+
+    .students-section {
+        margin-top: 20px;
+        text-align: left;
+    }
+
+    .student-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+    }
+
+        .student-list li {
+            background: #b2dfdb;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+            .student-list li:hover {
+                background: #80cbc4;
+            }
+
+    .no-students {
+        text-align: center;
+        color: #00796b;
+        font-size: 1rem;
+        padding: 10px;
+    }
+
+    .task-section {
+        margin-top: 20px;
+        background: #f1f8e9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: left;
+    }
+
+    .task-input {
+        margin-bottom: 10px;
+    }
+
+        .task-input label {
+            font-size: 1rem;
+            color: #33691e;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .task-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #a5d6a7;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: #f1f8e9;
+            color: #33691e;
+        }
+
+    .btn-task {
+        background: #43a047;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-task:hover {
+            background: #2e7d32;
+            transform: scale(1.05);
+        }
+
+    .btn-back {
+        background: #0288d1;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 15px;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-back:hover {
+            background: #0277bd;
+            transform: scale(1.05);
+        }
+
+    .error-message {
+        color: #d32f2f;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+</style>
 
 @code {
     [Parameter] public int ClaseId { get; set; }

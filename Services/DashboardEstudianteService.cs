@@ -1,21 +1,21 @@
 ﻿using EduSoft.Data;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace EduSoft.Services
 {
     public class DashboardEstudianteService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public DashboardEstudianteService(AppDbContext context)
+        public DashboardEstudianteService(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<List<Clase>> GetClasesPorEstudianteAsync(int usuarioId)
         {
-            return await _context.UsuarioClases
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UsuarioClases
                 .Where(uc => uc.UsuarioId == usuarioId)
                 .Select(uc => uc.Clase)
                 .OrderBy(c => c.Horario)
@@ -24,7 +24,8 @@ namespace EduSoft.Services
 
         public async Task<List<Tarea>> GetTareasPorEstudianteAsync(int usuarioId)
         {
-            return await _context.Tareas
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Tareas
                 .Where(t => t.UsuarioId == usuarioId)
                 .OrderBy(t => t.FechaEntrega)
                 .ToListAsync();
@@ -32,14 +33,15 @@ namespace EduSoft.Services
 
         public async Task<bool> UnirseAClaseAsync(int usuarioId, string codigoClase)
         {
-            var clase = await _context.Clases.FirstOrDefaultAsync(c => c.CodigoClase == codigoClase);
+            using var context = _contextFactory.CreateDbContext();
+            var clase = await context.Clases.FirstOrDefaultAsync(c => c.CodigoClase == codigoClase);
             if (clase == null) return false;
 
-            bool yaInscrito = await _context.UsuarioClases.AnyAsync(uc => uc.UsuarioId == usuarioId && uc.ClaseId == clase.Id);
+            bool yaInscrito = await context.UsuarioClases.AnyAsync(uc => uc.UsuarioId == usuarioId && uc.ClaseId == clase.Id);
             if (yaInscrito) return false;
 
-            _context.UsuarioClases.Add(new UsuarioClase { UsuarioId = usuarioId, ClaseId = clase.Id });
-            await _context.SaveChangesAsync();
+            context.UsuarioClases.Add(new UsuarioClase { UsuarioId = usuarioId, ClaseId = clase.Id });
+            await context.SaveChangesAsync();
             return true;
         }
     }

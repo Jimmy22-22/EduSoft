@@ -1,70 +1,138 @@
 ﻿@page "/dashboard-maestro"
+@layout LayoutMaestro
 @using EduSoft.Data
 @using EduSoft.Services
 @inject AuthService AuthService
 @inject DashboardMaestroService DashboardMaestroService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
-<h3 class="text-center mt-4">🎓 Dashboard Maestro</h3>
+<div class="dashboard-container">
+    <h2 class="dashboard-title">
+        <i class="fas fa-chalkboard-teacher"></i> Bienvenido, @UsuarioAutenticado?.Nombre
+    </h2>
 
-@if (UsuarioAutenticado != null)
-{
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <p class="mb-0">Hola, <strong>@UsuarioAutenticado.Nombre</strong></p>
-        <button @onclick="AbrirModal" class="btn btn-primary"><i class="fas fa-plus"></i> Crear Clase</button>
-    </div>
-
-    <button @onclick="CerrarSesion" class="btn btn-danger mb-4">Cerrar Sesión</button>
-
-    <div class="container mt-4">
-        <h4 class="text-center">📚 Clases Creadas</h4>
-        <div class="row">
-            @foreach (var clase in Clases)
-            {
-                <div class="col-md-4">
-                    <div class="card shadow-lg mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">@clase.Nombre</h5>
-                            <p class="card-text"><i class="fas fa-user"></i> Prof. @clase.Profesor</p>
-                            <p class="card-text"><strong>Código: @clase.CodigoClase</strong></p>
-                            <button class="btn btn-outline-primary w-100" @onclick="() => IrAClase(clase.Id)">Ver Detalles</button>
+    <div class="class-list-container">
+        <h3 class="class-list-title"><i class="fas fa-book"></i> Clases Creadas</h3>
+        @if (Clases.Count > 0)
+        {
+            <div class="class-grid">
+                @foreach (var clase in Clases)
+                {
+                    <div class="class-card" @onclick="() => IrAClase(clase.Id)">
+                        <div class="class-header">
+                            <h4><i class="fas fa-chalkboard"></i> @clase.Nombre</h4>
+                        </div>
+                        <div class="class-body">
+                            <p><i class="fas fa-user-tie"></i> Profesor: @clase.Profesor</p>
+                            <p><i class="fas fa-key"></i> Código: @clase.CodigoClase</p>
+                            <button class="btn-details">Ver Detalles <i class="fas fa-arrow-right"></i></button>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    </div>
-}
-
-@if (MostrarModal)
-{
-    <div class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Crear Nueva Clase</h5>
-                    <button type="button" class="close" @onclick="CerrarModal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" @bind="NuevaClaseNombre" class="form-control" placeholder="Nombre de la Clase" />
-                    <button @onclick="CrearClase" class="btn btn-success w-100 mt-2">Crear</button>
-                </div>
+                }
             </div>
-        </div>
+        }
+        else
+        {
+            <p class="no-classes"><i class="fas fa-exclamation-circle"></i> Aún no has creado ninguna clase.</p>
+        }
     </div>
-}
+</div>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #dff6e9, #a8e6cf);
+        margin: 0;
+        padding: 20px;
+    }
+
+    .dashboard-container {
+        max-width: 900px;
+        margin: auto;
+        background: #f0fff5;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .dashboard-title {
+        color: #27ae60;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .class-list-container {
+        margin-top: 20px;
+    }
+
+    .class-list-title {
+        color: #27ae60;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .class-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .class-card {
+        background: #D4EFDF;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .class-card:hover {
+            transform: scale(1.05);
+        }
+
+    .class-header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #229954;
+        margin-bottom: 10px;
+    }
+
+    .class-body p {
+        font-size: 0.9rem;
+        color: #4A5568;
+    }
+
+    .btn-details {
+        display: block;
+        margin-top: 10px;
+        background: #229954;
+        color: white;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-details:hover {
+            background: #1e8449;
+        }
+
+    .no-classes {
+        font-size: 1rem;
+        color: #A0AEC0;
+    }
+</style>
 
 @code {
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
-    private bool MostrarModal = false;
-    private string NuevaClaseNombre = "";
 
     protected override async Task OnInitializedAsync()
     {
-        var usuario = await AuthService.VerificarSesion(1);
-
+        var usuario = await AuthService.VerificarSesion();
         if (usuario != null)
         {
             UsuarioAutenticado = usuario;
@@ -76,23 +144,5 @@
         }
     }
 
-    private async Task CrearClase()
-    {
-        await DashboardMaestroService.CrearClaseAsync(NuevaClaseNombre, UsuarioAutenticado.Nombre);
-        Clases = await DashboardMaestroService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
-        CerrarModal();
-    }
-
-    private void AbrirModal() => MostrarModal = true;
-    private void CerrarModal() => MostrarModal = false;
     private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-maestro/{claseId}");
-
-    private async Task CerrarSesion()
-    {
-        await JS.InvokeVoidAsync("localStorage.removeItem", "usuarioId");
-        await JS.InvokeVoidAsync("localStorage.removeItem", "usuarioRol");
-        await JS.InvokeVoidAsync("localStorage.removeItem", "sesionToken");
-        UsuarioAutenticado = null;
-        Navigation.NavigateTo("/", true);
-    }
 }

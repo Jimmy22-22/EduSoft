@@ -1,23 +1,25 @@
 ﻿using EduSoft.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EduSoft.Services
 {
     public class DashboardMaestroService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public DashboardMaestroService(AppDbContext context)
+        public DashboardMaestroService(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<List<Clase>> GetClasesPorProfesorAsync(string nombreProfesor)
         {
-            return await _context.Clases
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Clases
                 .Where(c => c.Profesor == nombreProfesor)
                 .OrderBy(c => c.Horario)
                 .ToListAsync();
@@ -25,6 +27,7 @@ namespace EduSoft.Services
 
         public async Task<bool> CrearClaseAsync(string nombre, string profesor)
         {
+            using var context = _contextFactory.CreateDbContext();
             var clase = new Clase
             {
                 Nombre = nombre,
@@ -33,8 +36,8 @@ namespace EduSoft.Services
                 CodigoClase = GenerarCodigoUnico()
             };
 
-            _context.Clases.Add(clase);
-            await _context.SaveChangesAsync();
+            context.Clases.Add(clase);
+            await context.SaveChangesAsync();
             return true;
         }
 

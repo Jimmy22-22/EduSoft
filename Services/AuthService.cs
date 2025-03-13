@@ -27,7 +27,7 @@ namespace EduSoft.Services
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 Rol = rol,
                 SesionActiva = false,
-                SesionToken = Guid.NewGuid().ToString()
+                SesionToken = null
             };
 
             _context.Usuarios.Add(usuario);
@@ -41,6 +41,13 @@ namespace EduSoft.Services
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash))
                 return null;
 
+            var usuariosConSesionActiva = await _context.Usuarios.Where(u => u.SesionActiva).ToListAsync();
+            foreach (var user in usuariosConSesionActiva)
+            {
+                user.SesionActiva = false;
+                user.SesionToken = null;
+            }
+
             usuario.SesionActiva = true;
             usuario.SesionToken = Guid.NewGuid().ToString();
 
@@ -50,11 +57,11 @@ namespace EduSoft.Services
             return usuario;
         }
 
-        public async Task<Usuario?> VerificarSesion(int usuarioId)
+        public async Task<Usuario?> VerificarSesion()
         {
             return await _context.Usuarios
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == usuarioId && u.SesionActiva);
+                .FirstOrDefaultAsync(u => u.SesionActiva);
         }
 
         public async Task EliminarSesion(int usuarioId)
