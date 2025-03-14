@@ -3,7 +3,9 @@
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
+@inject HorarioService HorarioService
 @inject NavigationManager Navigation
+@inject AuthService AuthService
 
 <div class="class-container">
     <h2 class="class-title">
@@ -15,7 +17,17 @@
         <div class="class-info">
             <h3><i class="fas fa-book"></i> @ClaseSeleccionada.Nombre</h3>
             <p><i class="fas fa-user"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
-            <p><i class="fas fa-clock"></i> Horario: <strong>@ClaseSeleccionada.Horario.ToShortTimeString()</strong></p>
+
+            @if (HorarioClaseSeleccionado != null)
+            {
+                <p><i class="fas fa-clock"></i> Horario: <strong>@HorarioClaseSeleccionado.HoraInicio.ToString(@"hh\:mm") - @HorarioClaseSeleccionado.HoraFin.ToString(@"hh\:mm")</strong></p>
+                <p><i class="fas fa-door-open"></i> Aula: <strong>@HorarioClaseSeleccionado.Aula</strong></p>
+            }
+            else
+            {
+                <p><i class="fas fa-clock"></i> Horario: <strong>No asignado</strong></p>
+            }
+
             <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
         </div>
 
@@ -39,32 +51,54 @@
         </div>
 
         <div class="task-section">
-            <h4><i class="fas fa-tasks"></i> Crear Nueva Tarea</h4>
+            <h4><i class="fas fa-tasks"></i> Tareas Asignadas</h4>
+
+            <div class="task-container">
+                @if (Tareas.Count > 0)
+                {
+                    @foreach (var tarea in Tareas)
+                    {
+                        <div class="task-card">
+                            <p><i class="fas fa-file-alt"></i> @tarea.Descripcion</p>
+                            <span class="due-date"><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToShortDateString()</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="no-tasks"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
+                }
+            </div>
+
+            <h4><i class="fas fa-plus"></i> Asignar Nueva Tarea</h4>
             <div class="task-input">
                 <label for="taskDesc"><i class="fas fa-pencil-alt"></i> Descripción de la Tarea</label>
-                <input type="text" id="taskDesc" @bind="NuevaTareaDescripcion" placeholder="Escribe la tarea aquí..." />
+                <input type="text" id="taskDesc" @bind="NuevaTareaDescripcion" placeholder="Ejemplo: Leer capítulo 5" />
             </div>
             <div class="task-input">
                 <label for="taskDate"><i class="fas fa-calendar-alt"></i> Fecha de Entrega</label>
                 <input type="date" id="taskDate" @bind="NuevaTareaFechaEntrega" />
             </div>
             <button @onclick="CrearTarea" class="btn-task">
-                <i class="fas fa-plus"></i> Crear Tarea
+                <i class="fas fa-plus"></i> Asignar Tarea
             </button>
         </div>
 
         <button @onclick="VolverAlDashboard" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Volver
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
         </button>
     }
     else
     {
-        <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
-        <button @onclick="VolverAlDashboard" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
+        <div class="error-container">
+            <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
+            <button @onclick="VolverAlDashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
     }
 </div>
+
 
 <style>
     body {
@@ -95,6 +129,7 @@
         padding: 15px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
     }
 
         .class-info p {
@@ -180,6 +215,40 @@
             transform: scale(1.05);
         }
 
+    .task-list {
+        margin-top: 20px;
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: left;
+    }
+
+        .task-list h4 {
+            color: #0277bd;
+            margin-bottom: 10px;
+        }
+
+    .task-item {
+        background: #bbdefb;
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.3s;
+    }
+
+        .task-item:hover {
+            background: #90caf9;
+        }
+
+    .due-date {
+        font-size: 0.9rem;
+        color: #e53935;
+    }
+
     .btn-back {
         background: #0288d1;
         color: white;
@@ -205,30 +274,53 @@
     }
 </style>
 
+
 @code {
     [Parameter] public int ClaseId { get; set; }
     private Clase? ClaseSeleccionada;
+    private Usuario? UsuarioAutenticado;
+    private HorarioClase? HorarioClaseSeleccionado;
     private List<Usuario> Estudiantes = new();
+    private List<Tarea> Tareas = new();
     private string NuevaTareaDescripcion = "";
     private DateTime NuevaTareaFechaEntrega = DateTime.Now.AddDays(7);
 
     protected override async Task OnInitializedAsync()
     {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+
+        if (UsuarioAutenticado == null)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
         ClaseSeleccionada = await ClaseService.GetClasePorIdAsync(ClaseId);
         if (ClaseSeleccionada != null)
         {
             Estudiantes = await ClaseService.GetEstudiantesPorClaseAsync(ClaseId);
+            HorarioClaseSeleccionado = await HorarioService.GetHorarioPorClaseAsync(ClaseId);
+            await CargarTareas();
         }
     }
 
     private async Task CrearTarea()
     {
-        if (!string.IsNullOrEmpty(NuevaTareaDescripcion))
+        if (UsuarioAutenticado == null)
+            return;
+
+        bool exito = await ClaseService.CrearTarea(ClaseId, NuevaTareaDescripcion, NuevaTareaFechaEntrega, UsuarioAutenticado.Id);
+
+        if (exito)
         {
-            await ClaseService.CrearTarea(ClaseId, NuevaTareaDescripcion, NuevaTareaFechaEntrega);
-            NuevaTareaDescripcion = "";
-            NuevaTareaFechaEntrega = DateTime.Now.AddDays(7);
+            await CargarTareas();
+            StateHasChanged();
         }
+    }
+
+    private async Task CargarTareas()
+    {
+        Tareas = await ClaseService.GetTareasPorClaseAsync(ClaseId);
     }
 
     private void VolverAlDashboard()

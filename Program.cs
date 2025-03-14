@@ -14,6 +14,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<DashboardEstudianteService>();
 builder.Services.AddScoped<DashboardMaestroService>();
 builder.Services.AddScoped<ClaseService>();
+builder.Services.AddScoped<HorarioService>();
 
 builder.Services.AddCors(options =>
 {

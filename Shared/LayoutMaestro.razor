@@ -73,14 +73,16 @@
 
 @if (MostrarModal)
 {
-    <div class="modal-background">
-        <div class="modal-content">
-            <h4><i class="fas fa-chalkboard"></i> Crear Nueva Clase</h4>
-            <input type="text" @bind="NuevaClaseNombre" class="modal-input" placeholder="Nombre de la Clase" />
-            <button @onclick="CrearClase" class="modal-button">
-                <i class="fas fa-check"></i> Crear
-            </button>
-            <button @onclick="CerrarModal" class="modal-close"><i class="fas fa-times"></i></button>
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h2>Crear Nueva Clase</h2>
+            <div class="modal-content">
+                <input type="text" @bind="NuevaClaseNombre" class="modal-input" placeholder="Nombre de la Clase" />
+                <div class="modal-actions">
+                    <button @onclick="CrearClase" class="modal-button confirm"><i class="fas fa-check"></i> Crear</button>
+                    <button @onclick="CerrarModal" class="modal-button cancel"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -259,6 +261,76 @@
             background: #F4D03F;
             transform: scale(1.05);
         }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        width: 350px;
+        text-align: center;
+    }
+
+    .modal-content {
+        margin-top: 15px;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+    }
+
+    .modal-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .modal-button {
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 48%;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+    .confirm {
+        background: #16A085;
+        color: white;
+    }
+
+        .confirm:hover {
+            background: #138D75;
+            transform: scale(1.05);
+        }
+
+    .cancel {
+        background: #E74C3C;
+        color: white;
+    }
+
+        .cancel:hover {
+            background: #C0392B;
+            transform: scale(1.05);
+        }
 </style>
 
 @code {
@@ -280,12 +352,10 @@
         UsuarioAutenticado = null;
         Navigation.NavigateTo("/", true);
     }
-
     protected override async Task OnInitializedAsync()
     {
         await CargarDatos();
     }
-
     private async Task CargarDatos()
     {
         UsuarioAutenticado = await AuthService.VerificarSesion();
@@ -295,12 +365,10 @@
             StateHasChanged();
         }
     }
-
     private void IrAClase(int claseId)
     {
         Navigation.NavigateTo($"/clase-maestro/{claseId}");
     }
-
     private async Task CrearClase()
     {
         if (!string.IsNullOrEmpty(NuevaClaseNombre))
@@ -310,20 +378,7 @@
             CerrarModal();
         }
     }
-
-    private void AbrirModal() => MostrarModal = true;
-    private void CerrarModal() => MostrarModal = false;
-
-    private void ToggleSidebar()
-    {
-        if (MostrarSidebar)
-        {
-            MostrarSidebar = false;
-        }
-        else
-        {
-            SidebarAnimado = true;
-            MostrarSidebar = true;
-        }
-    }
+    private void AbrirModal() { MostrarModal = true; StateHasChanged(); }
+    private void CerrarModal() { MostrarModal = false; StateHasChanged(); }
+    private void ToggleSidebar() { MostrarSidebar = !MostrarSidebar; }
 }

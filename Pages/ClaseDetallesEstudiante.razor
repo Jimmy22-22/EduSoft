@@ -4,6 +4,8 @@
 @using EduSoft.Services
 @inject ClaseService ClaseService
 @inject NavigationManager Navigation
+@inject HorarioService HorarioService
+
 
 <div class="class-details-container">
     @if (ClaseSeleccionada != null)
@@ -12,7 +14,17 @@
             <h2 class="class-title"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h2>
             <div class="class-info">
                 <p><i class="fas fa-user-tie"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
-                <p><i class="fas fa-clock"></i> Horario: <strong>@ClaseSeleccionada.Horario.ToShortTimeString()</strong></p>
+
+                @if (HorarioClaseSeleccionado != null)
+                {
+                    <p><i class="fas fa-clock"></i> Horario: <strong>@HorarioClaseSeleccionado.HoraInicio.ToString(@"hh\:mm") - @HorarioClaseSeleccionado.HoraFin.ToString(@"hh\:mm")</strong></p>
+                    <p><i class="fas fa-door-open"></i> Aula: <strong>@HorarioClaseSeleccionado.Aula</strong></p>
+                }
+                else
+                {
+                    <p><i class="fas fa-clock"></i> Horario: <strong>No asignado</strong></p>
+                }
+
                 <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
             </div>
 
@@ -49,6 +61,7 @@
         </div>
     }
 </div>
+
 
 <style>
     body {
@@ -176,6 +189,7 @@
 @code {
     [Parameter] public int ClaseId { get; set; }
     private Clase? ClaseSeleccionada;
+    private HorarioClase? HorarioClaseSeleccionado;
     private List<Tarea> Tareas = new();
 
     protected override async Task OnInitializedAsync()
@@ -184,6 +198,7 @@
         if (ClaseSeleccionada != null)
         {
             Tareas = await ClaseService.GetTareasPorClaseAsync(ClaseId);
+            HorarioClaseSeleccionado = await HorarioService.GetHorarioPorClaseAsync(ClaseId);
         }
     }
 

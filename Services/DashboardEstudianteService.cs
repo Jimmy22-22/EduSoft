@@ -18,7 +18,11 @@ namespace EduSoft.Services
             return await context.UsuarioClases
                 .Where(uc => uc.UsuarioId == usuarioId)
                 .Select(uc => uc.Clase)
-                .OrderBy(c => c.Horario)
+                .OrderBy(c => context.HorariosClases
+                    .Where(h => h.ClaseId == c.Id)
+                    .OrderBy(h => h.HoraInicio)
+                    .Select(h => h.HoraInicio)
+                    .FirstOrDefault())
                 .ToListAsync();
         }
 

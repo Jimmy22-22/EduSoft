@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-
 namespace EduSoft.Data
 {
     public class AppDbContext : DbContext
@@ -11,6 +10,7 @@ namespace EduSoft.Data
         public DbSet<Clase> Clases { get; set; }
         public DbSet<Tarea> Tareas { get; set; }
         public DbSet<UsuarioClase> UsuarioClases { get; set; }
+        public DbSet<HorarioClase> HorariosClases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,6 +37,11 @@ namespace EduSoft.Data
                 .HasOne(t => t.Clase)
                 .WithMany(c => c.Tareas)
                 .HasForeignKey(t => t.ClaseId);
+
+            modelBuilder.Entity<HorarioClase>()
+                .HasOne(h => h.Clase)
+                .WithMany(c => c.Horarios)
+                .HasForeignKey(h => h.ClaseId);
         }
     }
 
@@ -63,8 +68,8 @@ namespace EduSoft.Data
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Profesor { get; set; }
-        public DateTime Horario { get; set; }
         public string CodigoClase { get; set; }
+        public List<HorarioClase> Horarios { get; set; } = new();
         public List<UsuarioClase> UsuarioClases { get; set; } = new();
         public List<Tarea> Tareas { get; set; } = new();
     }
@@ -85,5 +90,18 @@ namespace EduSoft.Data
         public Usuario Usuario { get; set; }
         public int ClaseId { get; set; }
         public Clase Clase { get; set; }
+    }
+
+    public class HorarioClase
+    {
+        public int Id { get; set; }
+        public int ClaseId { get; set; }
+        public Clase Clase { get; set; }
+        public string NombreClase => Clase?.Nombre;
+        public string Aula { get; set; }
+        public string Profesor { get; set; }
+        public DateTime Fecha { get; set; }
+        public TimeSpan HoraInicio { get; set; }
+        public TimeSpan HoraFin { get; set; }
     }
 }

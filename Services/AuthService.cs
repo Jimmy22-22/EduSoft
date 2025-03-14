@@ -7,16 +7,17 @@ namespace EduSoft.Services
 {
     public class AuthService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public AuthService(AppDbContext context)
+        public AuthService(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<bool> RegisterUser(string nombre, string email, string password, RolUsuario rol)
         {
-            var existingUser = await _context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
+            using var context = _contextFactory.CreateDbContext();
+            var existingUser = await context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
             if (existingUser != null)
                 return false;
 
@@ -30,18 +31,19 @@ namespace EduSoft.Services
                 SesionToken = null
             };
 
-            _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
+            context.Usuarios.Add(usuario);
+            await context.SaveChangesAsync();
             return true;
         }
 
         public async Task<Usuario?> Login(string email, string password)
         {
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+            using var context = _contextFactory.CreateDbContext();
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash))
                 return null;
 
-            var usuariosConSesionActiva = await _context.Usuarios.Where(u => u.SesionActiva).ToListAsync();
+            var usuariosConSesionActiva = await context.Usuarios.Where(u => u.SesionActiva).ToListAsync();
             foreach (var user in usuariosConSesionActiva)
             {
                 user.SesionActiva = false;
@@ -51,28 +53,30 @@ namespace EduSoft.Services
             usuario.SesionActiva = true;
             usuario.SesionToken = Guid.NewGuid().ToString();
 
-            _context.Usuarios.Update(usuario);
-            await _context.SaveChangesAsync();
+            context.Usuarios.Update(usuario);
+            await context.SaveChangesAsync();
 
             return usuario;
         }
 
         public async Task<Usuario?> VerificarSesion()
         {
-            return await _context.Usuarios
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Usuarios
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.SesionActiva);
         }
 
         public async Task EliminarSesion(int usuarioId)
         {
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuarioId);
+            using var context = _contextFactory.CreateDbContext();
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuarioId);
             if (usuario != null)
             {
                 usuario.SesionActiva = false;
                 usuario.SesionToken = null;
-                _context.Usuarios.Update(usuario);
-                await _context.SaveChangesAsync();
+                context.Usuarios.Update(usuario);
+                await context.SaveChangesAsync();
             }
         }
     }

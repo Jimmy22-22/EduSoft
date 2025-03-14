@@ -21,7 +21,11 @@ namespace EduSoft.Services
             using var context = _contextFactory.CreateDbContext();
             return await context.Clases
                 .Where(c => c.Profesor == nombreProfesor)
-                .OrderBy(c => c.Horario)
+                .OrderBy(c => context.HorariosClases
+                    .Where(h => h.ClaseId == c.Id)
+                    .OrderBy(h => h.HoraInicio)
+                    .Select(h => h.HoraInicio)
+                    .FirstOrDefault())
                 .ToListAsync();
         }
 
@@ -32,7 +36,6 @@ namespace EduSoft.Services
             {
                 Nombre = nombre,
                 Profesor = profesor,
-                Horario = DateTime.Now,
                 CodigoClase = GenerarCodigoUnico()
             };
 

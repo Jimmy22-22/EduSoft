@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace EduSoft.Services
 {
     public class ClaseService
@@ -25,7 +24,6 @@ namespace EduSoft.Services
             {
                 Nombre = nombre,
                 Profesor = profesor,
-                Horario = DateTime.Now,
                 CodigoClase = codigoClase
             };
 
@@ -78,18 +76,28 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> CrearTarea(int claseId, string descripcion, DateTime fechaEntrega)
+        public async Task<bool> CrearTarea(int claseId, string descripcion, DateTime fechaEntrega, int usuarioId)
         {
             var tarea = new Tarea
             {
                 Descripcion = descripcion,
                 FechaEntrega = fechaEntrega,
-                ClaseId = claseId
+                ClaseId = claseId,
+                UsuarioId = usuarioId
             };
 
             _context.Tareas.Add(tarea);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+
+        public async Task<HorarioClase?> GetHorarioPorClaseAsync(int claseId)
+        {
+            return await _context.HorariosClases
+                .Where(h => h.ClaseId == claseId)
+                .OrderBy(h => h.HoraInicio)
+                .FirstOrDefaultAsync();
         }
 
         private string GenerarCodigoUnico()

@@ -1,0 +1,434 @@
+﻿@page "/horarios-maestro"
+@layout LayoutMaestro
+@using EduSoft.Data
+@using EduSoft.Services
+@inject HorarioService HorarioService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2 class="schedule-title"><i class="fas fa-calendar-alt"></i> Horarios de Clases</h2>
+
+<div class="filter-container">
+    <label>Filtrar por Fecha:</label>
+    <input type="date" @bind="FechaFiltro" class="filter-input" />
+    <i class="fas fa-sync-alt reset-icon" @onclick="RestablecerFiltro" title="Restablecer"></i>
+    <i class="fas fa-plus-circle add-icon" @onclick="AbrirModalAgregar" title="Agregar Horario"></i>
+</div>
+
+@if (Horarios.Count > 0)
+{
+    <div class="schedule-container">
+        @foreach (var horario in Horarios)
+        {
+            <div class="day-section">
+                <h3 class="day-title">
+                    <i class="fas fa-calendar-day"></i> @horario.Fecha.ToString("dddd, dd MMMM yyyy")
+                </h3>
+
+                <ul class="schedule-list">
+                    <li class="schedule-item">
+                        <span class="time"><i class="fas fa-clock"></i> @horario.HoraInicio - @horario.HoraFin</span>
+                        <span class="subject"><i class="fas fa-book"></i> @horario.NombreClase</span>
+                        <span class="room"><i class="fas fa-door-open"></i> Aula: @horario.Aula</span>
+
+                        <div class="action-icons">
+                            <i class="fas fa-edit edit-icon" @onclick="() => AbrirModalEditar(horario)" title="Editar"></i>
+                            <i class="fas fa-trash-alt delete-icon" @onclick="() => EliminarHorario(horario.Id)" title="Eliminar"></i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="no-schedule"><i class="fas fa-calendar-times"></i> No tienes clases registradas en la fecha seleccionada.</p>
+}
+
+@if (MostrarModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h2>@(ModoEdicion ? "Editar Horario" : "Agregar Horario")</h2>
+            <div class="modal-content">
+                <div class="input-group">
+                    <label>Clase:</label>
+                    <select @bind="ClaseSeleccionadaId" class="modal-input">
+                        <option value="">Selecciona una clase</option>
+                        @foreach (var clase in Clases)
+                        {
+                            <option value="@clase.Id">@clase.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Fecha:</label>
+                    <input type="date" @bind="FechaHorario" class="modal-input" />
+                </div>
+                <div class="input-group">
+                    <label>Hora de Inicio:</label>
+                    <input type="time" @bind="HoraInicioTime" class="modal-input" />
+                </div>
+                <div class="input-group">
+                    <label>Hora de Fin:</label>
+                    <input type="time" @bind="HoraFinTime" class="modal-input" />
+                </div>
+                <div class="input-group">
+                    <label>Aula:</label>
+                    <input type="text" @bind="Aula" class="modal-input" placeholder="Ej: Aula 101" />
+                </div>
+                <div class="modal-actions">
+                    <button @onclick="GuardarHorario" class="modal-button confirm"><i class="fas fa-check"></i> Guardar</button>
+                    <button @onclick="CerrarModal" class="modal-button cancel"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .reset-icon,
+    .add-icon {
+        font-size: 1.5rem;
+        color: #16A085;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: transform 0.2s, color 0.3s;
+    }
+
+        .reset-icon:hover {
+            color: #138D75;
+            transform: rotate(180deg);
+        }
+
+        .add-icon:hover {
+            color: #1ABC9C;
+            transform: scale(1.1);
+        }
+
+    .edit-icon,
+    .delete-icon {
+        font-size: 1.3rem;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: color 0.3s, transform 0.2s;
+    }
+
+    .edit-icon {
+        color: #F39C12;
+    }
+
+        .edit-icon:hover {
+            color: #E67E22;
+            transform: scale(1.1);
+        }
+
+    .delete-icon {
+        color: #E74C3C;
+    }
+
+        .delete-icon:hover {
+            color: #C0392B;
+            transform: scale(1.1);
+        }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        width: 350px;
+        text-align: center;
+    }
+
+    .modal-content {
+        margin-top: 15px;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+    }
+
+    .modal-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .modal-button {
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 48%;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+    .confirm {
+        background: #16A085;
+        color: white;
+    }
+
+        .confirm:hover {
+            background: #138D75;
+            transform: scale(1.05);
+        }
+
+    .cancel {
+        background: #E74C3C;
+        color: white;
+    }
+
+        .cancel:hover {
+            background: #C0392B;
+            transform: scale(1.05);
+        }
+
+    .schedule-title {
+        color: #16A085;
+        text-align: center;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .filter-container {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .filter-input {
+        padding: 8px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .schedule-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .day-section {
+        background: #E8F8F5;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-title {
+        font-size: 1.4rem;
+        color: #138D75;
+        margin-bottom: 10px;
+    }
+
+    .schedule-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .schedule-item {
+        background: #D1F2EB;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .schedule-item span {
+            color: #0E6251;
+        }
+
+    .time {
+        font-weight: bold;
+    }
+
+    .no-class, .no-schedule {
+        text-align: center;
+        font-size: 1.1rem;
+        color: #AAB7B8;
+    }
+
+    .add-schedule-title {
+        text-align: center;
+        color: #16A085;
+        font-size: 1.5rem;
+        margin-top: 30px;
+    }
+
+    .add-schedule-container {
+        background: #F8F9F9;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 20px auto;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #B2BABB;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .btn-add-schedule {
+        background: #16A085;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-add-schedule:hover {
+            background: #138D75;
+            transform: scale(1.05);
+        }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<HorarioClase> Horarios = new();
+    private List<Clase> Clases = new();
+    private int ClaseSeleccionadaId;
+    private DateTime FechaHorario = DateTime.Today;
+    private DateTime FechaFiltro = DateTime.Today;
+    private string Aula = "";
+    private int HorarioIdEditar;
+    private bool ModoEdicion = false;
+    private bool MostrarModal = false;
+
+    private TimeSpan HoraInicio;
+    private TimeSpan HoraFin;
+
+    private DateTime HoraInicioTime
+    {
+        get => DateTime.Today.Add(HoraInicio);
+        set => HoraInicio = value.TimeOfDay;
+    }
+
+    private DateTime HoraFinTime
+    {
+        get => DateTime.Today.Add(HoraFin);
+        set => HoraFin = value.TimeOfDay;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            await CargarDatos();
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        Horarios = await HorarioService.GetHorariosPorMaestroAsync(UsuarioAutenticado.Nombre, FechaFiltro);
+        Clases = await HorarioService.GetClasesPorMaestroAsync(UsuarioAutenticado.Nombre);
+    }
+
+    private void AbrirModalAgregar()
+    {
+        ModoEdicion = false;
+        MostrarModal = true;
+        StateHasChanged();
+    }
+
+    private void AbrirModalEditar(HorarioClase horario)
+    {
+        ModoEdicion = true;
+        HorarioIdEditar = horario.Id;
+        ClaseSeleccionadaId = horario.ClaseId;
+        FechaHorario = horario.Fecha;
+        HoraInicio = horario.HoraInicio;
+        HoraFin = horario.HoraFin;
+        Aula = horario.Aula;
+        MostrarModal = true;
+        StateHasChanged();
+    }
+
+    private async Task GuardarHorario()
+    {
+        if (ModoEdicion)
+        {
+            await HorarioService.EditarHorarioAsync(HorarioIdEditar, ClaseSeleccionadaId, FechaHorario, HoraInicio, HoraFin, Aula);
+        }
+        else
+        {
+            await HorarioService.AgregarHorarioAsync(ClaseSeleccionadaId, FechaHorario, HoraInicio, HoraFin, Aula, UsuarioAutenticado.Nombre);
+        }
+        await CargarDatos();
+        MostrarModal = false;
+        StateHasChanged();
+    }
+
+    private async Task EliminarHorario(int id)
+    {
+        await HorarioService.EliminarHorarioAsync(id);
+        await CargarDatos();
+    }
+
+    private void RestablecerFiltro()
+    {
+        FechaFiltro = DateTime.Today;
+        CargarDatos();
+    }
+
+    private void CerrarModal()
+    {
+        MostrarModal = false;
+        StateHasChanged();
+    }
+}
