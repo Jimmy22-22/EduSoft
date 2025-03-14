@@ -9,7 +9,10 @@
     <header class="top-bar">
         <h2>EduSoft</h2>
         <div class="top-buttons">
-            <button class="btn-action home-btn" @onclick="IrDashboardGeneral">
+            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="btn-action home-btn" @onclick="IrDashboardEstudiante">
                 <i class="fas fa-home"></i>
             </button>
             <button class="btn-action logout-btn" @onclick="CerrarSesion">
@@ -23,22 +26,25 @@
             @Body
         </main>
 
-        <aside class="sidebar">
-            <h4>📚 Mis Cursos</h4>
-            <button class="btn-add-class" @onclick="AbrirModal">
-                <i class="fas fa-plus"></i> Unirse a Clase
-            </button>
-            <ul class="course-list">
-                @foreach (var clase in Clases)
-                {
-                    <li class="course-item">
-                        <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
-                            <i class="fas fa-book"></i> @clase.Nombre
-                        </a>
-                    </li>
-                }
-            </ul>
-        </aside>
+        @if (MostrarSidebar)
+        {
+            <aside class="sidebar @(SidebarAnimado ? "animated" : "")">
+                <h4><i class="fas fa-book-reader"></i> Mis Cursos</h4>
+                <button class="btn-add-class" @onclick="AbrirModal">
+                    <i class="fas fa-plus"></i> Unirse a Clase
+                </button>
+                <ul class="course-list">
+                    @foreach (var clase in Clases)
+                    {
+                        <li class="course-item">
+                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
+                                <i class="fas fa-book"></i> @clase.Nombre
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </aside>
+        }
     </div>
 </div>
 
@@ -100,6 +106,10 @@
             transform: scale(1.1);
         }
 
+    .toggle-sidebar-btn:hover {
+        color: #FFD700;
+    }
+
     .logout-btn:hover {
         color: #ff4d4d;
     }
@@ -132,11 +142,29 @@
         text-align: center;
     }
 
-        .sidebar h4 {
-            color: #0052D4;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+    .animated {
+        opacity: 0;
+        transform: scale(0.9);
+        animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
         }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .sidebar h4 {
+        color: #0052D4;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
 
     .btn-add-class {
         background: #329fff;
@@ -179,71 +207,15 @@
         .course-item:hover {
             background: #d0e0fc;
         }
-
-    .modal-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        width: 300px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        position: relative;
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #CBD5E0;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 1rem;
-    }
-
-    .modal-button {
-        margin-top: 10px;
-        background: #329fff;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        width: 100%;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-        .modal-button:hover {
-            background: #0088ff;
-        }
-
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #E53E3E;
-    }
 </style>
 
 @code {
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
+    private bool MostrarSidebar = true;
     private bool MostrarModal = false;
     private string CodigoClaseIngresado = "";
+    private bool SidebarAnimado = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -265,9 +237,9 @@
         Navigation.NavigateTo($"/clase-estudiante/{claseId}");
     }
 
-    private void IrDashboardGeneral()
+    private void IrDashboardEstudiante()
     {
-        Navigation.NavigateTo("/dashboard-general");
+        Navigation.NavigateTo("/dashboard-estudiante");
     }
 
     private async Task UnirseAClase()
@@ -282,6 +254,19 @@
 
     private void AbrirModal() => MostrarModal = true;
     private void CerrarModal() => MostrarModal = false;
+
+    private void ToggleSidebar()
+    {
+        if (MostrarSidebar)
+        {
+            MostrarSidebar = false;
+        }
+        else
+        {
+            SidebarAnimado = true;
+            MostrarSidebar = true;
+        }
+    }
 
     private async Task CerrarSesion()
     {

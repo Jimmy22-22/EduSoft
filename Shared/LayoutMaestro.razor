@@ -9,36 +9,65 @@
     <header class="top-bar">
         <h2>EduSoft - Gestión de Clases</h2>
         <div class="top-buttons">
-            <button class="btn-home" @onclick="IrDashboardGeneral">
+            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="btn-action btn-home" @onclick="IrDashboardMaestro">
                 <i class="fas fa-home"></i>
             </button>
-            <button class="btn-logout" @onclick="CerrarSesion">
+            <button class="btn-action btn-logout" @onclick="CerrarSesion">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
     </header>
+
+    <nav class="sub-nav">
+        <div class="nav-item" @onclick="IrHorarios">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Horarios</span>
+        </div>
+        <div class="nav-item" @onclick="IrNotas">
+            <i class="fas fa-file-alt"></i>
+            <span>Notas</span>
+        </div>
+        <div class="nav-item" @onclick="IrAsistencia">
+            <i class="fas fa-user-check"></i>
+            <span>Asistencia</span>
+        </div>
+        <div class="nav-item" @onclick="IrTareas">
+            <i class="fas fa-tasks"></i>
+            <span>Tareas</span>
+        </div>
+        <div class="nav-item" @onclick="IrExamenes">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Exámenes</span>
+        </div>
+    </nav>
 
     <div class="content-container">
         <main class="main-content">
             @Body
         </main>
 
-        <aside class="sidebar">
-            <h4>📚 Clases Creadas</h4>
-            <button class="btn-add-class" @onclick="AbrirModal">
-                <i class="fas fa-plus"></i> Crear Clase
-            </button>
-            <ul class="course-list">
-                @foreach (var clase in Clases)
-                {
-                    <li class="course-item">
-                        <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
-                            <i class="fas fa-chalkboard-teacher"></i> @clase.Nombre
-                        </a>
-                    </li>
-                }
-            </ul>
-        </aside>
+        @if (MostrarSidebar)
+        {
+            <aside class="sidebar @(SidebarAnimado ? "animated" : "")">
+                <h4><i class="fas fa-chalkboard"></i> Clases Creadas</h4>
+                <button class="btn-add-class" @onclick="AbrirModal">
+                    <i class="fas fa-plus"></i> Crear Clase
+                </button>
+                <ul class="course-list">
+                    @foreach (var clase in Clases)
+                    {
+                        <li class="course-item">
+                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
+                                <i class="fas fa-chalkboard-teacher"></i> @clase.Nombre
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </aside>
+        }
     </div>
 </div>
 
@@ -57,6 +86,37 @@
 }
 
 <style>
+    .sub-nav {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 15px;
+        background: linear-gradient(135deg, #16A085, #1ABC9C);
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        color: white;
+        font-size: 1rem;
+        transition: transform 0.2s, color 0.3s;
+    }
+
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover {
+            transform: scale(1.1);
+            color: #FFD700;
+        }
+
     body {
         font-family: 'Arial', sans-serif;
         background-color: #f4f7f6;
@@ -80,6 +140,7 @@
         font-size: 1.4rem;
         font-weight: bold;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid #0E8F57; 
     }
 
     .top-buttons {
@@ -87,19 +148,26 @@
         gap: 10px;
     }
 
-    .btn-home, .btn-logout {
+    .btn-action {
         background: none;
         border: none;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         cursor: pointer;
-        transition: transform 0.2s ease, color 0.2s ease;
+        transition: transform 0.2s ease, color 0.3s;
     }
 
-        .btn-home:hover, .btn-logout:hover {
-            transform: scale(1.1);
-            color: #FFD700;
-        }
+    .toggle-sidebar-btn:hover {
+        color: #FFD700;
+    }
+
+    .btn-home:hover {
+        color: #FFA500;
+    }
+
+    .btn-logout:hover {
+        color: #FF4D4D;
+    }
 
     .content-container {
         display: flex;
@@ -125,11 +193,29 @@
         text-align: center;
     }
 
-        .sidebar h4 {
-            color: #E67E22;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+    .animated {
+        opacity: 0;
+        transform: scale(0.9);
+        animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
         }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .sidebar h4 {
+        color: #E67E22;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
 
     .btn-add-class {
         background: #E67E22;
@@ -173,71 +259,27 @@
             background: #F4D03F;
             transform: scale(1.05);
         }
-
-    .modal-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        width: 300px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        position: relative;
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #CBD5E0;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 1rem;
-    }
-
-    .modal-button {
-        margin-top: 10px;
-        background: #E67E22;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        width: 100%;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-        .modal-button:hover {
-            background: #D35400;
-        }
-
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #E53E3E;
-    }
 </style>
 
 @code {
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
+    private bool MostrarSidebar = true;
     private bool MostrarModal = false;
+    private bool SidebarAnimado = false;
     private string NuevaClaseNombre = "";
+    private void IrDashboardMaestro() => Navigation.NavigateTo("/dashboard-maestro");
+    private void IrHorarios() => Navigation.NavigateTo("/horarios-maestro");
+    private void IrNotas() => Navigation.NavigateTo("/notas-maestro");
+    private void IrAsistencia() => Navigation.NavigateTo("/asistencia-maestro");
+    private void IrTareas() => Navigation.NavigateTo("/tareas-maestro");
+    private void IrExamenes() => Navigation.NavigateTo("/examenes-maestro");
+    private async Task CerrarSesion()
+    {
+        await AuthService.EliminarSesion(UsuarioAutenticado.Id);
+        UsuarioAutenticado = null;
+        Navigation.NavigateTo("/", true);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -259,11 +301,6 @@
         Navigation.NavigateTo($"/clase-maestro/{claseId}");
     }
 
-    private void IrDashboardGeneral()
-    {
-        Navigation.NavigateTo("/dashboard-general");
-    }
-
     private async Task CrearClase()
     {
         if (!string.IsNullOrEmpty(NuevaClaseNombre))
@@ -277,10 +314,16 @@
     private void AbrirModal() => MostrarModal = true;
     private void CerrarModal() => MostrarModal = false;
 
-    private async Task CerrarSesion()
+    private void ToggleSidebar()
     {
-        await AuthService.EliminarSesion(UsuarioAutenticado.Id);
-        UsuarioAutenticado = null;
-        Navigation.NavigateTo("/", true);
+        if (MostrarSidebar)
+        {
+            MostrarSidebar = false;
+        }
+        else
+        {
+            SidebarAnimado = true;
+            MostrarSidebar = true;
+        }
     }
 }
