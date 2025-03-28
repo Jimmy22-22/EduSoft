@@ -91,7 +91,6 @@ namespace EduSoft.Services
 
             return true;
         }
-
         public async Task<HorarioClase?> GetHorarioPorClaseAsync(int claseId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -100,7 +99,5 @@ namespace EduSoft.Services
                 .OrderBy(h => h.HoraInicio)
                 .FirstOrDefaultAsync();
         }
-
-
     }
 }
