@@ -88,7 +88,6 @@ namespace EduSoft.Services
 
             context.HorariosClases.Remove(horario);
             await context.SaveChangesAsync();
-
             return true;
         }
         public async Task<HorarioClase?> GetHorarioPorClaseAsync(int claseId)
