@@ -10,12 +10,10 @@ namespace EduSoft.Services
     public class DashboardMaestroService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
         public DashboardMaestroService(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
-
         public async Task<List<Clase>> GetClasesPorProfesorAsync(string nombreProfesor)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -27,8 +25,7 @@ namespace EduSoft.Services
                     .Select(h => h.HoraInicio)
                     .FirstOrDefault())
                 .ToListAsync();
-        }
-        
+        } 
         public async Task<bool> CrearClaseAsync(string nombre, string profesor)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -45,7 +42,6 @@ namespace EduSoft.Services
             await context.SaveChangesAsync();
             return true;
         }
-
         private string GenerarCodigoUnico()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -53,5 +49,4 @@ namespace EduSoft.Services
             return new string(Enumerable.Repeat(chars, 6).Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
-
 }
