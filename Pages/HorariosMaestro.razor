@@ -1,5 +1,6 @@
 ﻿@page "/horarios-maestro"
 @layout LayoutMaestro
+
 @using EduSoft.Data
 @using EduSoft.Services
 @inject HorarioService HorarioService
@@ -41,6 +42,7 @@
         }
     </div>
 }
+
 else
 {
     <p class="no-schedule"><i class="fas fa-calendar-times"></i> No tienes clases registradas en la fecha seleccionada.</p>
@@ -48,7 +50,7 @@ else
 
 @if (MostrarModal)
 {
-    <div class="modal-overlay">
+   <div class="modal-overlay">
         <div class="modal-box">
             <h2>@(ModoEdicion ? "Editar Horario" : "Agregar Horario")</h2>
             <div class="modal-content">
@@ -81,11 +83,12 @@ else
                 <div class="modal-actions">
                     <button @onclick="GuardarHorario" class="modal-button confirm"><i class="fas fa-check"></i> Guardar</button>
                     <button @onclick="CerrarModal" class="modal-button cancel"><i class="fas fa-times"></i> Cancelar</button>
-                </div>
-            </div>
-        </div>
+     </div>
+     </div>
+    </div>
     </div>
 }
+
 
 <style>
     .reset-icon,
@@ -114,6 +117,7 @@ else
         margin-left: 10px;
         transition: color 0.3s, transform 0.2s;
     }
+
 
     .edit-icon {
         color: #F39C12;
@@ -166,8 +170,8 @@ else
         padding: 30px;
         border-radius: 12px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        width: 350px;
         text-align: center;
+        width: 350px;
     }
 
     .modal-content {
@@ -277,7 +281,7 @@ else
             color: #0E6251;
         }
 
-    .time {
+     .time {
         font-weight: bold;
     }
 
@@ -315,7 +319,7 @@ else
         font-size: 1rem;
     }
 
-    .btn-add-schedule {
+     .btn-add-schedule {
         background: #16A085;
         color: white;
         padding: 12px;
@@ -331,6 +335,7 @@ else
             background: #138D75;
             transform: scale(1.05);
         }
+
 </style>
 
 @code {
@@ -340,6 +345,7 @@ else
     private int ClaseSeleccionadaId;
     private DateTime FechaHorario = DateTime.Today;
     private DateTime FechaFiltro = DateTime.Today;
+
     private string Aula = "";
     private int HorarioIdEditar;
     private bool ModoEdicion = false;
@@ -413,7 +419,6 @@ else
         MostrarModal = false;
         StateHasChanged();
     }
-
     private async Task EliminarHorario(int id)
     {
         await HorarioService.EliminarHorarioAsync(id);
@@ -425,7 +430,6 @@ else
         FechaFiltro = DateTime.Today;
         CargarDatos();
     }
-
     private void CerrarModal()
     {
         MostrarModal = false;
