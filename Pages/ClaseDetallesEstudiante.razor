@@ -1,11 +1,11 @@
 ﻿@page "/clase-estudiante/{ClaseId:int}"
+
 @layout LayoutEstudiante
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
 @inject NavigationManager Navigation
 @inject HorarioService HorarioService
-
 
 <div class="class-details-container">
     @if (ClaseSeleccionada != null)
@@ -45,7 +45,6 @@
                     <p class="no-tasks"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
                 }
             </div>
-
             <button @onclick="VolverAlDashboard" class="btn-back">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
@@ -187,6 +186,7 @@
 </style>
 
 @code {
+
     [Parameter] public int ClaseId { get; set; }
     private Clase? ClaseSeleccionada;
     private HorarioClase? HorarioClaseSeleccionado;
