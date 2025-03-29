@@ -1,11 +1,12 @@
 ﻿@page "/register"
 @using EduSoft.Services
 @using EduSoft.Data
+
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="register-container">
-    <div class="register-box">
+     <div class="register-box">
         <h2><i class="fas fa-user-plus"></i> Crear Cuenta</h2>
 
         @if (!string.IsNullOrEmpty(Message))
@@ -35,7 +36,6 @@
                 <option value="@RolUsuario.Maestro">Maestro</option>
             </select>
         </div>
-
         <button @onclick="PerformRegister" class="btn-register">
             <i class="@(IsLoading ? "fas fa-spinner fa-spin" : "fas fa-user-check")"></i>
             @(IsLoading ? " Registrando..." : " Registrar")
@@ -57,7 +57,6 @@
         height: 100vh;
         margin: 0;
     }
-
     .register-container {
         display: flex;
         justify-content: center;
@@ -75,7 +74,6 @@
         width: 100%;
         animation: fadeIn 0.8s ease-in-out;
     }
-
         .register-box h2 {
             color: #2A4365;
             margin-bottom: 20px;
@@ -90,7 +88,6 @@
         margin-bottom: 15px;
         font-size: 0.9rem;
     }
-
     .input-group {
         text-align: left;
         margin-bottom: 15px;
@@ -135,7 +132,6 @@
             background: #2B6CB0;
             transform: scale(1.05);
         }
-
     .login-link {
         margin-top: 15px;
         font-size: 0.9rem;
@@ -157,7 +153,6 @@
             opacity: 0;
             transform: translateY(-10px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);
@@ -169,6 +164,7 @@
     private string Nombre { get; set; } = string.Empty;
     private string Email { get; set; } = string.Empty;
     private string Password { get; set; } = string.Empty;
+
     private RolUsuario Rol { get; set; } = RolUsuario.Estudiante;
     private string Message { get; set; } = string.Empty;
     private bool IsLoading { get; set; } = false;
@@ -191,5 +187,6 @@
         }
 
         IsLoading = false;
+
     }
 }
