@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using EduSoft.Services
 @using EduSoft.Data
+
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
@@ -8,6 +9,7 @@
 {
     <div class="body2"></div>
 }
+
 else
 {
     <div class="login-container">
@@ -50,7 +52,6 @@ else
         height: 100vh;
         margin: 0;
     }
-
     .body2 {
         background: #ffffff;
         width: 100vw;
@@ -89,7 +90,6 @@ else
         margin-bottom: 15px;
         font-size: 0.9rem;
     }
-
     .input-group {
         text-align: left;
         margin-bottom: 15px;
@@ -134,7 +134,6 @@ else
             background: #2B6CB0;
             transform: scale(1.05);
         }
-
     .register-link {
         margin-top: 15px;
         font-size: 0.9rem;
@@ -153,17 +152,14 @@ else
 
     @@keyframes fadeIn {
         from
-
     {
         opacity: 0;
         transform: translateY(-10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
-
     }
 </style>
 
@@ -185,7 +181,6 @@ else
         isLoading = false;
         StateHasChanged();
     }
-
     private async Task PerformLogin()
     {
         var usuario = await AuthService.Login(Email, Password);
@@ -199,7 +194,6 @@ else
             ErrorMessage = "❌ Credenciales incorrectas. Inténtalo de nuevo.";
         }
     }
-
     private void RedirigirSegunRol(Usuario usuario)
     {
         if (usuario.Rol == RolUsuario.Estudiante)
