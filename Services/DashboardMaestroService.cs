@@ -28,11 +28,12 @@ namespace EduSoft.Services
                     .FirstOrDefault())
                 .ToListAsync();
         }
-
+        
         public async Task<bool> CrearClaseAsync(string nombre, string profesor)
         {
             using var context = _contextFactory.CreateDbContext();
-            var clase = new Clase
+            var clase = new Clase 
+
             {
                 Nombre = nombre,
                 Profesor = profesor,
@@ -51,4 +52,5 @@ namespace EduSoft.Services
             return new string(Enumerable.Repeat(chars, 6).Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
+
 }
