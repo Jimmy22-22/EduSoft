@@ -12,6 +12,7 @@ namespace EduSoft.Data
         public DbSet<UsuarioClase> UsuarioClases { get; set; }
         public DbSet<HorarioClase> HorariosClases { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -43,6 +44,7 @@ namespace EduSoft.Data
                 .WithMany(c => c.Horarios)
                 .HasForeignKey(h => h.ClaseId);
         }
+
     }
 
     public class Usuario
