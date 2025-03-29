@@ -1,10 +1,12 @@
 ﻿@page "/dashboard-estudiante"
+
 @layout LayoutEstudiante
 @using EduSoft.Data
 @using EduSoft.Services
 @inject AuthService AuthService
 @inject DashboardEstudianteService DashboardEstudianteService
 @inject NavigationManager Navigation
+
 
 <div class="dashboard-container">
     <h2 class="dashboard-title">
@@ -52,6 +54,7 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         text-align: center;
     }
+
 
     .dashboard-title {
         color: #0077cc;
@@ -101,6 +104,7 @@
         color: #005a99;
     }
 
+
     .btn-details {
         display: block;
         margin-top: 10px;
@@ -128,6 +132,7 @@
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
 
+    
     protected override async Task OnInitializedAsync()
     {
         var usuario = await AuthService.VerificarSesion();
@@ -141,6 +146,7 @@
             Navigation.NavigateTo("/");
         }
     }
+
 
     private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-estudiante/{claseId}");
 }
