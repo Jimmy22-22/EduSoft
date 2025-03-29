@@ -40,6 +40,7 @@ namespace EduSoft.Services
                 CodigoClase = GenerarCodigoUnico()
             };
 
+
             context.Clases.Add(clase);
             await context.SaveChangesAsync();
             return true;
