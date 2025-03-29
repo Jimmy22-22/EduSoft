@@ -6,12 +6,10 @@ namespace EduSoft.Services
     public class DashboardEstudianteService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
         public DashboardEstudianteService(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
-
         public async Task<List<Clase>> GetClasesPorEstudianteAsync(int usuarioId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -25,7 +23,6 @@ namespace EduSoft.Services
                     .FirstOrDefault())
                 .ToListAsync();
         }
-
         public async Task<List<Tarea>> GetTareasPorEstudianteAsync(int usuarioId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -34,7 +31,6 @@ namespace EduSoft.Services
                 .OrderBy(t => t.FechaEntrega)
                 .ToListAsync();
         }
-
         public async Task<bool> UnirseAClaseAsync(int usuarioId, string codigoClase)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -48,5 +44,7 @@ namespace EduSoft.Services
             await context.SaveChangesAsync();
             return true;
         }
+
+
     }
 }
