@@ -10,7 +10,6 @@ namespace EduSoft.Services
     public class ClaseService
     {
         private readonly AppDbContext _context;
-
         public ClaseService(AppDbContext context)
         {
             _context = context;
