@@ -1,0 +1,259 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EduSoft</name>
+    </assembly>
+    <members>
+        <member name="T:EduSoft.Services.AuthService">
+            <summary>
+            Servicio de autenticación que gestiona el registro, inicio de sesión, verificación y cierre de sesión de usuarios.
+            </summary>
+        </member>
+        <member name="M:EduSoft.Services.AuthService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{EduSoft.Data.AppDbContext})">
+            <summary>
+            Constructor del servicio de autenticación.
+            </summary>
+            <param name="contextFactory">Fábrica para crear instancias del contexto de base de datos.</param>
+        </member>
+        <member name="M:EduSoft.Services.AuthService.RegisterUser(System.String,System.String,System.String,EduSoft.Data.RolUsuario)">
+            <summary>
+            Registra un nuevo usuario si el correo electrónico no está en uso.
+            </summary>
+            <param name="nombre">Nombre del usuario.</param>
+            <param name="email">Correo electrónico del usuario.</param>
+            <param name="password">Contraseña del usuario (en texto plano).</param>
+            <param name="rol">Rol del usuario (estudiante o maestro).</param>
+            <returns>True si el usuario fue registrado exitosamente, false si el correo ya existe.</returns>
+        </member>
+        <member name="M:EduSoft.Services.AuthService.Login(System.String,System.String)">
+            <summary>
+            Realiza el proceso de inicio de sesión y desactiva otras sesiones activas.
+            </summary>
+            <param name="email">Correo electrónico del usuario.</param>
+            <param name="password">Contraseña ingresada por el usuario.</param>
+            <returns>El usuario autenticado si las credenciales son válidas; de lo contrario, null.</returns>
+        </member>
+        <member name="M:EduSoft.Services.AuthService.VerificarSesion">
+            <summary>
+            Verifica si existe una sesión activa y devuelve el usuario correspondiente.
+            </summary>
+            <returns>El usuario con sesión activa, o null si no hay sesión activa.</returns>
+        </member>
+        <member name="M:EduSoft.Services.AuthService.EliminarSesion(System.Int32)">
+            <summary>
+            Elimina la sesión activa del usuario especificado.
+            </summary>
+            <param name="usuarioId">ID del usuario que cerrará sesión.</param>
+        </member>
+        <member name="T:EduSoft.Services.ClaseService">
+            <summary>
+            Servicio encargado de gestionar la lógica relacionada con las clases,
+            como la creación, inscripción, asignación de tareas y horarios.
+            </summary>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.#ctor(EduSoft.Data.AppDbContext)">
+            <summary>
+            Inicializa una nueva instancia del <see cref="T:EduSoft.Services.ClaseService"/>.
+            </summary>
+            <param name="context">El contexto de base de datos inyectado.</param>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.CrearClase(System.String,System.String)">
+            <summary>
+            Crea una nueva clase con un código único y asigna el nombre del profesor.
+            </summary>
+            <param name="nombre">Nombre de la clase.</param>
+            <param name="profesor">Nombre del profesor.</param>
+            <returns>True si la clase fue creada correctamente.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.UnirseAClase(System.Int32,System.String)">
+            <summary>
+            Permite que un usuario se una a una clase usando un código.
+            </summary>
+            <param name="usuarioId">ID del usuario.</param>
+            <param name="codigoClase">Código único de la clase.</param>
+            <returns>True si el usuario se unió exitosamente, false si ya estaba inscrito o no existe la clase.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.GetClasePorIdAsync(System.Int32)">
+            <summary>
+            Obtiene una clase por su ID.
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <returns>La clase encontrada o null si no existe.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.GetEstudiantesPorClaseAsync(System.Int32)">
+            <summary>
+            Obtiene la lista de estudiantes inscritos en una clase.
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <returns>Lista de estudiantes inscritos.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.GetTareasPorClaseAsync(System.Int32)">
+            <summary>
+            Obtiene la lista de tareas asociadas a una clase ordenadas por fecha de entrega.
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <returns>Lista de tareas.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.CrearTarea(System.Int32,System.String,System.DateTime,System.Int32)">
+            <summary>
+            Crea una tarea para una clase específica y asigna un usuario responsable.
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <param name="descripcion">Descripción de la tarea.</param>
+            <param name="fechaEntrega">Fecha de entrega de la tarea.</param>
+            <param name="usuarioId">ID del usuario que la crea.</param>
+            <returns>True si la tarea fue creada correctamente.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.GetHorarioPorClaseAsync(System.Int32)">
+            <summary>
+            Obtiene el primer horario asignado a una clase, ordenado por hora de inicio.
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <returns>Un objeto <see cref="T:EduSoft.Data.HorarioClase"/> o null si no existe.</returns>
+        </member>
+        <member name="M:EduSoft.Services.ClaseService.GenerarCodigoUnico">
+            <summary>
+            Genera un código alfanumérico único de 6 caracteres para una nueva clase.
+            </summary>
+            <returns>Un string que representa el código generado.</returns>
+        </member>
+        <member name="T:EduSoft.Services.DashboardEstudianteService">
+            <summary>
+            Servicio que maneja las funcionalidades del dashboard del estudiante:
+            obtener clases, tareas y unirse a una clase.
+            </summary>
+        </member>
+        <member name="M:EduSoft.Services.DashboardEstudianteService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{EduSoft.Data.AppDbContext})">
+            <summary>
+            Constructor que recibe el factory del contexto para acceder a la base de datos.
+            </summary>
+            <param name="contextFactory">Factory para crear el contexto de EF.</param>
+        </member>
+        <member name="M:EduSoft.Services.DashboardEstudianteService.GetClasesPorEstudianteAsync(System.Int32)">
+            <summary>
+            Devuelve todas las clases a las que está inscrito un estudiante.
+            Se ordenan por el horario más temprano de cada clase (si existe).
+            </summary>
+            <param name="usuarioId">ID del estudiante.</param>
+            <returns>Lista de clases.</returns>
+        </member>
+        <member name="M:EduSoft.Services.DashboardEstudianteService.GetTareasPorEstudianteAsync(System.Int32)">
+            <summary>
+            Devuelve todas las tareas asignadas al estudiante,
+            ordenadas por su fecha de entrega más próxima.
+            </summary>
+            <param name="usuarioId">ID del estudiante.</param>
+            <returns>Lista de tareas pendientes.</returns>
+        </member>
+        <member name="M:EduSoft.Services.DashboardEstudianteService.UnirseAClaseAsync(System.Int32,System.String)">
+            <summary>
+            Permite que el estudiante se una a una clase mediante el código de clase.
+            Verifica que el código exista y que no esté ya inscrito.
+            </summary>
+            <param name="usuarioId">ID del estudiante.</param>
+            <param name="codigoClase">Código proporcionado de la clase.</param>
+            <returns>True si se unió correctamente, false si ya estaba inscrito o no existe la clase.</returns>
+        </member>
+        <member name="T:EduSoft.Services.DashboardMaestroService">
+            <summary>
+            Servicio que maneja la lógica del panel principal para los maestros.
+            Permite obtener las clases creadas por el docente y registrar nuevas clases.
+            </summary>
+        </member>
+        <member name="M:EduSoft.Services.DashboardMaestroService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{EduSoft.Data.AppDbContext})">
+            <summary>
+            Constructor que recibe el factory para crear el contexto de base de datos.
+            </summary>
+            <param name="contextFactory">Factory de EF Core.</param>
+        </member>
+        <member name="M:EduSoft.Services.DashboardMaestroService.GetClasesPorProfesorAsync(System.String)">
+            <summary>
+            Obtiene todas las clases creadas por un profesor específico.
+            Las clases se ordenan por el horario más temprano asignado (si existe).
+            </summary>
+            <param name="nombreProfesor">Nombre del profesor.</param>
+            <returns>Lista de clases ordenadas por hora de inicio.</returns>
+        </member>
+        <member name="M:EduSoft.Services.DashboardMaestroService.CrearClaseAsync(System.String,System.String)">
+            <summary>
+            Registra una nueva clase en la base de datos para un profesor.
+            Se genera automáticamente un código único para la clase.
+            </summary>
+            <param name="nombre">Nombre de la clase.</param>
+            <param name="profesor">Nombre del profesor que la crea.</param>
+            <returns>True si la clase se creó exitosamente.</returns>
+        </member>
+        <member name="M:EduSoft.Services.DashboardMaestroService.GenerarCodigoUnico">
+            <summary>
+            Genera un código único de 6 caracteres para identificar una clase.
+            </summary>
+            <returns>Cadena aleatoria de 6 caracteres.</returns>
+        </member>
+        <member name="T:EduSoft.Services.HorarioService">
+            <summary>
+            Servicio responsable de gestionar los horarios de clase.
+            Incluye funcionalidades para consultar, agregar, editar y eliminar horarios.
+            </summary>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.#ctor(Microsoft.EntityFrameworkCore.IDbContextFactory{EduSoft.Data.AppDbContext})">
+            <summary>
+            Constructor que recibe el factory para crear instancias del contexto de base de datos.
+            </summary>
+            <param name="contextFactory">Factory de EF Core.</param>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.GetHorariosPorMaestroAsync(System.String,System.Nullable{System.DateTime})">
+            <summary>
+            Obtiene la lista de horarios registrados por un maestro. 
+            Se puede filtrar por una fecha específica si se desea.
+            </summary>
+            <param name="nombreProfesor">Nombre del profesor que creó los horarios.</param>
+            <param name="fecha">Fecha opcional para filtrar los horarios.</param>
+            <returns>Lista de horarios ordenados por fecha y hora.</returns>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.GetClasesPorMaestroAsync(System.String)">
+            <summary>
+            Devuelve la lista de clases creadas por un profesor específico.
+            </summary>
+            <param name="nombreProfesor">Nombre del profesor.</param>
+            <returns>Lista de clases.</returns>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.AgregarHorarioAsync(System.Int32,System.DateTime,System.TimeSpan,System.TimeSpan,System.String,System.String)">
+            <summary>
+            Registra un nuevo horario para una clase existente.
+            </summary>
+            <param name="claseId">ID de la clase a la que pertenece el horario.</param>
+            <param name="fecha">Fecha del horario.</param>
+            <param name="horaInicio">Hora de inicio.</param>
+            <param name="horaFin">Hora de finalización.</param>
+            <param name="aula">Nombre o número del aula.</param>
+            <param name="profesor">Nombre del profesor asignado.</param>
+            <returns>True si el horario fue agregado con éxito.</returns>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.EditarHorarioAsync(System.Int32,System.Int32,System.DateTime,System.TimeSpan,System.TimeSpan,System.String)">
+            <summary>
+            Permite modificar los datos de un horario ya existente.
+            </summary>
+            <param name="horarioId">ID del horario a modificar.</param>
+            <param name="claseId">Nuevo ID de clase si se desea cambiar.</param>
+            <param name="fecha">Nueva fecha del horario.</param>
+            <param name="horaInicio">Nueva hora de inicio.</param>
+            <param name="horaFin">Nueva hora de finalización.</param>
+            <param name="aula">Nuevo nombre o número de aula.</param>
+            <returns>True si la edición fue exitosa.</returns>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.EliminarHorarioAsync(System.Int32)">
+            <summary>
+            Elimina un horario específico de la base de datos.
+            </summary>
+            <param name="horarioId">ID del horario a eliminar.</param>
+            <returns>True si el horario fue eliminado con éxito.</returns>
+        </member>
+        <member name="M:EduSoft.Services.HorarioService.GetHorarioPorClaseAsync(System.Int32)">
+            <summary>
+            Devuelve el primer horario asignado a una clase (el más temprano).
+            </summary>
+            <param name="claseId">ID de la clase.</param>
+            <returns>Horario correspondiente, o null si no hay asignado.</returns>
+        </member>
+    </members>
+</doc>
