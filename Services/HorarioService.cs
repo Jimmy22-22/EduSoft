@@ -7,15 +7,30 @@ using System.Threading.Tasks;
 
 namespace EduSoft.Services
 {
+    /// <summary>
+    /// Servicio responsable de gestionar los horarios de clase.
+    /// Incluye funcionalidades para consultar, agregar, editar y eliminar horarios.
+    /// </summary>
     public class HorarioService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
+        /// <summary>
+        /// Constructor que recibe el factory para crear instancias del contexto de base de datos.
+        /// </summary>
+        /// <param name="contextFactory">Factory de EF Core.</param>
         public HorarioService(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
 
+        /// <summary>
+        /// Obtiene la lista de horarios registrados por un maestro. 
+        /// Se puede filtrar por una fecha específica si se desea.
+        /// </summary>
+        /// <param name="nombreProfesor">Nombre del profesor que creó los horarios.</param>
+        /// <param name="fecha">Fecha opcional para filtrar los horarios.</param>
+        /// <returns>Lista de horarios ordenados por fecha y hora.</returns>
         public async Task<List<HorarioClase>> GetHorariosPorMaestroAsync(string nombreProfesor, DateTime? fecha = null)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -31,6 +46,11 @@ namespace EduSoft.Services
             return await query.OrderBy(h => h.Fecha).ThenBy(h => h.HoraInicio).ToListAsync();
         }
 
+        /// <summary>
+        /// Devuelve la lista de clases creadas por un profesor específico.
+        /// </summary>
+        /// <param name="nombreProfesor">Nombre del profesor.</param>
+        /// <returns>Lista de clases.</returns>
         public async Task<List<Clase>> GetClasesPorMaestroAsync(string nombreProfesor)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -40,6 +60,16 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Registra un nuevo horario para una clase existente.
+        /// </summary>
+        /// <param name="claseId">ID de la clase a la que pertenece el horario.</param>
+        /// <param name="fecha">Fecha del horario.</param>
+        /// <param name="horaInicio">Hora de inicio.</param>
+        /// <param name="horaFin">Hora de finalización.</param>
+        /// <param name="aula">Nombre o número del aula.</param>
+        /// <param name="profesor">Nombre del profesor asignado.</param>
+        /// <returns>True si el horario fue agregado con éxito.</returns>
         public async Task<bool> AgregarHorarioAsync(int claseId, DateTime fecha, TimeSpan horaInicio, TimeSpan horaFin, string aula, string profesor)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -62,6 +92,16 @@ namespace EduSoft.Services
             return true;
         }
 
+        /// <summary>
+        /// Permite modificar los datos de un horario ya existente.
+        /// </summary>
+        /// <param name="horarioId">ID del horario a modificar.</param>
+        /// <param name="claseId">Nuevo ID de clase si se desea cambiar.</param>
+        /// <param name="fecha">Nueva fecha del horario.</param>
+        /// <param name="horaInicio">Nueva hora de inicio.</param>
+        /// <param name="horaFin">Nueva hora de finalización.</param>
+        /// <param name="aula">Nuevo nombre o número de aula.</param>
+        /// <returns>True si la edición fue exitosa.</returns>
         public async Task<bool> EditarHorarioAsync(int horarioId, int claseId, DateTime fecha, TimeSpan horaInicio, TimeSpan horaFin, string aula)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -79,6 +119,11 @@ namespace EduSoft.Services
             return true;
         }
 
+        /// <summary>
+        /// Elimina un horario específico de la base de datos.
+        /// </summary>
+        /// <param name="horarioId">ID del horario a eliminar.</param>
+        /// <returns>True si el horario fue eliminado con éxito.</returns>
         public async Task<bool> EliminarHorarioAsync(int horarioId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -90,6 +135,12 @@ namespace EduSoft.Services
             await context.SaveChangesAsync();
             return true;
         }
+
+        /// <summary>
+        /// Devuelve el primer horario asignado a una clase (el más temprano).
+        /// </summary>
+        /// <param name="claseId">ID de la clase.</param>
+        /// <returns>Horario correspondiente, o null si no hay asignado.</returns>
         public async Task<HorarioClase?> GetHorarioPorClaseAsync(int claseId)
         {
             using var context = _contextFactory.CreateDbContext();

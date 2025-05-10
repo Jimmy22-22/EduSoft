@@ -5,15 +5,30 @@ using System.Threading.Tasks;
 
 namespace EduSoft.Services
 {
+    /// <summary>
+    /// Servicio de autenticación que gestiona el registro, inicio de sesión, verificación y cierre de sesión de usuarios.
+    /// </summary>
     public class AuthService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
+        /// <summary>
+        /// Constructor del servicio de autenticación.
+        /// </summary>
+        /// <param name="contextFactory">Fábrica para crear instancias del contexto de base de datos.</param>
         public AuthService(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
 
+        /// <summary>
+        /// Registra un nuevo usuario si el correo electrónico no está en uso.
+        /// </summary>
+        /// <param name="nombre">Nombre del usuario.</param>
+        /// <param name="email">Correo electrónico del usuario.</param>
+        /// <param name="password">Contraseña del usuario (en texto plano).</param>
+        /// <param name="rol">Rol del usuario (estudiante o maestro).</param>
+        /// <returns>True si el usuario fue registrado exitosamente, false si el correo ya existe.</returns>
         public async Task<bool> RegisterUser(string nombre, string email, string password, RolUsuario rol)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -36,6 +51,12 @@ namespace EduSoft.Services
             return true;
         }
 
+        /// <summary>
+        /// Realiza el proceso de inicio de sesión y desactiva otras sesiones activas.
+        /// </summary>
+        /// <param name="email">Correo electrónico del usuario.</param>
+        /// <param name="password">Contraseña ingresada por el usuario.</param>
+        /// <returns>El usuario autenticado si las credenciales son válidas; de lo contrario, null.</returns>
         public async Task<Usuario?> Login(string email, string password)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -59,6 +80,10 @@ namespace EduSoft.Services
             return usuario;
         }
 
+        /// <summary>
+        /// Verifica si existe una sesión activa y devuelve el usuario correspondiente.
+        /// </summary>
+        /// <returns>El usuario con sesión activa, o null si no hay sesión activa.</returns>
         public async Task<Usuario?> VerificarSesion()
         {
             using var context = _contextFactory.CreateDbContext();
@@ -67,6 +92,10 @@ namespace EduSoft.Services
                 .FirstOrDefaultAsync(u => u.SesionActiva);
         }
 
+        /// <summary>
+        /// Elimina la sesión activa del usuario especificado.
+        /// </summary>
+        /// <param name="usuarioId">ID del usuario que cerrará sesión.</param>
         public async Task EliminarSesion(int usuarioId)
         {
             using var context = _contextFactory.CreateDbContext();
