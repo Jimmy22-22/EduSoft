@@ -11,7 +11,7 @@
 
 <div class="filter-container">
     <label>Filtrar por Fecha:</label>
-    <input type="date" @bind="FechaFiltro" class="filter-input" />
+    <input type="date" @bind="FechaFiltro" @bind:after="async () => await CargarDatos()" class="filter-input" />
     <i class="fas fa-sync-alt reset-icon" @onclick="RestablecerFiltro" title="Restablecer"></i>
     <i class="fas fa-plus-circle add-icon" @onclick="AbrirModalAgregar" title="Agregar Horario"></i>
 </div>

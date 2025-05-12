@@ -119,14 +119,18 @@ namespace EduSoft.Services
         /// <param name="fechaEntrega">Fecha de entrega de la tarea.</param>
         /// <param name="usuarioId">ID del usuario que la crea.</param>
         /// <returns>True si la tarea fue creada correctamente.</returns>
-        public async Task<bool> CrearTarea(int claseId, string descripcion, DateTime fechaEntrega, int usuarioId)
+        public async Task<bool> CrearTarea(int claseId, string titulo, string descripcion, DateTime fechaEntrega, int usuarioId, string? link, string? archivoNombre, byte[]? archivoContenido)
         {
             var tarea = new Tarea
             {
+                Titulo = titulo,
                 Descripcion = descripcion,
                 FechaEntrega = fechaEntrega,
+                UsuarioId = usuarioId,
                 ClaseId = claseId,
-                UsuarioId = usuarioId
+                Link = link,
+                ArchivoNombre = archivoNombre,
+                ArchivoContenido = archivoContenido
             };
 
             _context.Tareas.Add(tarea);
@@ -158,5 +162,16 @@ namespace EduSoft.Services
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        /// <summary>
+        /// Obtiene una tarea por su ID con todos sus datos (título, descripción, enlace y archivo).
+        /// </summary>
+        /// <param name="tareaId">ID de la tarea.</param>
+        /// <returns>La tarea encontrada o null si no existe.</returns>
+        public async Task<Tarea?> GetTareaPorIdAsync(int tareaId)
+        {
+            return await _context.Tareas.FirstOrDefaultAsync(t => t.Id == tareaId);
+        }
+
     }
 }

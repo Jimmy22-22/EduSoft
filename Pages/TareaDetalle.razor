@@ -1,0 +1,133 @@
+﻿@page "/tarea-detalle/{TareaId:int}"
+@layout LayoutMaestro
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h2 class="tarea-titulo">@Tarea?.Titulo</h2>
+
+@if (Tarea != null)
+{
+    <div class="tarea-detalle-box">
+        <p><strong>Descripción:</strong> @Tarea.Descripcion</p>
+        <p><strong>Fecha de Entrega:</strong> @Tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
+
+        @if (!string.IsNullOrWhiteSpace(Tarea.Link))
+        {
+            <p><strong>Enlace:</strong> <a href="@Tarea.Link" target="_blank">@Tarea.Link</a></p>
+        }
+
+        @if (Tarea.ArchivoNombre != null && Tarea.ArchivoContenido != null)
+        {
+            <p>
+                <strong>Archivo:</strong>
+                <button class="descargar-btn" @onclick="DescargarArchivo">
+                    <i class="fas fa-download"></i> Descargar @Tarea.ArchivoNombre
+                </button>
+            </p>
+        }
+
+        <button class="btn-volver" @onclick="VolverAClase">
+            <i class="fas fa-arrow-left"></i> Volver a la clase
+        </button>
+    </div>
+}
+else
+{
+    <p class="no-data">Tarea no encontrada.</p>
+}
+
+<style>
+    .tarea-titulo {
+        color: #1e88e5;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 2rem;
+    }
+
+    .tarea-detalle-box {
+        background: #f1f1f1;
+        padding: 20px;
+        max-width: 600px;
+        margin: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .btn-volver {
+        margin-top: 20px;
+        background: #607d8b;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .descargar-btn {
+        background: #43a047;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    .no-data {
+        text-align: center;
+        margin-top: 40px;
+        color: #888;
+        font-size: 1.2rem;
+    }
+</style>
+
+@code {
+    [Parameter] public int TareaId { get; set; }
+    private Tarea? Tarea;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
+    }
+
+    private async Task DescargarArchivo()
+    {
+        if (Tarea?.ArchivoContenido != null && Tarea.ArchivoNombre != null)
+        {
+            var mime = ObtenerMimeType(Tarea.ArchivoNombre);
+            using var stream = new MemoryStream(Tarea.ArchivoContenido);
+            using var dotNetStream = new DotNetStreamReference(stream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", Tarea.ArchivoNombre, mime, dotNetStream);
+        }
+    }
+
+    private string ObtenerMimeType(string nombreArchivo)
+    {
+        var ext = Path.GetExtension(nombreArchivo)?.ToLower() ?? "";
+        return ext switch
+        {
+            ".pdf" => "application/pdf",
+            ".doc" => "application/msword",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".xls" => "application/vnd.ms-excel",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".txt" => "text/plain",
+            ".zip" => "application/zip",
+            _ => "application/octet-stream"
+        };
+    }
+
+    private void VolverAClase()
+    {
+        if (Tarea != null)
+            Navigation.NavigateTo($"/clase-maestro/{Tarea.ClaseId}");
+    }
+}

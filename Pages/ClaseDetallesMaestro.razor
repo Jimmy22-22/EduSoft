@@ -8,285 +8,244 @@
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 
-<div class="class-container">
-    <h2 class="class-title">
-        <i class="fas fa-chalkboard-teacher"></i> Gestión de la Clase
-    </h2>
+<div class="class-header">
+    <div class="class-banner">
+        <h1>@ClaseSeleccionada?.Nombre</h1>
+        <p><i class="fas fa-user"></i> Profesor: <strong>@ClaseSeleccionada?.Profesor</strong></p>
+        <p><i class="fas fa-key"></i> Código: @ClaseSeleccionada?.CodigoClase</p>
+        <p>
+            <i class="fas fa-clock"></i>
+            Horario: @(HorarioClaseSeleccionado != null
+            ? $"{HorarioClaseSeleccionado.HoraInicio:hh\\:mm} - {HorarioClaseSeleccionado.HoraFin:hh\\:mm} en {HorarioClaseSeleccionado.Aula}"
+            : "No asignado")
+        </p>
+    </div>
+</div>
 
-    @if (ClaseSeleccionada != null)
+<div class="tareas-container">
+    <h2><i class="fas fa-users"></i> Estudiantes</h2>
+    <div class="students-list">
+        @if (Estudiantes.Count > 0)
+        {
+            @foreach (var estudiante in Estudiantes)
+            {
+                <div class="student-chip">
+                    <i class="fas fa-user"></i> @estudiante.Nombre
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-data">No hay estudiantes inscritos.</p>
+        }
+    </div>
+
+    <h2><i class="fas fa-tasks"></i> Tareas</h2>
+
+    @if (Tareas.Count > 0)
     {
-        <div class="class-info">
-            <h3><i class="fas fa-book"></i> @ClaseSeleccionada.Nombre</h3>
-            <p><i class="fas fa-user"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
-
-            @if (HorarioClaseSeleccionado != null)
-            {
-                <p><i class="fas fa-clock"></i> Horario: <strong>@HorarioClaseSeleccionado.HoraInicio.ToString(@"hh\:mm") - @HorarioClaseSeleccionado.HoraFin.ToString(@"hh\:mm")</strong></p>
-                <p><i class="fas fa-door-open"></i> Aula: <strong>@HorarioClaseSeleccionado.Aula</strong></p>
-            }
-            else
-            {
-                <p><i class="fas fa-clock"></i> Horario: <strong>No asignado</strong></p>
-            }
-
-            <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
-        </div>
-
-        <div class="students-section">
-            <h4><i class="fas fa-users"></i> Estudiantes Inscritos</h4>
-            <ul class="student-list">
-                @if (Estudiantes.Count > 0)
-                {
-                    @foreach (var estudiante in Estudiantes)
-                    {
-                        <li>
-                            <i class="fas fa-user"></i> @estudiante.Nombre - @estudiante.Email
-                        </li>
-                    }
-                }
-                else
-                {
-                    <li class="no-students"><i class="fas fa-exclamation-circle"></i> No hay estudiantes inscritos.</li>
-                }
-            </ul>
-        </div>
-
-        <div class="task-section">
-            <h4><i class="fas fa-tasks"></i> Tareas Asignadas</h4>
-
-            <div class="task-container">
-                @if (Tareas.Count > 0)
-                {
-                    @foreach (var tarea in Tareas)
-                    {
-                        <div class="task-card">
-                            <p><i class="fas fa-file-alt"></i> @tarea.Descripcion</p>
-                            <span class="due-date"><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToShortDateString()</span>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="no-tasks"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
-                }
+        @foreach (var tarea in Tareas)
+        {
+            <div class="tarea-card" @onclick="() => IrADetalleTarea(tarea.Id)">
+                <div class="tarea-header">@tarea.Titulo</div>
+                <div class="tarea-body">
+                    <p class="descripcion">@tarea.Descripcion</p>
+                    <span class="fecha"><i class="fas fa-calendar-day"></i> @tarea.FechaEntrega.ToString("dd MMM yyyy")</span>
+                </div>
             </div>
-
-            <h4><i class="fas fa-plus"></i> Asignar Nueva Tarea</h4>
-            <div class="task-input">
-                <label for="taskDesc"><i class="fas fa-pencil-alt"></i> Descripción de la Tarea</label>
-                <input type="text" id="taskDesc" @bind="NuevaTareaDescripcion" placeholder="Ejemplo: Leer capítulo 5" />
-            </div>
-            <div class="task-input">
-                <label for="taskDate"><i class="fas fa-calendar-alt"></i> Fecha de Entrega</label>
-                <input type="date" id="taskDate" @bind="NuevaTareaFechaEntrega" />
-            </div>
-            <button @onclick="CrearTarea" class="btn-task">
-                <i class="fas fa-plus"></i> Asignar Tarea
-            </button>
-        </div>
-        <button @onclick="VolverAlDashboard" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Volver al Dashboard
-        </button>
+        }
     }
     else
     {
-        <div class="error-container">
-            <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
-            <button @onclick="VolverAlDashboard" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
-        </div>
+        <p class="no-data">No hay tareas asignadas.</p>
     }
+
+    <button class="btn-fab" @onclick="() => MostrarModal = true">
+        <i class="fas fa-plus"></i>
+    </button>
 </div>
 
+@if (MostrarModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h3>Crear Nueva Tarea</h3>
+            <input type="text" placeholder="Título" @bind="NuevoTitulo" class="modal-input" />
+            <textarea placeholder="Descripción" @bind="NuevoDescripcion" class="modal-input"></textarea>
+            <input type="date" @bind="NuevaFechaEntrega" class="modal-input" />
+            <input type="text" placeholder="Enlace externo (opcional)" @bind="NuevoLink" class="modal-input" />
+            <InputFile OnChange="CargarArchivo" />
+            <div class="modal-actions">
+                <button class="btn-confirm" @onclick="CrearTarea"><i class="fas fa-check"></i> Guardar</button>
+                <button class="btn-cancel" @onclick="() => MostrarModal = false"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
 
 <style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #e0f7fa, #80deea);
-        margin: 0;
-        padding: 20px;
+    .class-header {
+        background: linear-gradient(to right, #2196f3, #1e88e5);
+        color: white;
+        padding: 25px;
+        text-align: center;
+        border-radius: 12px;
+        margin-bottom: 30px;
     }
 
-
-    .class-container {
+    .tareas-container {
+        padding: 20px;
         max-width: 900px;
         margin: auto;
-        background: #ffffff;
-        padding: 25px;
+    }
+
+    .tarea-card {
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .class-title {
-        color: #00796b;
-        font-size: 1.8rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         margin-bottom: 20px;
-    }
-
-    .class-info {
-        background: #e0f2f1;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
-
-        .class-info p {
-            font-size: 1rem;
-            color: #004d40;
-            margin: 5px 0;
-        }
-
-    .students-section {
-        margin-top: 20px;
-        text-align: left;
-    }
-
-    .student-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 10px;
-    }
-
-        .student-list li {
-            background: #b2dfdb;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            transition: background 0.3s;
-        }
-
-            .student-list li:hover {
-                background: #80cbc4;
-            }
-
-    .no-students {
-        text-align: center;
-        color: #00796b;
-        font-size: 1rem;
-        padding: 10px;
-    }
-
-    .task-section {
-        margin-top: 20px;
-        background: #f1f8e9;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        text-align: left;
-    }
-
-    .task-input {
-        margin-bottom: 10px;
-    }
-
-        .task-input label {
-            font-size: 1rem;
-            color: #33691e;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-
-        .task-input input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #a5d6a7;
-            border-radius: 6px;
-            font-size: 1rem;
-            background: #f1f8e9;
-            color: #33691e;
-        }
-
-    .btn-task {
-        background: #43a047;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
         cursor: pointer;
-        width: 100%;
-        transition: background 0.3s, transform 0.2s;
+        overflow: hidden;
     }
 
-        .btn-task:hover {
-            background: #2e7d32;
-            transform: scale(1.05);
-        }
-
-    .task-list {
-        margin-top: 20px;
-        background: #e3f2fd;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        text-align: left;
+    .tarea-header {
+        background: #1976d2;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 
-        .task-list h4 {
-            color: #0277bd;
-            margin-bottom: 10px;
-        }
-
-    .task-item {
-        background: #bbdefb;
-        padding: 10px;
-        margin-bottom: 5px;
-        border-radius: 6px;
+    .tarea-body {
+        background: #fff;
+        padding: 15px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: background 0.3s;
     }
 
-        .task-item:hover {
-            background: #90caf9;
+    .descripcion {
+        margin: 0;
+        color: #263238;
+        flex: 1;
+    }
+
+    .fecha {
+        font-size: 0.9rem;
+        color: #78909c;
+        margin-left: 20px;
+        white-space: nowrap;
+    }
+
+    .btn-fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #43a047;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+        .btn-fab:hover {
+            background: #388e3c;
         }
 
-    .due-date {
-        font-size: 0.9rem;
-        color: #e53935;
+    .students-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
-    .btn-back {
-        background: #0288d1;
+    .student-chip {
+        background: #e3f2fd;
+        padding: 8px 15px;
+        border-radius: 20px;
+        color: #1565c0;
+        font-weight: 500;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px;
+        width: 400px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        text-align: center;
+    }
+
+    .modal-input {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .btn-confirm {
+        background: #43a047;
         color: white;
-        padding: 12px;
+        padding: 10px 15px;
         border: none;
         border-radius: 8px;
-        font-size: 1rem;
         cursor: pointer;
-        width: 100%;
-        margin-top: 15px;
-        transition: background 0.3s, transform 0.2s;
     }
 
-        .btn-back:hover {
-            background: #0277bd;
-            transform: scale(1.05);
-        }
+    .btn-cancel {
+        background: #e53935;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
 
-    .error-message {
-        color: #d32f2f;
-        font-size: 1.2rem;
-        margin-bottom: 10px;
+    .no-data {
+        text-align: center;
+        color: #999;
+        font-style: italic;
     }
 </style>
 
-
 @code {
-
     [Parameter] public int ClaseId { get; set; }
     private Clase? ClaseSeleccionada;
     private Usuario? UsuarioAutenticado;
     private HorarioClase? HorarioClaseSeleccionado;
     private List<Usuario> Estudiantes = new();
     private List<Tarea> Tareas = new();
-    private string NuevaTareaDescripcion = "";
-    private DateTime NuevaTareaFechaEntrega = DateTime.Now.AddDays(7);
+
+    private string NuevoTitulo = "";
+    private string NuevoDescripcion = "";
+    private DateTime NuevaFechaEntrega = DateTime.Now.AddDays(7);
+    private string? NuevoLink;
+    private string? NombreArchivo;
+    private byte[]? ContenidoArchivo;
+    private bool MostrarModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -309,15 +268,29 @@
 
     private async Task CrearTarea()
     {
-        if (UsuarioAutenticado == null)
+        if (UsuarioAutenticado == null || string.IsNullOrWhiteSpace(NuevoTitulo))
             return;
 
-        bool exito = await ClaseService.CrearTarea(ClaseId, NuevaTareaDescripcion, NuevaTareaFechaEntrega, UsuarioAutenticado.Id);
+        bool exito = await ClaseService.CrearTarea(
+            ClaseId,
+            NuevoTitulo,
+            NuevoDescripcion,
+            NuevaFechaEntrega,
+            UsuarioAutenticado.Id,
+            NuevoLink,
+            NombreArchivo,
+            ContenidoArchivo
+        );
 
         if (exito)
         {
             await CargarTareas();
-            StateHasChanged();
+            MostrarModal = false;
+            NuevoTitulo = "";
+            NuevoDescripcion = "";
+            NuevoLink = null;
+            NombreArchivo = null;
+            ContenidoArchivo = null;
         }
     }
 
@@ -326,6 +299,19 @@
         Tareas = await ClaseService.GetTareasPorClaseAsync(ClaseId);
     }
 
+    private async Task CargarArchivo(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        NombreArchivo = archivo.Name;
+        using var stream = new MemoryStream();
+        await archivo.OpenReadStream().CopyToAsync(stream);
+        ContenidoArchivo = stream.ToArray();
+    }
+
+    private void IrADetalleTarea(int tareaId)
+    {
+        Navigation.NavigateTo($"/tarea-detalle/{tareaId}");
+    }
 
     private void VolverAlDashboard()
     {

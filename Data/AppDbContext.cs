@@ -79,12 +79,20 @@ namespace EduSoft.Data
     public class Tarea
     {
         public int Id { get; set; }
-        public string Descripcion { get; set; }
+        public string Titulo { get; set; } = "";
+        public string Descripcion { get; set; } = "";
         public DateTime FechaEntrega { get; set; }
         public int UsuarioId { get; set; }
         public int ClaseId { get; set; }
-        public Clase Clase { get; set; }
+
+        public string? Link { get; set; }
+        public string? ArchivoNombre { get; set; }
+        public byte[]? ArchivoContenido { get; set; }
+
+        public Usuario Usuario { get; set; } = null!;
+        public Clase Clase { get; set; } = null!;
     }
+
 
     public class UsuarioClase
     {
