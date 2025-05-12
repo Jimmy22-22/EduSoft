@@ -9,36 +9,36 @@
     <header class="top-bar">
         <h2>EduSoft - Gestión de Clases</h2>
         <div class="top-buttons">
-            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar">
+            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
                 <i class="fas fa-bars"></i>
             </button>
-            <button class="btn-action btn-home" @onclick="IrDashboardMaestro">
+            <button class="btn-action btn-home" @onclick="IrDashboardMaestro" tabindex="2">
                 <i class="fas fa-home"></i>
             </button>
-            <button class="btn-action btn-logout" @onclick="CerrarSesion">
+            <button class="btn-action btn-logout" @onclick="CerrarSesion" tabindex="3">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
     </header>
 
     <nav class="sub-nav">
-        <div class="nav-item" @onclick="IrHorarios">
+        <div class="nav-item" @onclick="IrHorarios" tabindex="4">
             <i class="fas fa-calendar-alt"></i>
             <span>Horarios</span>
         </div>
-        <div class="nav-item" @onclick="IrNotas">
+        <div class="nav-item" @onclick="IrNotas" tabindex="5">
             <i class="fas fa-file-alt"></i>
             <span>Notas</span>
         </div>
-        <div class="nav-item" @onclick="IrAsistencia">
+        <div class="nav-item" @onclick="IrAsistencia" tabindex="6">
             <i class="fas fa-user-check"></i>
             <span>Asistencia</span>
         </div>
-        <div class="nav-item" @onclick="IrTareas">
+        <div class="nav-item" @onclick="IrTareas" tabindex="7">
             <i class="fas fa-tasks"></i>
             <span>Tareas</span>
         </div>
-        <div class="nav-item" @onclick="IrExamenes">
+        <div class="nav-item" @onclick="IrExamenes" tabindex="8">
             <i class="fas fa-clipboard-list"></i>
             <span>Exámenes</span>
         </div>
@@ -53,15 +53,15 @@
         {
             <aside class="sidebar @(SidebarAnimado ? "animated" : "")">
                 <h4><i class="fas fa-chalkboard"></i> Clases Creadas</h4>
-                <button class="btn-add-class" @onclick="AbrirModal">
+                <button class="btn-add-class" @onclick="AbrirModal" tabindex="9">
                     <i class="fas fa-plus"></i> Crear Clase
                 </button>
                 <ul class="course-list">
-                    @foreach (var clase in Clases)
+                    @foreach (var clase in Clases.Select((valor, i) => (valor, i)))
                     {
                         <li class="course-item">
-                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
-                                <i class="fas fa-chalkboard-teacher"></i> @clase.Nombre
+                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.valor.Id)" tabindex="@((clase.i + 10) * 10)">
+                                <i class="fas fa-chalkboard-teacher"></i> @clase.valor.Nombre
                             </a>
                         </li>
                     }
@@ -77,10 +77,14 @@
         <div class="modal-box">
             <h2>Crear Nueva Clase</h2>
             <div class="modal-content">
-                <input type="text" @bind="NuevaClaseNombre" class="modal-input" placeholder="Nombre de la Clase" />
+                <input type="text" @bind="NuevaClaseNombre" class="modal-input" placeholder="Nombre de la Clase" tabindex="100" />
                 <div class="modal-actions">
-                    <button @onclick="CrearClase" class="modal-button confirm"><i class="fas fa-check"></i> Crear</button>
-                    <button @onclick="CerrarModal" class="modal-button cancel"><i class="fas fa-times"></i> Cancelar</button>
+                    <button @onclick="CrearClase" class="modal-button confirm" tabindex="101">
+                        <i class="fas fa-check"></i> Crear
+                    </button>
+                    <button @onclick="CerrarModal" class="modal-button cancel" tabindex="102">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
                 </div>
             </div>
         </div>

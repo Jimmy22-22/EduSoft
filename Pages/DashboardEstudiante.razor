@@ -18,15 +18,18 @@
         @if (Clases.Count > 0)
         {
             <div class="class-grid">
-                @foreach (var clase in Clases)
+                @foreach (var clase in Clases.Select((valor, indice) => (valor, indice)))
                 {
-                    <div class="class-card" @onclick="() => IrAClase(clase.Id)">
+                    // usamos múltiplos de 10 para mantener orden flexible
+                    <div class="class-card"
+                         tabindex="@((clase.indice + 1) * 10)"
+                         @onclick="() => IrAClase(clase.valor.Id)">
                         <div class="class-header">
-                            <h4><i class="fas fa-chalkboard"></i> @clase.Nombre</h4>
+                            <h4><i class="fas fa-chalkboard"></i> @clase.valor.Nombre</h4>
                         </div>
                         <div class="class-body">
-                            <p><i class="fas fa-user-tie"></i> Profesor: @clase.Profesor</p>
-                            <button class="btn-details">Ver Detalles <i class="fas fa-arrow-right"></i></button>
+                            <p><i class="fas fa-user-tie"></i> Profesor: @clase.valor.Profesor</p>
+                            <button class="btn-details" tabindex="-1">Ver Detalles <i class="fas fa-arrow-right"></i></button>
                         </div>
                     </div>
                 }
@@ -125,6 +128,12 @@
     .no-classes {
         font-size: 1rem;
         color: #4b6a88;
+    }
+
+    .class-card:focus {
+        outline: 2px solid #007acc;
+        background: #cdefff;
+        transform: scale(1.03);
     }
 </style>
 

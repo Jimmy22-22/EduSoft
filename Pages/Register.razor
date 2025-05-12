@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 
 <div class="register-container">
-     <div class="register-box">
+    <div class="register-box">
         <h2><i class="fas fa-user-plus"></i> Crear Cuenta</h2>
 
         @if (!string.IsNullOrEmpty(Message))
@@ -16,33 +16,37 @@
 
         <div class="input-group">
             <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
-            <input type="text" id="nombre" @bind="Nombre" class="input-field" placeholder="Ingresa tu nombre" />
+            <input type="text" id="nombre" @bind="Nombre" class="input-field" placeholder="Ingresa tu nombre" tabindex="1" />
         </div>
 
         <div class="input-group">
             <label for="email"><i class="fas fa-envelope"></i> Email:</label>
-            <input type="email" id="email" @bind="Email" class="input-field" placeholder="Ingresa tu email" />
+            <input type="email" id="email" @bind="Email" class="input-field" placeholder="Ingresa tu email" tabindex="2" />
         </div>
 
         <div class="input-group">
             <label for="password"><i class="fas fa-lock"></i> Contraseña:</label>
-            <input type="password" id="password" @bind="Password" class="input-field" placeholder="Crea una contraseña" />
+            <input type="password" id="password" @bind="Password" class="input-field" placeholder="Crea una contraseña" tabindex="3" />
         </div>
 
         <div class="input-group">
             <label for="rol"><i class="fas fa-user-tag"></i> Rol:</label>
-            <select id="rol" @bind="Rol" class="input-field">
+            <select id="rol" @bind="Rol" class="input-field" tabindex="4">
                 <option value="@RolUsuario.Estudiante">Estudiante</option>
                 <option value="@RolUsuario.Maestro">Maestro</option>
             </select>
         </div>
-        <button @onclick="PerformRegister" class="btn-register">
+
+        <button @onclick="PerformRegister" class="btn-register" tabindex="5">
             <i class="@(IsLoading ? "fas fa-spinner fa-spin" : "fas fa-user-check")"></i>
             @(IsLoading ? " Registrando..." : " Registrar")
         </button>
 
         <p class="login-link">
-            ¿Ya tienes una cuenta? <a href="/" class="btn-login-link"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+            ¿Ya tienes una cuenta?
+            <a href="/" class="btn-login-link" tabindex="6">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
         </p>
     </div>
 </div>
@@ -157,6 +161,13 @@
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    .input-field:focus,
+    .btn-login:focus,
+    a:focus {
+        outline: 2px solid #3182CE;
+        box-shadow: 0 0 5px #3182CE;
     }
 </style>
 

@@ -1,3 +1,4 @@
+using CHATBOT.Services;
 using EduSoft.Data;
 using EduSoft.Services;
 using ElectronNET.API;
@@ -15,6 +16,8 @@ builder.Services.AddScoped<DashboardEstudianteService>();
 builder.Services.AddScoped<DashboardMaestroService>();
 builder.Services.AddScoped<ClaseService>();
 builder.Services.AddScoped<HorarioService>();
+builder.Services.AddScoped<GeminiService>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>
 {

@@ -106,4 +106,10 @@ namespace EduSoft.Data
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFin { get; set; }
     }
+
+    public class ChatMessage
+    {
+        public string Role { get; set; } = "user";
+        public string Content { get; set; } = string.Empty;
+    }
 }

@@ -9,13 +9,13 @@
     <header class="top-bar">
         <h2>EduSoft</h2>
         <div class="top-buttons">
-            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar">
+            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
                 <i class="fas fa-bars"></i>
             </button>
-            <button class="btn-action home-btn" @onclick="IrDashboardEstudiante">
+            <button class="btn-action home-btn" @onclick="IrDashboardEstudiante" tabindex="2">
                 <i class="fas fa-home"></i>
             </button>
-            <button class="btn-action logout-btn" @onclick="CerrarSesion">
+            <button class="btn-action logout-btn" @onclick="CerrarSesion" tabindex="3">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -30,15 +30,15 @@
         {
             <aside class="sidebar @(SidebarAnimado ? "animated" : "")">
                 <h4><i class="fas fa-book-reader"></i> Mis Cursos</h4>
-                <button class="btn-add-class" @onclick="AbrirModal">
+                <button class="btn-add-class" @onclick="AbrirModal" tabindex="4">
                     <i class="fas fa-plus"></i> Unirse a Clase
                 </button>
                 <ul class="course-list">
-                    @foreach (var clase in Clases)
+                    @foreach (var clase in Clases.Select((valor, i) => (valor, i)))
                     {
                         <li class="course-item">
-                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.Id)">
-                                <i class="fas fa-book"></i> @clase.Nombre
+                            <a href="javascript:void(0);" @onclick="() => IrAClase(clase.valor.Id)" tabindex="@((clase.i + 5) * 10)">
+                                <i class="fas fa-book"></i> @clase.valor.Nombre
                             </a>
                         </li>
                     }
@@ -54,10 +54,14 @@
         <div class="modal-box">
             <h2><i class="fas fa-sign-in-alt"></i> Unirse a una Clase</h2>
             <div class="modal-content">
-                <input type="text" @bind="CodigoClaseIngresado" class="modal-input" placeholder="Código de Clase" />
+                <input type="text" @bind="CodigoClaseIngresado" class="modal-input" placeholder="Código de Clase" tabindex="100" />
                 <div class="modal-actions">
-                    <button @onclick="UnirseAClase" class="modal-button confirm"><i class="fas fa-check"></i> Unirse</button>
-                    <button @onclick="CerrarModal" class="modal-button cancel"><i class="fas fa-times"></i> Cancelar</button>
+                    <button @onclick="UnirseAClase" class="modal-button confirm" tabindex="101">
+                        <i class="fas fa-check"></i> Unirse
+                    </button>
+                    <button @onclick="CerrarModal" class="modal-button cancel" tabindex="102">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
                 </div>
             </div>
         </div>
@@ -279,6 +283,11 @@
             background: #C0392B;
             transform: scale(1.05);
         }
+
+    :focus {
+        outline: 2px solid #007acc !important;
+        box-shadow: 0 0 5px #007acc;
+    }
 </style>
 
 @code {
