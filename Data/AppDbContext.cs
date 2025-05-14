@@ -11,6 +11,7 @@ namespace EduSoft.Data
         public DbSet<Tarea> Tareas { get; set; }
         public DbSet<UsuarioClase> UsuarioClases { get; set; }
         public DbSet<HorarioClase> HorariosClases { get; set; }
+        public DbSet<EntregaTareaEstudiante> EntregasTareasEstudiantes { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -120,4 +121,21 @@ namespace EduSoft.Data
         public string Role { get; set; } = "user";
         public string Content { get; set; } = string.Empty;
     }
+
+    public class EntregaTareaEstudiante
+    {
+        public int Id { get; set; }
+        public int TareaId { get; set; }
+        public int UsuarioId { get; set; }
+        public string? Comentario { get; set; }
+        public string? Link { get; set; }
+        public string? ArchivoNombre { get; set; }
+        public byte[]? ArchivoContenido { get; set; }
+
+        public DateTime FechaEntrega { get; set; }
+
+        public Tarea Tarea { get; set; } = null!;
+        public Usuario Usuario { get; set; } = null!;
+    }
+
 }

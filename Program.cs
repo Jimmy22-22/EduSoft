@@ -17,6 +17,8 @@ builder.Services.AddScoped<DashboardMaestroService>();
 builder.Services.AddScoped<ClaseService>();
 builder.Services.AddScoped<HorarioService>();
 builder.Services.AddScoped<GeminiService>();
+builder.Services.AddScoped<TareaEstudianteService>();
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>

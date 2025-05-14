@@ -6,6 +6,7 @@
 @inject ClaseService ClaseService
 @inject NavigationManager Navigation
 @inject HorarioService HorarioService
+@inject AuthService AuthService
 
 <div class="class-details-container">
     @if (ClaseSeleccionada != null)
@@ -34,8 +35,8 @@
                 {
                     @foreach (var tarea in Tareas)
                     {
-                        <div class="task-card">
-                            <p><i class="fas fa-file-alt"></i> @tarea.Descripcion</p>
+                        <div class="task-card" @onclick="() => IrADetalleTarea(tarea.Id)">
+                            <p><i class="fas fa-file-alt"></i> @tarea.Titulo</p>
                             <span class="due-date"><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToShortDateString()</span>
                         </div>
                     }
@@ -60,7 +61,6 @@
         </div>
     }
 </div>
-
 
 <style>
     body {
@@ -126,6 +126,7 @@
         font-size: 1rem;
         color: #2C5282;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
     }
 
     .due-date {
@@ -186,7 +187,6 @@
 </style>
 
 @code {
-
     [Parameter] public int ClaseId { get; set; }
     private Clase? ClaseSeleccionada;
     private HorarioClase? HorarioClaseSeleccionado;
@@ -205,5 +205,10 @@
     private void VolverAlDashboard()
     {
         Navigation.NavigateTo("/dashboard-estudiante");
+    }
+
+    private void IrADetalleTarea(int tareaId)
+    {
+        Navigation.NavigateTo($"/tarea-detalle-estudiante/{tareaId}");
     }
 }

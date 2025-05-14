@@ -1,0 +1,169 @@
+﻿@page "/tarea-detalle-estudiante/{TareaId:int}"
+
+@layout LayoutEstudiante
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject TareaEstudianteService TareaEstudianteService
+
+<h2 class="tarea-titulo">@Tarea?.Titulo</h2>
+
+@if (Tarea != null)
+{
+    <div class="tarea-detalle-box">
+        <p><strong>Descripción:</strong> @Tarea.Descripcion</p>
+        <p><strong>Fecha de Entrega:</strong> @Tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
+
+        @if (!string.IsNullOrWhiteSpace(Tarea.Link))
+        {
+            <p><strong>Enlace:</strong> <a href="@Tarea.Link" target="_blank">@Tarea.Link</a></p>
+        }
+
+        @if (Tarea.ArchivoNombre != null && Tarea.ArchivoContenido != null)
+        {
+            <p>
+                <strong>Archivo del Profesor:</strong>
+                <button class="descargar-btn" @onclick="DescargarArchivo">
+                    <i class="fas fa-download"></i> Descargar @Tarea.ArchivoNombre
+                </button>
+            </p>
+        }
+
+        <hr />
+        <h4>Entregar Tarea</h4>
+        <textarea class="input-textarea" placeholder="Comentario privado (opcional)" @bind="Comentario"></textarea>
+        <input class="input-link" placeholder="Enlace externo (opcional)" @bind="LinkEstudiante" />
+        <InputFile OnChange="CargarArchivoEstudiante" />
+        <button class="btn-entregar" @onclick="EntregarTarea"><i class="fas fa-paper-plane"></i> Enviar</button>
+
+        <button class="btn-volver" @onclick="VolverAClase">
+            <i class="fas fa-arrow-left"></i> Volver a la clase
+        </button>
+    </div>
+}
+else
+{
+    <p class="no-data">Tarea no encontrada.</p>
+}
+
+<style>
+    .tarea-titulo {
+        color: #1e88e5;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 2rem;
+    }
+
+    .tarea-detalle-box {
+        background: #f9f9f9;
+        padding: 25px;
+        max-width: 700px;
+        margin: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .descargar-btn, .btn-entregar {
+        background: #43a047;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .btn-volver {
+        margin-top: 20px;
+        background: #607d8b;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .input-textarea, .input-link {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+    }
+
+    .no-data {
+        text-align: center;
+        margin-top: 40px;
+        color: #888;
+        font-size: 1.2rem;
+    }
+</style>
+
+@code {
+    [Parameter] public int TareaId { get; set; }
+    private Tarea? Tarea;
+
+    private string Comentario = "";
+    private string? LinkEstudiante;
+    private string? NombreArchivo;
+    private byte[]? ContenidoArchivo;
+    private Usuario? UsuarioAutenticado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+    }
+
+    private void DescargarArchivo()
+    {
+        if (Tarea?.ArchivoContenido != null && Tarea.ArchivoNombre != null)
+        {
+            var base64 = Convert.ToBase64String(Tarea.ArchivoContenido);
+            var tipo = "application/octet-stream";
+            var url = $"data:{tipo};base64,{base64}";
+            Navigation.NavigateTo(url, true);
+        }
+    }
+
+    private async Task CargarArchivoEstudiante(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        NombreArchivo = archivo.Name;
+        using var stream = new MemoryStream();
+        await archivo.OpenReadStream().CopyToAsync(stream);
+        ContenidoArchivo = stream.ToArray();
+    }
+
+    private async Task EntregarTarea()
+    {
+        if (UsuarioAutenticado == null || Tarea == null)
+            return;
+
+        await TareaEstudianteService.EnviarEntregaAsync(new EntregaTareaEstudiante
+            {
+                TareaId = Tarea.Id,
+                UsuarioId = UsuarioAutenticado.Id,
+                Comentario = Comentario,
+                Link = LinkEstudiante,
+                ArchivoNombre = NombreArchivo,
+                ArchivoContenido = ContenidoArchivo,
+                FechaEntrega = DateTime.Now
+            });
+
+        Comentario = "";
+        LinkEstudiante = null;
+        NombreArchivo = null;
+        ContenidoArchivo = null;
+    }
+
+    private void VolverAClase()
+    {
+        if (Tarea != null)
+        {
+            Navigation.NavigateTo($"/clase-estudiante/{Tarea.ClaseId}");
+        }
+    }
+}

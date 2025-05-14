@@ -23,8 +23,8 @@
         {
             <p>
                 <strong>Archivo:</strong>
-                <button class="descargar-btn" @onclick="DescargarArchivo">
-                    <i class="fas fa-download"></i> Descargar @Tarea.ArchivoNombre
+                <button class="descargar-btn" @onclick="DescargarOVisualizar">
+                    <i class="fas fa-file-alt"></i> Abrir @Tarea.ArchivoNombre
                 </button>
             </p>
         }
@@ -93,7 +93,13 @@ else
         Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
     }
 
-    private async Task DescargarArchivo()
+    private bool EsPreviewable(string nombre)
+    {
+        var ext = Path.GetExtension(nombre)?.ToLower();
+        return ext == ".pdf" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif";
+    }
+
+    private async Task DescargarOVisualizar()
     {
         if (Tarea?.ArchivoContenido != null && Tarea.ArchivoNombre != null)
         {
@@ -101,7 +107,14 @@ else
             using var stream = new MemoryStream(Tarea.ArchivoContenido);
             using var dotNetStream = new DotNetStreamReference(stream);
 
-            await JS.InvokeVoidAsync("downloadFileFromStream", Tarea.ArchivoNombre, mime, dotNetStream);
+            if (EsPreviewable(Tarea.ArchivoNombre))
+            {
+                await JS.InvokeVoidAsync("previewFileFromStream", mime, dotNetStream);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("downloadFileFromStream", Tarea.ArchivoNombre, mime, dotNetStream);
+            }
         }
     }
 
