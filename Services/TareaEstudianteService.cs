@@ -52,5 +52,21 @@ namespace EduSoft.Services
             return await _context.EntregasTareasEstudiantes
                 .FirstOrDefaultAsync(e => e.TareaId == tareaId && e.UsuarioId == usuarioId);
         }
+
+        public async Task<bool> ActualizarRetroalimentacionYNotaAsync(EntregaTareaEstudiante entrega)
+        {
+            var existente = await _context.EntregasTareasEstudiantes
+                .FirstOrDefaultAsync(e => e.Id == entrega.Id);
+
+            if (existente != null)
+            {
+                existente.Retroalimentacion = entrega.Retroalimentacion;
+                existente.Nota = entrega.Nota;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
     }
 }

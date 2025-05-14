@@ -1,8 +1,10 @@
 ﻿@page "/tarea-detalle/{TareaId:int}"
+
 @layout LayoutMaestro
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
+@inject TareaEstudianteService TareaEstudianteService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -33,6 +35,41 @@
             <i class="fas fa-arrow-left"></i> Volver a la clase
         </button>
     </div>
+
+    <hr />
+
+    <h3 class="entregas-titulo"><i class="fas fa-user-check"></i> Entregas de Estudiantes</h3>
+    @if (Entregas.Count > 0)
+    {
+        @foreach (var entrega in Entregas)
+        {
+            <div class="entrega-card">
+                <p><strong>Estudiante:</strong> @entrega.Usuario.Nombre</p>
+                <p><strong>Fecha de Entrega:</strong> @entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
+                @if (!string.IsNullOrEmpty(entrega.Comentario))
+                {
+                    <p><strong>Comentario:</strong> @entrega.Comentario</p>
+                }
+                @if (!string.IsNullOrEmpty(entrega.Link))
+                {
+                    <p><strong>Enlace:</strong> <a href="@entrega.Link" target="_blank">@entrega.Link</a></p>
+                }
+                @if (!string.IsNullOrEmpty(entrega.ArchivoNombre))
+                {
+                    <button class="descargar-btn" @onclick="() => DescargarOVisualizarEntrega(entrega.ArchivoNombre, entrega.ArchivoContenido)">
+                        <i class="fas fa-file-download"></i> Ver/Descargar @entrega.ArchivoNombre
+                    </button>
+                }
+                <textarea class="input-textarea" placeholder="Retroalimentación" @bind="entrega.Retroalimentacion"></textarea>
+                <input class="input-nota" type="number" step="0.1" min="0" max="100" @bind="entrega.Nota" placeholder="Nota (0-100)" />
+                <button class="btn-guardar" @onclick="() => GuardarRetroalimentacion(entrega)"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="no-data">Aún no hay entregas.</p>
+    }
 }
 else
 {
@@ -56,7 +93,7 @@ else
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .btn-volver {
+    .btn-volver, .btn-guardar {
         margin-top: 20px;
         background: #607d8b;
         color: white;
@@ -76,6 +113,30 @@ else
         margin-top: 5px;
     }
 
+    .entrega-card {
+        background: #f9f9f9;
+        padding: 20px;
+        margin: 15px auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        max-width: 700px;
+    }
+
+    .input-textarea, .input-nota {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .entregas-titulo {
+        text-align: center;
+        color: #1565c0;
+        margin-top: 30px;
+        margin-bottom: 10px;
+    }
+
     .no-data {
         text-align: center;
         margin-top: 40px;
@@ -87,16 +148,15 @@ else
 @code {
     [Parameter] public int TareaId { get; set; }
     private Tarea? Tarea;
+    private List<EntregaTareaEstudiante> Entregas = new();
 
     protected override async Task OnInitializedAsync()
     {
         Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
-    }
-
-    private bool EsPreviewable(string nombre)
-    {
-        var ext = Path.GetExtension(nombre)?.ToLower();
-        return ext == ".pdf" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif";
+        if (Tarea != null)
+        {
+            Entregas = await TareaEstudianteService.ObtenerEntregasPorTareaAsync(Tarea.Id);
+        }
     }
 
     private async Task DescargarOVisualizar()
@@ -118,6 +178,28 @@ else
         }
     }
 
+    private async Task DescargarOVisualizarEntrega(string nombreArchivo, byte[] contenido)
+    {
+        var mime = ObtenerMimeType(nombreArchivo);
+        using var stream = new MemoryStream(contenido);
+        using var dotNetStream = new DotNetStreamReference(stream);
+
+        if (EsPreviewable(nombreArchivo))
+        {
+            await JS.InvokeVoidAsync("previewFileFromStream", mime, dotNetStream);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("downloadFileFromStream", nombreArchivo, mime, dotNetStream);
+        }
+    }
+
+    private bool EsPreviewable(string nombre)
+    {
+        var ext = Path.GetExtension(nombre)?.ToLower();
+        return ext is ".pdf" or ".jpg" or ".jpeg" or ".png" or ".gif";
+    }
+
     private string ObtenerMimeType(string nombreArchivo)
     {
         var ext = Path.GetExtension(nombreArchivo)?.ToLower() ?? "";
@@ -129,13 +211,16 @@ else
             ".xls" => "application/vnd.ms-excel",
             ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             ".png" => "image/png",
-            ".jpg" => "image/jpeg",
-            ".jpeg" => "image/jpeg",
+            ".jpg" or ".jpeg" => "image/jpeg",
             ".gif" => "image/gif",
             ".txt" => "text/plain",
-            ".zip" => "application/zip",
             _ => "application/octet-stream"
         };
+    }
+
+    private async Task GuardarRetroalimentacion(EntregaTareaEstudiante entrega)
+    {
+        await TareaEstudianteService.ActualizarRetroalimentacionYNotaAsync(entrega);
     }
 
     private void VolverAClase()

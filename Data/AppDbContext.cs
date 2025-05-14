@@ -136,6 +136,9 @@ namespace EduSoft.Data
 
         public Tarea Tarea { get; set; } = null!;
         public Usuario Usuario { get; set; } = null!;
+
+        public string? Retroalimentacion { get; set; }
+        public decimal? Nota { get; set; }
     }
 
 }

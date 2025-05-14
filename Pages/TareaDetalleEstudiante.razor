@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject TareaEstudianteService TareaEstudianteService
+@inject IJSRuntime JS
 
 <h2 class="tarea-titulo">@Tarea?.Titulo</h2>
 
@@ -21,31 +22,69 @@
             <p><strong>Enlace:</strong> <a href="@Tarea.Link" target="_blank">@Tarea.Link</a></p>
         }
 
-        @if (Tarea.ArchivoNombre != null && Tarea.ArchivoContenido != null)
+        @if (!string.IsNullOrEmpty(Tarea.ArchivoNombre))
         {
             <p>
                 <strong>Archivo del Profesor:</strong>
-                <button class="descargar-btn" @onclick="DescargarArchivo">
-                    <i class="fas fa-download"></i> Descargar @Tarea.ArchivoNombre
+                <button class="descargar-btn" @onclick="() => VerArchivoStream(Tarea.ArchivoNombre, Tarea.ArchivoContenido)">
+                    <i class="fas fa-download"></i> Ver/Descargar @Tarea.ArchivoNombre
                 </button>
             </p>
         }
 
         <hr />
-        <h4>Entregar Tarea</h4>
-        <textarea class="input-textarea" placeholder="Comentario privado (opcional)" @bind="Comentario"></textarea>
-        <input class="input-link" placeholder="Enlace externo (opcional)" @bind="LinkEstudiante" />
-        <InputFile OnChange="CargarArchivoEstudiante" />
-        <button class="btn-entregar" @onclick="EntregarTarea"><i class="fas fa-paper-plane"></i> Enviar</button>
+
+        @if (Entrega != null)
+        {
+            <div class="entrega-previa">
+                <h4><i class="fas fa-check-circle text-green"></i> Ya has entregado esta tarea</h4>
+                <p><strong>Fecha:</strong> @Entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
+                @if (!string.IsNullOrEmpty(Entrega.Comentario))
+                {
+                    <p><strong>Comentario:</strong> @Entrega.Comentario</p>
+                }
+                @if (!string.IsNullOrEmpty(Entrega.Link))
+                {
+                    <p><strong>Enlace enviado:</strong> <a href="@Entrega.Link" target="_blank">@Entrega.Link</a></p>
+                }
+                @if (!string.IsNullOrEmpty(Entrega.ArchivoNombre))
+                {
+                    <p>
+                        <strong>Archivo enviado:</strong>
+                        <button class="descargar-btn" @onclick="() => VerArchivoStream(Entrega.ArchivoNombre, Entrega.ArchivoContenido)">
+                            <i class="fas fa-file-download"></i> Ver/Descargar @Entrega.ArchivoNombre
+                        </button>
+                    </p>
+                }
+            </div>
+        }
+        else
+        {
+            <h4>Entregar Tarea</h4>
+            <textarea class="input-textarea" placeholder="Comentario privado (opcional)" @bind="Comentario"></textarea>
+            <input class="input-link" placeholder="Enlace externo (opcional)" @bind="LinkEstudiante" />
+            <InputFile OnChange="CargarArchivoEstudiante" />
+            <button class="btn-entregar" @onclick="ActivarModal"><i class="fas fa-paper-plane"></i> Enviar</button>
+        }
 
         <button class="btn-volver" @onclick="VolverAClase">
             <i class="fas fa-arrow-left"></i> Volver a la clase
         </button>
     </div>
 }
-else
+
+@if (MostrarModal)
 {
-    <p class="no-data">Tarea no encontrada.</p>
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h3>¿Confirmar entrega?</h3>
+            <p>Estás a punto de entregar esta tarea. ¿Deseas continuar?</p>
+            <div class="modal-actions">
+                <button class="btn-confirm" @onclick="EntregarTarea">Sí, Entregar</button>
+                <button class="btn-cancel" @onclick="() => MostrarModal = false">Cancelar</button>
+            </div>
+        </div>
+    </div>
 }
 
 <style>
@@ -65,7 +104,15 @@ else
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .descargar-btn, .btn-entregar {
+    .entrega-previa {
+        background: #e8f5e9;
+        border-left: 4px solid #43a047;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+
+    .descargar-btn, .btn-entregar, .btn-confirm {
         background: #43a047;
         color: white;
         border: none;
@@ -75,7 +122,7 @@ else
         margin-top: 10px;
     }
 
-    .btn-volver {
+    .btn-volver, .btn-cancel {
         margin-top: 20px;
         background: #607d8b;
         color: white;
@@ -93,38 +140,100 @@ else
         margin-top: 10px;
     }
 
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        text-align: center;
+        max-width: 400px;
+    }
+
+    .modal-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
     .no-data {
         text-align: center;
         margin-top: 40px;
         color: #888;
         font-size: 1.2rem;
     }
+
+    .text-green {
+        color: #2e7d32;
+    }
 </style>
 
 @code {
     [Parameter] public int TareaId { get; set; }
     private Tarea? Tarea;
+    private EntregaTareaEstudiante? Entrega;
 
     private string Comentario = "";
     private string? LinkEstudiante;
     private string? NombreArchivo;
     private byte[]? ContenidoArchivo;
     private Usuario? UsuarioAutenticado;
+    private bool MostrarModal = false;
 
     protected override async Task OnInitializedAsync()
     {
-        Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
         UsuarioAutenticado = await AuthService.VerificarSesion();
+        Tarea = await ClaseService.GetTareaPorIdAsync(TareaId);
+
+        if (UsuarioAutenticado != null && Tarea != null)
+        {
+            Entrega = await TareaEstudianteService.ObtenerEntregaEstudianteAsync(Tarea.Id, UsuarioAutenticado.Id);
+        }
     }
 
-    private void DescargarArchivo()
+    private async Task VerArchivoStream(string nombre, byte[] contenido)
     {
-        if (Tarea?.ArchivoContenido != null && Tarea.ArchivoNombre != null)
+        var extension = Path.GetExtension(nombre).ToLowerInvariant();
+        var mime = extension switch
         {
-            var base64 = Convert.ToBase64String(Tarea.ArchivoContenido);
-            var tipo = "application/octet-stream";
-            var url = $"data:{tipo};base64,{base64}";
-            Navigation.NavigateTo(url, true);
+            ".pdf" => "application/pdf",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            ".webp" => "image/webp",
+            ".doc" => "application/msword",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".xls" => "application/vnd.ms-excel",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ".ppt" => "application/vnd.ms-powerpoint",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ".txt" => "text/plain",
+            ".csv" => "text/csv",
+            _ => "application/octet-stream"
+        };
+
+        using var streamRef = new DotNetStreamReference(new MemoryStream(contenido));
+
+        if (mime.StartsWith("application/pdf") || mime.StartsWith("image/"))
+        {
+            await JS.InvokeVoidAsync("previewFileFromStream", mime, streamRef);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("downloadFileFromStream", nombre, mime, streamRef);
         }
     }
 
@@ -142,7 +251,7 @@ else
         if (UsuarioAutenticado == null || Tarea == null)
             return;
 
-        await TareaEstudianteService.EnviarEntregaAsync(new EntregaTareaEstudiante
+        var entrega = new EntregaTareaEstudiante
             {
                 TareaId = Tarea.Id,
                 UsuarioId = UsuarioAutenticado.Id,
@@ -151,12 +260,21 @@ else
                 ArchivoNombre = NombreArchivo,
                 ArchivoContenido = ContenidoArchivo,
                 FechaEntrega = DateTime.Now
-            });
+            };
+
+        await TareaEstudianteService.EnviarEntregaAsync(entrega);
+        Entrega = entrega;
+        MostrarModal = false;
 
         Comentario = "";
         LinkEstudiante = null;
         NombreArchivo = null;
         ContenidoArchivo = null;
+    }
+
+    private void ActivarModal()
+    {
+        MostrarModal = true;
     }
 
     private void VolverAClase()
