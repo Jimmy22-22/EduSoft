@@ -1,0 +1,74 @@
+﻿@page "/notas-maestro"
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@layout LayoutMaestro
+
+<h2 class="text-center text-primary mb-4"><i class="fas fa-graduation-cap"></i> Calificaciones por Clase</h2>
+
+<div class="mb-3">
+    <label for="claseSelect" class="form-label">Selecciona una clase:</label>
+    <select id="claseSelect" class="form-select" @onchange="OnClaseChanged">
+        <option value="">-- Seleccionar --</option>
+        @foreach (var clase in Clases)
+        {
+            <option value="@clase.Id">@clase.Nombre</option>
+        }
+    </select>
+</div>
+
+@if (NotasEstudiantes != null && NotasEstudiantes.Any())
+{
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Estudiante</th>
+                @foreach (var tarea in Tareas)
+                {
+                    <th>@tarea.Titulo</th>
+                }
+                <th>Promedio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var notaEst in NotasEstudiantes)
+            {
+                <tr>
+                    <td>@notaEst.NombreEstudiante</td>
+                    @foreach (var tarea in Tareas)
+                    {
+                        var nota = notaEst.Notas.FirstOrDefault(n => n.TareaId == tarea.Id)?.Nota;
+                        <td>@(nota.HasValue ? nota.Value.ToString("F2") : "N/A")</td>
+                    }
+                    <td>@(notaEst.Notas.Average(n => n.Nota ?? 0).ToString("F2"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (ClaseSeleccionadaId != null)
+{
+    <p>No hay calificaciones disponibles para esta clase.</p>
+}
+
+@code {
+    private List<Clase> Clases = new();
+    private List<Tarea> Tareas = new();
+    private List<NotaEstudianteDto> NotasEstudiantes = new();
+    private int? ClaseSeleccionadaId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Clases = await ClaseService.ObtenerClasesAsync();
+    }
+
+    private async Task OnClaseChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int claseId))
+        {
+            ClaseSeleccionadaId = claseId;
+            Tareas = await ClaseService.ObtenerTareasPorClaseAsync(claseId);
+            NotasEstudiantes = await ClaseService.ObtenerNotasPorClaseAsync(claseId);
+        }
+    }
+}

@@ -47,7 +47,13 @@
         @foreach (var tarea in Tareas)
         {
             <div class="tarea-card" @onclick="() => IrADetalleTarea(tarea.Id)">
-                <div class="tarea-header">@tarea.Titulo</div>
+                <div class="tarea-header">
+                    @tarea.Titulo
+                    @if (tarea.EsExamen)
+                    {
+                        <span class="badge-examen"><i class="fas fa-file-signature"></i> Examen</span>
+                    }
+                </div>
                 <div class="tarea-body">
                     <p class="descripcion">@tarea.Descripcion</p>
                     <span class="fecha"><i class="fas fa-calendar-day"></i> @tarea.FechaEntrega.ToString("dd MMM yyyy")</span>
@@ -75,6 +81,12 @@
             <input type="date" @bind="NuevaFechaEntrega" class="modal-input" />
             <input type="text" placeholder="Enlace externo (opcional)" @bind="NuevoLink" class="modal-input" />
             <InputFile OnChange="CargarArchivo" />
+
+            <label class="checkbox-examen">
+                <input type="checkbox" @bind="EsExamen" />
+                <span>¿Es un examen?</span>
+            </label>
+
             <div class="modal-actions">
                 <button class="btn-confirm" @onclick="CrearTarea"><i class="fas fa-check"></i> Guardar</button>
                 <button class="btn-cancel" @onclick="() => MostrarModal = false"><i class="fas fa-times"></i> Cancelar</button>
@@ -229,6 +241,15 @@
         color: #999;
         font-style: italic;
     }
+
+    .badge-examen {
+        background: #e53935;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        margin-left: 10px;
+    }
 </style>
 
 @code {
@@ -246,6 +267,8 @@
     private string? NombreArchivo;
     private byte[]? ContenidoArchivo;
     private bool MostrarModal = false;
+    private bool EsExamen = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -272,14 +295,15 @@
             return;
 
         bool exito = await ClaseService.CrearTarea(
-            ClaseId,
-            NuevoTitulo,
-            NuevoDescripcion,
-            NuevaFechaEntrega,
-            UsuarioAutenticado.Id,
-            NuevoLink,
-            NombreArchivo,
-            ContenidoArchivo
+            claseId: ClaseId,
+            titulo: NuevoTitulo,
+            descripcion: NuevoDescripcion,
+            fechaEntrega: NuevaFechaEntrega,
+            usuarioId: UsuarioAutenticado.Id,
+            link: NuevoLink,
+            archivoNombre: NombreArchivo,
+            archivoContenido: ContenidoArchivo,
+            esExamen: EsExamen // ✅ nuevo parámetro
         );
 
         if (exito)
@@ -291,6 +315,7 @@
             NuevoLink = null;
             NombreArchivo = null;
             ContenidoArchivo = null;
+            EsExamen = false; // ✅ reseteamos
         }
     }
 

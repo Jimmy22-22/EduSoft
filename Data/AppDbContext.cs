@@ -12,6 +12,7 @@ namespace EduSoft.Data
         public DbSet<UsuarioClase> UsuarioClases { get; set; }
         public DbSet<HorarioClase> HorariosClases { get; set; }
         public DbSet<EntregaTareaEstudiante> EntregasTareasEstudiantes { get; set; }
+        public DbSet<AsistenciaEstudiante> AsistenciasEstudiantes { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,6 +45,16 @@ namespace EduSoft.Data
                 .HasOne(h => h.Clase)
                 .WithMany(c => c.Horarios)
                 .HasForeignKey(h => h.ClaseId);
+
+            modelBuilder.Entity<AsistenciaEstudiante>()
+                 .HasOne(a => a.Clase)
+                 .WithMany()
+                 .HasForeignKey(a => a.ClaseId);
+
+            modelBuilder.Entity<AsistenciaEstudiante>()
+                .HasOne(a => a.Usuario)
+                .WithMany()
+                .HasForeignKey(a => a.UsuarioId);
         }
 
     }
@@ -92,6 +103,8 @@ namespace EduSoft.Data
 
         public Usuario Usuario { get; set; } = null!;
         public Clase Clase { get; set; } = null!;
+        public bool EsExamen { get; set; } = false;
+
     }
 
 
@@ -140,5 +153,32 @@ namespace EduSoft.Data
         public string? Retroalimentacion { get; set; }
         public decimal? Nota { get; set; }
     }
+
+    public class AsistenciaEstudiante
+    {
+        public int Id { get; set; }
+        public int ClaseId { get; set; }
+        public int UsuarioId { get; set; }
+        public DateTime Fecha { get; set; }
+        public bool Asistio { get; set; }
+
+        public Clase Clase { get; set; } = null!;
+        public Usuario Usuario { get; set; } = null!;
+    }
+
+    public class NotaEstudianteDto
+    {
+        public int EstudianteId { get; set; }
+        public string NombreEstudiante { get; set; } = string.Empty;
+        public List<NotaTareaDto> Notas { get; set; } = new();
+    }
+
+    public class NotaTareaDto
+    {
+        public int TareaId { get; set; }
+        public string TituloTarea { get; set; } = string.Empty;
+        public decimal? Nota { get; set; }
+    }
+
 
 }

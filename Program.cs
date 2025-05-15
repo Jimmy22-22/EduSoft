@@ -18,6 +18,7 @@ builder.Services.AddScoped<ClaseService>();
 builder.Services.AddScoped<HorarioService>();
 builder.Services.AddScoped<GeminiService>();
 builder.Services.AddScoped<TareaEstudianteService>();
+builder.Services.AddScoped<AsistenciaService>();
 
 builder.Services.AddHttpClient();
 

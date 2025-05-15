@@ -1,0 +1,169 @@
+﻿@page "/examenes-maestro"
+@layout LayoutMaestro
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@inject TareaEstudianteService TareaEstudianteService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h2 class="titulo"><i class="fas fa-clipboard-list"></i> Exámenes por Clase</h2>
+
+@if (UsuarioAutenticado == null)
+{
+    <p class="no-data">Inicia sesión para ver los exámenes.</p>
+}
+else
+{
+    <div class="form-seleccion">
+        <label><i class="fas fa-book"></i> Selecciona una clase:</label>
+        <select class="form-control" value="@ClaseIdSeleccionada" @onchange="OnClaseChanged">
+            <option value="">-- Seleccionar --</option>
+            @foreach (var clase in Clases)
+            {
+                <option value="@clase.Id">@clase.Nombre</option>
+            }
+        </select>
+    </div>
+
+    @if (Examenes.Count > 0)
+    {
+        @foreach (var examen in Examenes)
+        {
+            <div class="examen-card">
+                <h4>@examen.Titulo <span class="badge-examen">Examen</span></h4>
+                <p>@examen.Descripcion</p>
+                <p><i class="fas fa-calendar-alt"></i> Fecha entrega: @examen.FechaEntrega.ToString("dd MMM yyyy")</p>
+
+                <details>
+                    <summary><i class="fas fa-users"></i> Ver Entregas</summary>
+                    <table class="tabla-entregas">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Comentario</th>
+                                <th>Link</th>
+                                <th>Archivo</th>
+                                <th>Nota</th>
+                                <th>Retroalimentación</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entrega in EntregasPorExamen[examen.Id])
+                            {
+                                <tr>
+                                    <td>@entrega.Usuario.Nombre</td>
+                                    <td>@entrega.Comentario</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(entrega.Link))
+                                        {
+                                            <a href="@entrega.Link" target="_blank">Ver</a>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(entrega.ArchivoNombre))
+                                        {
+                                            <button @onclick="() => VerArchivo(entrega.ArchivoNombre, entrega.ArchivoContenido)">Ver</button>
+                                        }
+                                    </td>
+                                    <td>
+                                        <input type="number" min="0" max="100" @bind="entrega.Nota" />
+                                    </td>
+                                    <td>
+                                        <input type="text" @bind="entrega.Retroalimentacion" />
+                                    </td>
+                                    <td>
+                                        <button class="btn-confirm" @onclick="() => GuardarNota(entrega)">Guardar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+        }
+    }
+    else if (ClaseIdSeleccionada != null)
+    {
+        <p class="no-data">No hay exámenes registrados en esta clase.</p>
+    }
+}
+
+<style>
+    .titulo { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+    .form-seleccion { max-width: 600px; margin: auto; margin-bottom: 20px; }
+    .form-control { width: 100%; padding: 10px; border-radius: 8px; }
+    .examen-card { background: #f3f4f6; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .badge-examen { background: #d32f2f; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; }
+    .tabla-entregas { width: 100%; margin-top: 10px; border-collapse: collapse; }
+    .tabla-entregas th, .tabla-entregas td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .tabla-entregas th { background: #f0f0f0; }
+    .btn-confirm { background: #2e7d32; color: white; padding: 5px 10px; border: none; border-radius: 6px; cursor: pointer; }
+    .no-data { text-align: center; color: #999; margin-top: 30px; }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<Clase> Clases = new();
+    private List<Tarea> Examenes = new();
+    private Dictionary<int, List<EntregaTareaEstudiante>> EntregasPorExamen = new();
+
+    private int? ClaseIdSeleccionada;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+
+        if (UsuarioAutenticado != null)
+        {
+            Clases = await ClaseService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
+        }
+    }
+
+    private async Task OnClaseChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int claseId))
+        {
+            ClaseIdSeleccionada = claseId;
+            await CargarExamenes();
+        }
+    }
+
+    private async Task CargarExamenes()
+    {
+        Examenes.Clear();
+        EntregasPorExamen.Clear();
+
+        if (ClaseIdSeleccionada != null)
+        {
+            Examenes = await ClaseService.ObtenerExamenesPorClaseAsync(ClaseIdSeleccionada.Value);
+
+            foreach (var ex in Examenes)
+            {
+                EntregasPorExamen[ex.Id] = await TareaEstudianteService.ObtenerEntregasPorTareaAsync(ex.Id);
+            }
+        }
+    }
+
+    private async Task GuardarNota(EntregaTareaEstudiante entrega)
+    {
+        await ClaseService.GuardarNotaYRetroalimentacion(entrega.Id, entrega.Nota, entrega.Retroalimentacion);
+    }
+
+    private async Task VerArchivo(string nombre, byte[] contenido)
+    {
+        var ext = Path.GetExtension(nombre)?.ToLower() ?? "";
+        var mime = ext switch
+        {
+            ".pdf" => "application/pdf",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            _ => "application/octet-stream"
+        };
+
+        using var streamRef = new DotNetStreamReference(new MemoryStream(contenido));
+        await JS.InvokeVoidAsync("previewFileFromStream", mime, streamRef);
+    }
+}

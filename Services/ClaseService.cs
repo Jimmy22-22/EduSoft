@@ -119,7 +119,7 @@ namespace EduSoft.Services
         /// <param name="fechaEntrega">Fecha de entrega de la tarea.</param>
         /// <param name="usuarioId">ID del usuario que la crea.</param>
         /// <returns>True si la tarea fue creada correctamente.</returns>
-        public async Task<bool> CrearTarea(int claseId, string titulo, string descripcion, DateTime fechaEntrega, int usuarioId, string? link, string? archivoNombre, byte[]? archivoContenido)
+        public async Task<bool> CrearTarea(int claseId, string titulo, string descripcion, DateTime fechaEntrega, int usuarioId, string? link, string? archivoNombre, byte[]? archivoContenido, bool esExamen)
         {
             var tarea = new Tarea
             {
@@ -130,7 +130,8 @@ namespace EduSoft.Services
                 ClaseId = claseId,
                 Link = link,
                 ArchivoNombre = archivoNombre,
-                ArchivoContenido = archivoContenido
+                ArchivoContenido = archivoContenido,
+                EsExamen = esExamen
             };
 
             _context.Tareas.Add(tarea);
@@ -172,6 +173,122 @@ namespace EduSoft.Services
         {
             return await _context.Tareas.FirstOrDefaultAsync(t => t.Id == tareaId);
         }
+
+        /// <summary>
+        /// Obtiene todas las clases creadas por un profesor específico (por su nombre).
+        /// </summary>
+        /// <param name="nombreProfesor">Nombre del profesor.</param>
+        /// <returns>Lista de clases creadas por ese profesor.</returns>
+        public async Task<List<Clase>> GetClasesPorProfesorAsync(string nombreProfesor)
+        {
+            return await _context.Clases
+                .Where(c => c.Profesor == nombreProfesor)
+                .OrderBy(c => c.Nombre)
+                .ToListAsync();
+        }
+
+        public async Task<List<NotaEstudianteDto>> ObtenerNotasPorClaseAsync(int claseId)
+        {
+            var tareas = await _context.Tareas
+                .Where(t => t.ClaseId == claseId)
+                .ToListAsync();
+
+            var estudiantes = await _context.UsuarioClases
+                .Where(uc => uc.ClaseId == claseId)
+                .Select(uc => uc.Usuario)
+                .ToListAsync();
+
+            var notas = await _context.EntregasTareasEstudiantes
+                .Where(e => tareas.Select(t => t.Id).Contains(e.TareaId))
+                .ToListAsync();
+
+            var resultado = new List<NotaEstudianteDto>();
+
+            foreach (var estudiante in estudiantes)
+            {
+                var notasEstudiante = notas
+                    .Where(n => n.UsuarioId == estudiante.Id)
+                    .Select(n => new NotaTareaDto
+                    {
+                        TareaId = n.TareaId,
+                        TituloTarea = tareas.First(t => t.Id == n.TareaId).Titulo,
+                        Nota = n.Nota
+                    })
+                    .ToList();
+
+                resultado.Add(new NotaEstudianteDto
+                {
+                    EstudianteId = estudiante.Id,
+                    NombreEstudiante = estudiante.Nombre,
+                    Notas = notasEstudiante
+                });
+            }
+
+            return resultado;
+        }
+
+        public async Task<List<Clase>> ObtenerClasesAsync()
+        {
+            return await _context.Clases
+                .OrderBy(c => c.Nombre)
+                .ToListAsync();
+        }
+
+        public async Task<List<Tarea>> ObtenerTareasPorClaseAsync(int claseId)
+        {
+            return await _context.Tareas
+                .Where(t => t.ClaseId == claseId)
+                .OrderBy(t => t.FechaEntrega)
+                .ToListAsync();
+        }
+
+        public async Task ActualizarNotaAsync(EntregaTareaEstudiante entrega)
+        {
+            var entregaExistente = await _context.EntregasTareasEstudiantes
+                .FirstOrDefaultAsync(e => e.Id == entrega.Id);
+
+            if (entregaExistente != null)
+            {
+                entregaExistente.Nota = entrega.Nota;
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task<List<EntregaTareaEstudiante>> ObtenerEntregasPorTareaAsync(int tareaId)
+        {
+            return await _context.EntregasTareasEstudiantes
+                .Where(e => e.TareaId == tareaId)
+                .Include(e => e.Usuario)
+                .ToListAsync();
+        }
+
+        public async Task<List<Tarea>> ObtenerTareasPorClaseSinExamenAsync(int claseId)
+        {
+            return await _context.Tareas
+                .Where(t => t.ClaseId == claseId && !t.EsExamen)
+                .OrderBy(t => t.FechaEntrega)
+                .ToListAsync();
+        }
+
+        public async Task<List<Tarea>> ObtenerExamenesPorClaseAsync(int claseId)
+        {
+            return await _context.Tareas
+                .Where(t => t.ClaseId == claseId && t.EsExamen)
+                .OrderByDescending(t => t.FechaEntrega)
+                .ToListAsync();
+        }
+
+        public async Task GuardarNotaYRetroalimentacion(int entregaId, decimal? nota, string? retroalimentacion)
+        {
+            var entrega = await _context.EntregasTareasEstudiantes.FindAsync(entregaId);
+            if (entrega != null)
+            {
+                entrega.Nota = nota;
+                entrega.Retroalimentacion = retroalimentacion;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
 
     }
 }

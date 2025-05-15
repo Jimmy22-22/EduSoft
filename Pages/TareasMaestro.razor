@@ -1,0 +1,105 @@
+﻿@page "/tareas-maestro"
+@using EduSoft.Data
+@using EduSoft.Services
+@inject ClaseService ClaseService
+@layout LayoutMaestro
+
+<h2 class="text-center text-primary mb-4"><i class="fas fa-tasks"></i> Gestión de Tareas</h2>
+
+<div class="mb-3">
+    <label for="claseSelect" class="form-label">Selecciona una clase:</label>
+    <select id="claseSelect" class="form-select" @onchange="OnClaseChanged">
+        <option value="">-- Seleccionar --</option>
+        @foreach (var clase in Clases)
+        {
+            <option value="@clase.Id">@clase.Nombre</option>
+        }
+    </select>
+</div>
+
+@if (Tareas != null && Tareas.Any())
+{
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Título</th>
+                <th>Fecha de Entrega</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tarea in Tareas)
+            {
+                <tr>
+                    <td>@tarea.Titulo</td>
+                    <td>@tarea.FechaEntrega.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => VerEntregas(tarea.Id)">Ver Entregas</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Entregas != null)
+{
+    <h3 class="mt-4">Entregas de la Tarea</h3>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Estudiante</th>
+                <th>Estado</th>
+                <th>Calificación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entrega in Entregas)
+            {
+                <tr>
+                    <td>@entrega.Usuario.Nombre</td>
+                    <td>@(entrega.ArchivoContenido != null ? "Entregado" : "No entregado")</td>
+                    <td>
+                        <input type="number" class="form-control" @bind="entrega.Nota" min="0" max="100" />
+                    </td>
+                    <td>
+                        <button class="btn btn-success" @onclick="() => CalificarEntrega(entrega)">Guardar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Clase> Clases = new();
+    private List<Tarea> Tareas = new();
+    private List<EntregaTareaEstudiante> Entregas = new();
+    private int? ClaseSeleccionadaId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Clases = await ClaseService.ObtenerClasesAsync();
+    }
+
+    private async Task OnClaseChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int claseId))
+        {
+            ClaseSeleccionadaId = claseId;
+            Tareas = await ClaseService.ObtenerTareasPorClaseSinExamenAsync(claseId);
+            Entregas = null;
+        }
+    }
+
+    private async Task VerEntregas(int tareaId)
+    {
+        Entregas = await ClaseService.ObtenerEntregasPorTareaAsync(tareaId);
+    }
+
+    private async Task CalificarEntrega(EntregaTareaEstudiante entrega)
+    {
+        await ClaseService.ActualizarNotaAsync(entrega);
+    }
+}

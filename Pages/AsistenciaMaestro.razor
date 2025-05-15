@@ -1,0 +1,205 @@
+﻿@page "/asistencia-maestro"
+
+@layout LayoutMaestro
+@using EduSoft.Data
+@using EduSoft.Services
+@inject AuthService AuthService
+@inject ClaseService ClaseService
+@inject AsistenciaService AsistenciaService
+@inject NavigationManager Navigation
+
+<h2 class="titulo"><i class="fas fa-clipboard-check"></i> Registro de Asistencia</h2>
+
+@if (UsuarioAutenticado == null)
+{
+    <p class="no-data"><i class="fas fa-user-lock"></i> Inicia sesión para ver tus clases.</p>
+}
+else if (Clases.Count == 0)
+{
+    <p class="no-data"><i class="fas fa-chalkboard"></i> No tienes clases creadas.</p>
+}
+else
+{
+    <div class="asistencia-form">
+        <label><i class="fas fa-chalkboard-teacher"></i> Selecciona una clase:</label>
+        <select @bind="ClaseSeleccionadaId" class="form-control">
+            <option value="">-- Seleccionar --</option>
+            @foreach (var clase in Clases)
+            {
+                <option value="@clase.Id">@clase.Nombre</option>
+            }
+        </select>
+
+        <label><i class="fas fa-calendar-day"></i> Fecha:</label>
+        <input type="date" @bind="FechaSeleccionada" class="form-control" />
+
+        <button class="btn btn-success" @onclick="CargarEstudiantes">
+            <i class="fas fa-users"></i> Cargar Estudiantes
+        </button>
+    </div>
+
+    @if (Estudiantes.Count > 0)
+    {
+        <div class="tabla-asistencia">
+            <table class="table table-bordered table-striped mt-4">
+                <thead class="table-primary">
+                    <tr>
+                        <th><i class="fas fa-user"></i> Estudiante</th>
+                        <th><i class="fas fa-check-circle"></i> Asistencía</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var est in Estudiantes)
+                    {
+                        <tr>
+                            <td>@est.Usuario.Nombre</td>
+                            <td>
+                                <input type="checkbox" @bind="est.Asistio" class="form-check-input" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <button class="btn btn-primary mt-3" @onclick="GuardarAsistencia">
+                <i class="fas fa-save"></i> Guardar Asistencia
+            </button>
+            @if (Estudiantes.Count > 0)
+            {
+                <div class="resumen-asistencia">
+                    <p><i class="fas fa-users"></i> Total estudiantes: <strong>@Estudiantes.Count</strong></p>
+                    <p><i class="fas fa-user-check text-green"></i> Asistieron: <strong>@TotalAsistieron</strong></p>
+                    <p><i class="fas fa-user-times text-red"></i> Faltaron: <strong>@TotalFaltaron</strong></p>
+                </div>
+            }
+        </div>
+    }
+}
+
+@if (MostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle"></i> ¡Asistencia guardada!</h5>
+                    <button type="button" class="btn-close" @onclick="() => MostrarModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>La asistencia ha sido registrada correctamente para la fecha <strong>@FechaSeleccionada.ToString("dd MMM yyyy")</strong>.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" @onclick="() => MostrarModal = false">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .titulo {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 25px;
+        font-size: 2rem;
+    }
+
+    .asistencia-form {
+        max-width: 700px;
+        margin: auto;
+        background: #ecf0f1;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .form-control {
+        margin-bottom: 15px;
+    }
+
+    .tabla-asistencia {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .no-data {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 1.1rem;
+        color: #888;
+    }
+
+    .resumen-asistencia {
+        margin-top: 20px;
+        background-color: #f1f8e9;
+        padding: 15px;
+        border: 1px solid #c5e1a5;
+        border-radius: 10px;
+        font-size: 1rem;
+        color: #33691e;
+    }
+
+    .text-green {
+        color: #2e7d32;
+    }
+
+    .text-red {
+        color: #c62828;
+    }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<Clase> Clases = new();
+    private int? ClaseSeleccionadaId;
+    private DateTime FechaSeleccionada = DateTime.Today;
+    private List<AsistenciaRegistro> Estudiantes = new();
+    private bool MostrarModal = false;
+    private int TotalAsistieron => Estudiantes.Count(e => e.Asistio);
+    private int TotalFaltaron => Estudiantes.Count(e => !e.Asistio);
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            Clases = await ClaseService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
+        }
+    }
+
+    private async Task CargarEstudiantes()
+    {
+        if (ClaseSeleccionadaId == null) return;
+
+        var registros = await AsistenciaService.ObtenerAsistenciasPorClaseYFechaAsync(ClaseSeleccionadaId.Value, FechaSeleccionada);
+        var estudiantes = await ClaseService.GetEstudiantesPorClaseAsync(ClaseSeleccionadaId.Value);
+
+        Estudiantes = estudiantes
+            .Select(e =>
+            {
+                var reg = registros.FirstOrDefault(r => r.UsuarioId == e.Id);
+                return new AsistenciaRegistro
+                    {
+                        Usuario = e,
+                        Asistio = reg?.Asistio ?? false
+                    };
+            }).ToList();
+    }
+
+    private async Task GuardarAsistencia()
+    {
+        if (ClaseSeleccionadaId == null) return;
+
+        var data = Estudiantes.Select(e => (e.Usuario.Id, e.Asistio)).ToList();
+        await AsistenciaService.RegistrarAsistencia(ClaseSeleccionadaId.Value, FechaSeleccionada, data);
+
+        MostrarModal = true;
+    }
+
+    public class AsistenciaRegistro
+    {
+        public Usuario Usuario { get; set; } = null!;
+        public bool Asistio { get; set; }
+    }
+}
