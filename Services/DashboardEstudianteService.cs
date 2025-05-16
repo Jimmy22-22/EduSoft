@@ -75,5 +75,62 @@ namespace EduSoft.Services
             await context.SaveChangesAsync();
             return true;
         }
+
+        /// <summary>
+        /// Obtiene notificaciones relacionadas a tareas próximas, calificaciones, asistencias y nuevos horarios.
+        /// </summary>
+        public async Task<List<string>> ObtenerNotificacionesAsync(int estudianteId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var notificaciones = new List<string>();
+
+            var entregas = await context.EntregasTareasEstudiantes
+                .Include(e => e.Tarea)
+                .ThenInclude(t => t.Clase)
+                .Where(e => e.UsuarioId == estudianteId)
+                .ToListAsync();
+
+            foreach (var entrega in entregas)
+            {
+                if (entrega.Nota != null)
+                {
+                    notificaciones.Add($"Recibiste una nota de {entrega.Nota}/100 en la tarea '{entrega.Tarea.Titulo}' de {entrega.Tarea.Clase.Nombre}.");
+                }
+                else if ((entrega.Tarea.FechaEntrega - DateTime.Now).TotalDays <= 1 && entrega.FechaEntrega == default)
+                {
+                    notificaciones.Add($"¡La tarea '{entrega.Tarea.Titulo}' de {entrega.Tarea.Clase.Nombre} vence mañana!");
+                }
+            }
+
+            var asistencias = await context.AsistenciasEstudiantes
+                .Include(a => a.Clase)
+                .Where(a => a.UsuarioId == estudianteId && !a.Asistio)
+                .OrderByDescending(a => a.Fecha)
+                .ToListAsync();
+
+            foreach (var falta in asistencias)
+            {
+                notificaciones.Add($"Faltaste el {falta.Fecha:dd/MM/yyyy} a la clase de {falta.Clase.Nombre}.");
+            }
+
+            var fechaLimite = DateTime.Now.AddDays(-2);
+
+            var clasesDelEstudiante = await context.UsuarioClases
+                .Where(uc => uc.UsuarioId == estudianteId)
+                .Select(uc => uc.ClaseId)
+                .ToListAsync();
+
+            var nuevosHorarios = await context.HorariosClases
+                .Include(h => h.Clase)
+                .Where(h => clasesDelEstudiante.Contains(h.ClaseId) && h.Fecha >= fechaLimite)
+                .ToListAsync();
+
+            foreach (var horario in nuevosHorarios)
+            {
+                notificaciones.Add($"Nuevo horario publicado para {horario.Clase.Nombre}: {horario.Fecha:dd/MM/yyyy} de {horario.HoraInicio} a {horario.HoraFin} en Aula {horario.Aula}.");
+            }
+
+            return notificaciones;
+        }
     }
 }

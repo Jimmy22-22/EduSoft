@@ -19,6 +19,15 @@
             <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
                 <i class="fas fa-bars"></i>
             </button>
+
+            <button class="btn-action notification-btn" @onclick="ToggleNotificaciones" tabindex="0">
+                <i class="fas fa-bell"></i>
+                @if (BadgeVisible && Notificaciones.Count > 0)
+                {
+                    <span class="badge">@Notificaciones.Count</span>
+                }
+            </button>
+
             <button class="btn-action home-btn" @onclick="IrDashboardEstudiante" tabindex="2">
                 <i class="fas fa-home"></i>
             </button>
@@ -27,6 +36,29 @@
             </button>
         </div>
     </header>
+
+    @if (MostrarNotificaciones)
+    {
+        <div class="notification-panel">
+            <h4><i class="fas fa-bell"></i> Notificaciones</h4>
+            @if (Notificaciones.Count == 0)
+            {
+                <p class="empty-msg"><i class="fas fa-inbox"></i> No tienes notificaciones nuevas.</p>
+            }
+            else
+            {
+                <ul class="notification-list">
+                    @foreach (var noti in Notificaciones)
+                    {
+                        <li class="notification-bubble">
+                            <i class="fas fa-bell"></i>
+                            <span>@noti</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
 
     <nav class="sub-nav">
         <div class="nav-item" @onclick="IrTareas" tabindex="4">
@@ -374,6 +406,81 @@
         outline: 2px solid #007acc !important;
         box-shadow: 0 0 5px #007acc;
     }
+
+    .notification-btn {
+        position: relative;
+    }
+
+    .badge {
+        position: absolute;
+        top: -4px;
+        right: -6px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+    }
+
+    .notification-panel {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        background: #ffffff;
+        color: #333;
+        padding: 15px;
+        border-radius: 10px;
+        width: 320px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1001;
+    }
+
+        .notification-panel h4 {
+            margin-top: 0;
+            color: #0052D4;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+    .notification-list {
+        list-style: none;
+        padding-left: 0;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+        .notification-list li {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .empty-msg {
+        font-size: 0.9rem;
+        color: #888;
+        text-align: center;
+    }
+
+    .notification-bubble {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        color: #0d47a1;
+        padding: 12px 15px;
+        border-radius: 16px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.3s ease;
+    }
+
+        .notification-bubble:hover {
+            background: linear-gradient(135deg, #d2e3fc, #90caf9);
+            cursor: default;
+        }
 </style>
 
 @code {
@@ -384,9 +491,31 @@
     private string CodigoClaseIngresado = "";
     private bool SidebarAnimado = false;
 
+    private int TotalNotificaciones = 0;
+    private bool MostrarNotificaciones = false;
+    private bool MostrarBadge = true;
+    private bool BadgeVisible = false;
+    private List<string> Notificaciones = new();
+
+
+    private void ToggleNotificaciones()
+    {
+        MostrarNotificaciones = !MostrarNotificaciones;
+
+        if (MostrarNotificaciones)
+            BadgeVisible = false;
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            await CargarDatos();
+            Notificaciones = await DashboardEstudianteService.ObtenerNotificacionesAsync(UsuarioAutenticado.Id);
+            TotalNotificaciones = Notificaciones.Count;
+            BadgeVisible = TotalNotificaciones > 0;
+        }
     }
 
     private async Task CargarDatos()

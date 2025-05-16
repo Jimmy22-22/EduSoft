@@ -76,5 +76,30 @@ namespace EduSoft.Services
             return new string(Enumerable.Repeat(chars, 6)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        public async Task<List<string>> ObtenerNotificacionesMaestroAsync(string nombreMaestro)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var notificaciones = new List<string>();
+
+            var entregas = await context.EntregasTareasEstudiantes
+                .Include(e => e.Usuario)
+                .Include(e => e.Tarea)
+                .ThenInclude(t => t.Clase)
+                .Where(e => e.Tarea.Usuario.Nombre == nombreMaestro)
+                .OrderByDescending(e => e.FechaEntrega)
+                .ToListAsync();
+
+            foreach (var entrega in entregas)
+            {
+                if (entrega.Usuario != null && entrega.Tarea != null && entrega.Tarea.Clase != null)
+                {
+                    var tipo = entrega.Tarea.EsExamen ? "examen" : "tarea";
+                    notificaciones.Add($"El estudiante {entrega.Usuario.Nombre} entregó el {tipo} {entrega.Tarea.Titulo} de la clase {entrega.Tarea.Clase.Nombre}.");
+                }
+            }
+
+            return notificaciones;
+        }
     }
 }
