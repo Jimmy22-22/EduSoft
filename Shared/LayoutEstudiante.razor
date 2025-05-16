@@ -41,6 +41,14 @@
             <i class="fas fa-clipboard-check"></i>
             <span>Notas</span>
         </div>
+        <div class="nav-item" @onclick="IrHorarios" tabindex="7">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Horarios</span>
+        </div>
+        <div class="nav-item" @onclick="IrAsistencias" tabindex="8">
+            <i class="fas fa-user-check"></i>
+            <span>Asistencia</span>
+        </div>
     </nav>
 
     <div class="content-container">
@@ -396,6 +404,9 @@
     private void IrTareas() => Navigation.NavigateTo("/tareas-estudiante");
     private void IrExamenes() => Navigation.NavigateTo("/examenes-estudiante");
     private void IrNotas() => Navigation.NavigateTo("/notas-estudiante");
+    private void IrHorarios() => Navigation.NavigateTo("/horarios-estudiante");
+    private void IrAsistencias() => Navigation.NavigateTo("/asistencias-estudiante");
+
     private void IrEduAI() => Navigation.NavigateTo("/eduai");
 
     private async Task UnirseAClase()
@@ -403,13 +414,25 @@
         bool exito = await DashboardEstudianteService.UnirseAClaseAsync(UsuarioAutenticado.Id, CodigoClaseIngresado);
         if (exito)
         {
-            Clases = await DashboardEstudianteService.GetClasesPorEstudianteAsync(UsuarioAutenticado.Id);
+            CodigoClaseIngresado = "";
+            CerrarModal();
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
-        CerrarModal();
     }
 
-    private void AbrirModal() => MostrarModal = true;
-    private void CerrarModal() => MostrarModal = false;
+    private void AbrirModal()
+    {
+        CodigoClaseIngresado = ""; 
+        MostrarModal = true;
+        StateHasChanged();
+    }
+
+    private void CerrarModal()
+    {
+        CodigoClaseIngresado = ""; 
+        MostrarModal = false;
+        StateHasChanged();
+    }
 
     private void ToggleSidebar()
     {

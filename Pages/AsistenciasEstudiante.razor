@@ -1,0 +1,121 @@
+﻿@page "/asistencias-estudiante"
+@layout LayoutEstudiante
+@using EduSoft.Data
+@using EduSoft.Services
+@inject AuthService AuthService
+@inject AsistenciaService AsistenciaService
+@inject NavigationManager Navigation
+
+<h2 class="asistencias-title"><i class="fas fa-user-check"></i> Mis Asistencias</h2>
+
+@if (AsistenciasAgrupadas.Count == 0)
+{
+    <p class="no-asistencias"><i class="fas fa-calendar-times"></i> No se encontraron asistencias registradas.</p>
+}
+else
+{
+    @foreach (var grupo in AsistenciasAgrupadas)
+    {
+        <div class="asistencia-card">
+            <h3 class="clase-nombre"><i class="fas fa-book"></i> @grupo.Key</h3>
+            <ul class="asistencia-lista">
+                @foreach (var registro in grupo.Value.OrderByDescending(a => a.Fecha))
+                {
+                    <li class="asistencia-item">
+                        <span class="fecha"><i class="fas fa-calendar-day"></i> @registro.Fecha.ToString("dd MMM yyyy")</span>
+                        <span class="estado @(registro.Asistio ? "presente" : "ausente")">
+                            <i class="fas @(registro.Asistio ? "fa-check-circle" : "fa-times-circle")"></i>
+                            @(registro.Asistio ? "Presente" : "Ausente")
+                        </span>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+}
+
+<style>
+    .asistencias-title {
+        color: #0052D4;
+        text-align: center;
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+
+    .asistencia-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .clase-nombre {
+        font-size: 1.4rem;
+        color: #0052D4;
+        margin-bottom: 10px;
+    }
+
+    .asistencia-lista {
+        list-style: none;
+        padding: 0;
+    }
+
+    .asistencia-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 1rem;
+    }
+
+        .asistencia-item:last-child {
+            border-bottom: none;
+        }
+
+    .fecha {
+        color: #34495E;
+    }
+
+    .estado {
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .estado.presente {
+            color: #27AE60;
+        }
+
+        .estado.ausente {
+            color: #E74C3C;
+        }
+
+    .no-asistencias {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #888;
+    }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private Dictionary<string, List<AsistenciaEstudiante>> AsistenciasAgrupadas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            var asistencias = await AsistenciaService.GetAsistenciasPorEstudianteAsync(UsuarioAutenticado.Id);
+            AsistenciasAgrupadas = asistencias
+                .GroupBy(a => a.Clase.Nombre)
+                .ToDictionary(g => g.Key, g => g.ToList());
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+}

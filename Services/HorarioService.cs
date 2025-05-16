@@ -149,5 +149,25 @@ namespace EduSoft.Services
                 .OrderBy(h => h.HoraInicio)
                 .FirstOrDefaultAsync();
         }
+
+        /// <summary>
+        /// Obtiene todos los horarios de las clases en las que el estudiante está inscrito.
+        /// </summary>
+        public async Task<List<HorarioClase>> GetHorariosPorEstudianteAsync(int estudianteId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var claseIds = await context.UsuarioClases
+                .Where(uc => uc.UsuarioId == estudianteId)
+                .Select(uc => uc.ClaseId)
+                .ToListAsync();
+
+            return await context.HorariosClases
+                .Include(h => h.Clase)
+                .Where(h => claseIds.Contains(h.ClaseId))
+                .OrderBy(h => h.Fecha)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+        }
     }
 }

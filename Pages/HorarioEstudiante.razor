@@ -1,0 +1,94 @@
+﻿@page "/horarios-estudiante"
+@layout LayoutEstudiante
+
+@using EduSoft.Data
+@using EduSoft.Services
+@inject HorarioService HorarioService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2 class="horario-title"><i class="fas fa-calendar-alt"></i> Mis Horarios</h2>
+
+@if (Horarios.Count == 0)
+{
+        <p class="no-horario"><i class="fas fa-calendar-times"></i> Aún no tienes horarios asignados en tus clases.</p>
+}
+else
+{
+        <div class="horario-container">
+        @foreach (var horario in Horarios)
+        {
+                    <div class="horario-item">
+                        <div class="horario-fecha">
+                            <i class="fas fa-calendar-day"></i> @horario.Fecha.ToString("dddd, dd MMMM yyyy")
+                        </div>
+                        <div class="horario-info">
+                            <p><strong>Hora:</strong> @horario.HoraInicio - @horario.HoraFin</p>
+                            <p><strong>Clase:</strong> @horario.NombreClase</p>
+                            <p><strong>Profesor:</strong> @horario.Profesor</p>
+                            <p><strong>Aula:</strong> @horario.Aula</p>
+                        </div>
+                    </div>
+        }
+        </div>
+}
+
+<style>
+    .horario-title {
+        text-align: center;
+        font-size: 1.8rem;
+        color: #0052D4;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
+
+    .horario-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .horario-item {
+        background: #eaf0ff;
+        border-left: 6px solid #0052D4;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .horario-fecha {
+        font-weight: bold;
+        color: #0033a0;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+    }
+
+    .horario-info p {
+        margin: 4px 0;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .no-horario {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #999;
+    }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private List<HorarioClase> Horarios = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado == null || UsuarioAutenticado.Rol != RolUsuario.Estudiante)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        Horarios = await HorarioService.GetHorariosPorEstudianteAsync(UsuarioAutenticado.Id);
+    }
+}

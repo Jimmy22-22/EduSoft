@@ -1,5 +1,6 @@
 ﻿using EduSoft.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace EduSoft.Services
 {
@@ -45,5 +46,14 @@ namespace EduSoft.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task<List<AsistenciaEstudiante>> GetAsistenciasPorEstudianteAsync(int estudianteId)
+        {
+            return await _context.AsistenciasEstudiantes
+                .Include(a => a.Clase)
+                .Where(a => a.UsuarioId == estudianteId)
+                .OrderByDescending(a => a.Fecha)
+                .ToListAsync();
+        }
+
     }
 }

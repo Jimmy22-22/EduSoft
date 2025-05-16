@@ -404,16 +404,25 @@
     {
         Navigation.NavigateTo($"/clase-maestro/{claseId}");
     }
+
     private async Task CrearClase()
     {
-        if (!string.IsNullOrEmpty(NuevaClaseNombre))
+        if (!string.IsNullOrWhiteSpace(NuevaClaseNombre))
         {
             await DashboardMaestroService.CrearClaseAsync(NuevaClaseNombre, UsuarioAutenticado.Nombre);
-            Clases = await DashboardMaestroService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
-            CerrarModal();
+            NuevaClaseNombre = "";
+            MostrarModal = false;
+
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
     }
-    private void AbrirModal() { MostrarModal = true; StateHasChanged(); }
+
+    private void AbrirModal()
+    {
+        NuevaClaseNombre = "";
+        MostrarModal = true;
+        StateHasChanged();
+    }
     private void CerrarModal() { MostrarModal = false; StateHasChanged(); }
     private void ToggleSidebar() { MostrarSidebar = !MostrarSidebar; }
 
