@@ -16,15 +16,15 @@
         </div>
 
         <div class="top-buttons">
-            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
-                <i class="fas fa-bars"></i>
-            </button>
             <button class="btn-action notification-btn" @onclick="ToggleNotificaciones" tabindex="0">
                 <i class="fas fa-bell"></i>
                 @if (MostrarBadge && Notificaciones.Count > 0)
                 {
                     <span class="badge">@Notificaciones.Count</span>
                 }
+            </button>
+            <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
+                <i class="fas fa-bars"></i>
             </button>
             <button class="btn-action btn-home" @onclick="IrDashboardMaestro" tabindex="2">
                 <i class="fas fa-home"></i>

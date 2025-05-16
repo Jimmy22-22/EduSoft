@@ -94,11 +94,11 @@ namespace EduSoft.Services
             {
                 if (entrega.Nota != null)
                 {
-                    notificaciones.Add($"Recibiste una nota de {entrega.Nota}/100 en la tarea '{entrega.Tarea.Titulo}' de {entrega.Tarea.Clase.Nombre}.");
+                    notificaciones.Add($"Recibiste una nota de {entrega.Nota}/100 en la tarea {entrega.Tarea.Titulo} de {entrega.Tarea.Clase.Nombre}.");
                 }
                 else if ((entrega.Tarea.FechaEntrega - DateTime.Now).TotalDays <= 1 && entrega.FechaEntrega == default)
                 {
-                    notificaciones.Add($"¡La tarea '{entrega.Tarea.Titulo}' de {entrega.Tarea.Clase.Nombre} vence mañana!");
+                    notificaciones.Add($"¡La tarea {entrega.Tarea.Titulo} de {entrega.Tarea.Clase.Nombre} vence mañana!");
                 }
             }
 
