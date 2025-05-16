@@ -19,6 +19,8 @@ builder.Services.AddScoped<HorarioService>();
 builder.Services.AddScoped<GeminiService>();
 builder.Services.AddScoped<TareaEstudianteService>();
 builder.Services.AddScoped<AsistenciaService>();
+builder.Services.AddScoped<EduAiContextMaestroBuilder>();
+builder.Services.AddScoped<EduAiContextEstudianteBuilder>();
 
 builder.Services.AddHttpClient();
 

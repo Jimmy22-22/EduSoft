@@ -5,6 +5,9 @@
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
 @layout LayoutMaestro
+@inject EduSoft.Services.EduAiContextMaestroBuilder EduAiContextMaestroBuilder
+
+
 
 @if (UsuarioAutenticado == null)
 {
@@ -177,10 +180,11 @@ else
     {
         if (!string.IsNullOrWhiteSpace(mensajeUsuario))
         {
-            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario);
+            var contexto = await EduAiContextMaestroBuilder.ConstruirContextoMaestroAsync(UsuarioAutenticado.Nombre);
+            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario, contexto);
+            mensajeUsuario = string.Empty;
             mensajes.Clear();
             mensajes.AddRange(ChatService.Messages);
-            mensajeUsuario = string.Empty;
             await ScrollToBottom();
         }
     }

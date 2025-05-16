@@ -5,6 +5,8 @@
 @inject AuthService AuthService
 @layout LayoutEstudiante
 @inject IJSRuntime JSRuntime
+@inject EduAiContextEstudianteBuilder EduAiContextEstudianteBuilder
+
 
 @if (UsuarioAutenticado == null)
 {
@@ -178,12 +180,14 @@ else
 
     private async Task EnviarMensaje()
     {
-        if (!string.IsNullOrWhiteSpace(mensajeUsuario))
+        if (!string.IsNullOrWhiteSpace(mensajeUsuario) && UsuarioAutenticado != null)
         {
-            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario);
+            var contexto = await EduAiContextEstudianteBuilder.ConstruirContextoEstudianteAsync(UsuarioAutenticado.Id);
+            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario, contexto);
+
+            mensajeUsuario = string.Empty;
             mensajes.Clear();
             mensajes.AddRange(ChatService.Messages);
-            mensajeUsuario = string.Empty;
             await ScrollToBottom();
         }
     }
