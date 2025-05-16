@@ -1,0 +1,155 @@
+﻿@page "/tareas-estudiante"
+@layout LayoutEstudiante
+@using EduSoft.Data
+@using EduSoft.Services
+@inject AuthService AuthService
+@inject ClaseService ClaseService
+@inject NavigationManager Navigation
+
+<h2 class="titulo"><i class="fas fa-tasks"></i> Mis Tareas</h2>
+
+@if (UsuarioAutenticado == null)
+{
+    <p class="no-data">Inicia sesión para ver tus tareas.</p>
+}
+else if (TareasPorClase.Count == 0)
+{
+    <p class="no-data">No tienes tareas asignadas actualmente.</p>
+}
+else
+{
+    @foreach (var grupo in TareasPorClase)
+    {
+        <div class="clase-seccion">
+            <h3><i class="fas fa-book"></i> @grupo.Key</h3>
+            @foreach (var tarea in grupo.Value)
+            {
+                <div class="tarea-card">
+                    <div class="tarea-info">
+                        <h4>@tarea.Titulo @if (tarea.EsExamen)
+                            {
+                                <span class="badge-examen">Examen</span>
+                            }</h4>
+                        <p>@tarea.Descripcion</p>
+                        <p><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
+                    </div>
+                    <div class="tarea-acciones">
+                        <button class="btn-ver" @onclick="@(() => IrADetalle(tarea.Id))">
+                            <i class="fas fa-eye"></i> Ver Detalle
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+<style>
+    .titulo {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+    }
+
+    .clase-seccion {
+        margin-bottom: 40px;
+        background: #f7f9fc;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .clase-seccion h3 {
+            color: #0052D4;
+            margin-bottom: 15px;
+        }
+
+    .tarea-card {
+        display: flex;
+        justify-content: space-between;
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+
+        .tarea-card:hover {
+            transform: scale(1.01);
+        }
+
+    .tarea-info h4 {
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .tarea-info p {
+        margin: 5px 0;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .btn-ver {
+        background: #0052D4;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+        .btn-ver:hover {
+            background: #003c9d;
+        }
+
+    .badge-examen {
+        background: #d32f2f;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        margin-left: 10px;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #999;
+        margin-top: 40px;
+        font-style: italic;
+    }
+</style>
+
+@code {
+    private Usuario? UsuarioAutenticado;
+    private Dictionary<string, List<Tarea>> TareasPorClase = new();
+
+    protected override async Task OnInitializedAsync()
+{
+    UsuarioAutenticado = await AuthService.VerificarSesion();
+    if (UsuarioAutenticado != null)
+    {
+        var clases = await ClaseService.GetClasesPorEstudianteAsync(UsuarioAutenticado.Id);
+        foreach (var clase in clases)
+        {
+            var tareas = await ClaseService.GetTareasPorClaseAsync(clase.Id);
+            var soloTareas = tareas
+                .Where(t => !t.EsExamen)
+                .OrderBy(t => t.FechaEntrega)
+                .ToList();
+
+            if (soloTareas.Count > 0)
+            {
+                TareasPorClase[clase.Nombre] = soloTareas;
+            }
+        }
+    }
+}
+
+    private void IrADetalle(int tareaId)
+    {
+        Navigation.NavigateTo($"/tarea-detalle-estudiante/{tareaId}");
+    }
+}

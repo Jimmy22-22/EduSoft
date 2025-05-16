@@ -8,6 +8,13 @@
 <div class="layout-container">
     <header class="top-bar">
         <h2>EduSoft - Gestión de Clases</h2>
+
+        <div class="center-ai-button">
+            <button class="btn-ai" @onclick="IrIA" tabindex="99">
+                <i class="fas fa-brain"></i> EDU AI
+            </button>
+        </div>
+
         <div class="top-buttons">
             <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
                 <i class="fas fa-bars"></i>
@@ -335,6 +342,30 @@
             background: #C0392B;
             transform: scale(1.05);
         }
+
+    .center-ai-button {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .btn-ai {
+        background: #F39C12;
+        color: white;
+        font-weight: bold;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-ai:hover {
+            background: #D68910;
+            transform: scale(1.05);
+        }
 </style>
 
 @code {
@@ -385,4 +416,6 @@
     private void AbrirModal() { MostrarModal = true; StateHasChanged(); }
     private void CerrarModal() { MostrarModal = false; StateHasChanged(); }
     private void ToggleSidebar() { MostrarSidebar = !MostrarSidebar; }
+
+    private void IrIA() => Navigation.NavigateTo("/eduaimaestro");
 }

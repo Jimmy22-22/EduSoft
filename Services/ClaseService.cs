@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static EduSoft.Pages.NotaEstudiante;
 
 namespace EduSoft.Services
 {
@@ -287,6 +288,53 @@ namespace EduSoft.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<NotasClaseDto>> ObtenerNotasPorEstudianteAsync(int estudianteId)
+        {
+            var clases = await _context.UsuarioClases
+                .Where(uc => uc.UsuarioId == estudianteId)
+                .Include(uc => uc.Clase)
+                .ToListAsync();
+
+            var entregas = await _context.EntregasTareasEstudiantes
+                .Where(e => e.UsuarioId == estudianteId)
+                .ToListAsync();
+
+            var tareas = await _context.Tareas.ToListAsync();
+
+            var resultado = new List<NotasClaseDto>();
+
+            foreach (var clase in clases)
+            {
+                var tareasClase = tareas.Where(t => t.ClaseId == clase.ClaseId).ToList();
+                var notas = tareasClase.Select(t => {
+                    var entrega = entregas.FirstOrDefault(e => e.TareaId == t.Id);
+                    return new NotaTareaDto
+                    {
+                        TareaId = t.Id,
+                        TituloTarea = t.Titulo,
+                        Nota = entrega?.Nota
+                    };
+                }).ToList();
+
+                resultado.Add(new NotasClaseDto
+                {
+                    NombreClase = clase.Clase.Nombre,
+                    Notas = notas
+                });
+            }
+
+            return resultado;
+        }
+
+        public async Task<List<Clase>> GetClasesPorEstudianteAsync(int usuarioId)
+        {
+            return await _context.UsuarioClases
+                .Where(uc => uc.UsuarioId == usuarioId)
+                .Select(uc => uc.Clase)
+                .ToListAsync();
+        }
+
 
 
 

@@ -1,20 +1,20 @@
-﻿@page "/eduai"
+﻿@page "/eduaimaestro"
 @using EduSoft.Data
 @using EduSoft.Services
 @inject CHATBOT.Services.GeminiService ChatService
 @inject AuthService AuthService
-@layout LayoutEstudiante
 @inject IJSRuntime JSRuntime
+@layout LayoutMaestro
 
 @if (UsuarioAutenticado == null)
 {
-    <p class="no-session">Debes iniciar sesión como estudiante para usar EDU AI.</p>
+    <p class="no-session">Debes iniciar sesión como maestro para usar EDU AI.</p>
 }
 else
 {
     <div class="chat-wrapper">
         <div class="chat-title">
-            <i class="fas fa-robot"></i> EDU AI - Asistente Estudiantil
+            <i class="fas fa-robot"></i> EDU AI - Asistente Docente
         </div>
 
         <div class="chat-box" @ref="ChatScrollRef">
@@ -44,7 +44,7 @@ else
 
 <style>
     .no-session {
-        color: #d32f2f;
+        color: #d84315;
         text-align: center;
         margin-top: 30px;
         font-weight: bold;
@@ -54,7 +54,7 @@ else
         display: flex;
         flex-direction: column;
         height: calc(100vh - 170px);
-        background: #eaf3fc;
+        background: #e8f5e9;
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -63,7 +63,7 @@ else
     .chat-title {
         text-align: center;
         font-size: 1.6rem;
-        color: #0052D4;
+        color: #2e7d32;
         margin-bottom: 15px;
         font-weight: bold;
     }
@@ -87,7 +87,7 @@ else
         }
 
     .bubble {
-        background-color: #dbeafe;
+        background-color: #dcedc8;
         padding: 10px 15px;
         border-radius: 12px;
         max-width: 60%;
@@ -95,8 +95,8 @@ else
     }
 
     .message.user .bubble {
-        background-color: #c7e0ff;
-        color: #0a3d91;
+        background-color: #ffecb3;
+        color: #e65100;
         text-align: right;
     }
 
@@ -104,7 +104,7 @@ else
         font-weight: bold;
         font-size: 0.9rem;
         margin-bottom: 5px;
-        color: #1d3557;
+        color: #2e7d32;
         display: flex;
         align-items: center;
         gap: 5px;
@@ -112,7 +112,7 @@ else
 
     .message.user .bubble-header {
         justify-content: flex-end;
-        color: #0a3d91;
+        color: #e65100;
     }
 
     .bubble-body {
@@ -137,7 +137,7 @@ else
     }
 
     .chat-send-button {
-        background: #0052D4;
+        background: #388e3c;
         color: white;
         padding: 12px 16px;
         font-size: 1rem;
@@ -148,20 +148,17 @@ else
     }
 
         .chat-send-button:hover {
-            background: #003c9d;
+            background: #2e7d32;
         }
 
     @@media (max-width: 768px) {
-        .bubble
+        .bubble {
+            max-width: 85%;
+        }
 
-    {
-        max-width: 85%;
-    }
-
-    .chat-title {
-        font-size: 1.3rem;
-    }
-
+        .chat-title {
+            font-size: 1.3rem;
+        }
     }
 </style>
 

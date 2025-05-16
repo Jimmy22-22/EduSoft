@@ -8,6 +8,13 @@
 <div class="layout-container">
     <header class="top-bar">
         <h2>EduSoft</h2>
+
+        <div class="top-center">
+            <button class="btn-ai" @onclick="IrEduAI">
+                <i class="fas fa-robot"></i> Edu AI
+            </button>
+        </div>
+
         <div class="top-buttons">
             <button class="btn-action toggle-sidebar-btn" @onclick="ToggleSidebar" tabindex="1">
                 <i class="fas fa-bars"></i>
@@ -20,6 +27,21 @@
             </button>
         </div>
     </header>
+
+    <nav class="sub-nav">
+        <div class="nav-item" @onclick="IrTareas" tabindex="4">
+            <i class="fas fa-tasks"></i>
+            <span>Tareas</span>
+        </div>
+        <div class="nav-item" @onclick="IrExamenes" tabindex="5">
+            <i class="fas fa-file-alt"></i>
+            <span>Exámenes</span>
+        </div>
+        <div class="nav-item" @onclick="IrNotas" tabindex="6">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Notas</span>
+        </div>
+    </nav>
 
     <div class="content-container">
         <main class="main-content">
@@ -92,7 +114,63 @@
         font-size: 1.4rem;
         font-weight: bold;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        position: relative;
     }
+
+    .top-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .btn-ai {
+        background: white;
+        color: #0052D4;
+        border: none;
+        padding: 6px 16px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border-radius: 50px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .btn-ai:hover {
+            background: #e0ebff;
+            transform: scale(1.05);
+        }
+
+    .sub-nav {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 15px;
+        background: linear-gradient(135deg, #329fff, #3f78ff);
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.2s ease, color 0.3s;
+    }
+
+        .nav-item:hover {
+            transform: scale(1.1);
+            color: #ffd700;
+        }
+
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
 
     .top-buttons {
         display: flex;
@@ -313,15 +391,12 @@
         }
     }
 
-    private void IrAClase(int claseId)
-    {
-        Navigation.NavigateTo($"/clase-estudiante/{claseId}");
-    }
-
-    private void IrDashboardEstudiante()
-    {
-        Navigation.NavigateTo("/dashboard-estudiante");
-    }
+    private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-estudiante/{claseId}");
+    private void IrDashboardEstudiante() => Navigation.NavigateTo("/dashboard-estudiante");
+    private void IrTareas() => Navigation.NavigateTo("/tareas-estudiante");
+    private void IrExamenes() => Navigation.NavigateTo("/examenes-estudiante");
+    private void IrNotas() => Navigation.NavigateTo("/notas-estudiante");
+    private void IrEduAI() => Navigation.NavigateTo("/eduai");
 
     private async Task UnirseAClase()
     {
@@ -333,20 +408,13 @@
         CerrarModal();
     }
 
-    private void AbrirModal() { MostrarModal = true; StateHasChanged(); }
-    private void CerrarModal() { MostrarModal = false; StateHasChanged(); }
+    private void AbrirModal() => MostrarModal = true;
+    private void CerrarModal() => MostrarModal = false;
 
     private void ToggleSidebar()
     {
-        if (MostrarSidebar)
-        {
-            MostrarSidebar = false;
-        }
-        else
-        {
-            SidebarAnimado = true;
-            MostrarSidebar = true;
-        }
+        MostrarSidebar = !MostrarSidebar;
+        if (MostrarSidebar) SidebarAnimado = true;
     }
 
     private async Task CerrarSesion()
