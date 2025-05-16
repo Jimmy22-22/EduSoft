@@ -94,8 +94,11 @@ namespace EduSoft.Services
             {
                 if (entrega.Usuario != null && entrega.Tarea != null && entrega.Tarea.Clase != null)
                 {
-                    var tipo = entrega.Tarea.EsExamen ? "examen" : "tarea";
-                    notificaciones.Add($"El estudiante {entrega.Usuario.Nombre} entregó {tipo} {entrega.Tarea.Titulo} de la clase {entrega.Tarea.Clase.Nombre}.");
+                    var esExamen = entrega.Tarea.EsExamen;
+                    var tipo = esExamen ? "examen" : "tarea";
+                    var articulo = esExamen ? "el" : "la";
+
+                    notificaciones.Add($"El estudiante {entrega.Usuario.Nombre} entregó {articulo} {tipo} {entrega.Tarea.Titulo} de la clase {entrega.Tarea.Clase.Nombre}.");
                 }
             }
 

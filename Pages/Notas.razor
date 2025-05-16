@@ -40,7 +40,11 @@
                         var nota = notaEst.Notas.FirstOrDefault(n => n.TareaId == tarea.Id)?.Nota;
                         <td>@(nota.HasValue ? nota.Value.ToString("F2") : "N/A")</td>
                     }
-                    <td>@(notaEst.Notas.Average(n => n.Nota ?? 0).ToString("F2"))</td>
+                    <td>
+                        @(notaEst.Notas.Any(n => n.Nota.HasValue)
+                            ? notaEst.Notas.Where(n => n.Nota.HasValue).Average(n => n.Nota!.Value).ToString("F2")
+                            : "N/A")
+                    </td>
                 </tr>
             }
         </tbody>
