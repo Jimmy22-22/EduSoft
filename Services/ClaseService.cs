@@ -334,9 +334,5 @@ namespace EduSoft.Services
                 .Select(uc => uc.Clase)
                 .ToListAsync();
         }
-
-
-
-
     }
 }
