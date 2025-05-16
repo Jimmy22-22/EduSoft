@@ -6,7 +6,7 @@
 @inject IJSRuntime JSRuntime
 @layout LayoutMaestro
 @inject EduSoft.Services.EduAiContextMaestroBuilder EduAiContextMaestroBuilder
-
+@inject EduAiHistoryService EduAiHistoryService
 
 
 @if (UsuarioAutenticado == null)
@@ -171,20 +171,31 @@ else
     private ElementReference ChatScrollRef;
     private Usuario? UsuarioAutenticado;
 
+
     protected override async Task OnInitializedAsync()
     {
         UsuarioAutenticado = await AuthService.VerificarSesion();
+        if (UsuarioAutenticado != null)
+        {
+            mensajes = await EduAiHistoryService.ObtenerConversacionAsync(UsuarioAutenticado.Id);
+        }
     }
 
     private async Task EnviarMensaje()
     {
-        if (!string.IsNullOrWhiteSpace(mensajeUsuario))
+        if (!string.IsNullOrWhiteSpace(mensajeUsuario) && UsuarioAutenticado != null)
         {
             var contexto = await EduAiContextMaestroBuilder.ConstruirContextoMaestroAsync(UsuarioAutenticado.Nombre);
-            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario, contexto);
+            bool esPrimera = !mensajes.Any();
+
+            var respuesta = await ChatService.SendMessageAsync(mensajeUsuario, contexto, esPrimera);
+
+            await EduAiHistoryService.GuardarMensajeAsync(UsuarioAutenticado.Id, "user", mensajeUsuario);
+            await EduAiHistoryService.GuardarMensajeAsync(UsuarioAutenticado.Id, "assistant", respuesta);
+
             mensajeUsuario = string.Empty;
-            mensajes.Clear();
-            mensajes.AddRange(ChatService.Messages);
+
+            mensajes = await EduAiHistoryService.ObtenerConversacionAsync(UsuarioAutenticado.Id);
             await ScrollToBottom();
         }
     }

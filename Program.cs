@@ -21,6 +21,7 @@ builder.Services.AddScoped<TareaEstudianteService>();
 builder.Services.AddScoped<AsistenciaService>();
 builder.Services.AddScoped<EduAiContextMaestroBuilder>();
 builder.Services.AddScoped<EduAiContextEstudianteBuilder>();
+builder.Services.AddScoped<EduAiHistoryService>();
 
 builder.Services.AddHttpClient();
 

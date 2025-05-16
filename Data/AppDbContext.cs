@@ -13,6 +13,8 @@ namespace EduSoft.Data
         public DbSet<HorarioClase> HorariosClases { get; set; }
         public DbSet<EntregaTareaEstudiante> EntregasTareasEstudiantes { get; set; }
         public DbSet<AsistenciaEstudiante> AsistenciasEstudiantes { get; set; }
+        public DbSet<ConversacionIA> ConversacionesIA { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,6 +57,11 @@ namespace EduSoft.Data
                 .HasOne(a => a.Usuario)
                 .WithMany()
                 .HasForeignKey(a => a.UsuarioId);
+
+            modelBuilder.Entity<ConversacionIA>()
+                .HasOne(c => c.Usuario)
+                .WithMany()
+                .HasForeignKey(c => c.UsuarioId);
         }
 
     }
@@ -178,6 +185,17 @@ namespace EduSoft.Data
         public int TareaId { get; set; }
         public string TituloTarea { get; set; } = string.Empty;
         public decimal? Nota { get; set; }
+    }
+
+    public class ConversacionIA
+    {
+        public int Id { get; set; }
+        public int UsuarioId { get; set; }
+        public string Rol { get; set; } = "";
+        public string Contenido { get; set; } = "";
+        public DateTime Fecha { get; set; } = DateTime.Now;
+
+        public Usuario Usuario { get; set; } = null!;
     }
 
 
