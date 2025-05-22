@@ -4,9 +4,9 @@
 @inject ClaseService ClaseService
 @layout LayoutMaestro
 
-<h2 class="text-center text-primary mb-4"><i class="fas fa-graduation-cap"></i> Calificaciones por Clase</h2>
+<h2 class="page-title"><i class="fas fa-graduation-cap"></i> Calificaciones por Clase</h2>
 
-<div class="mb-3">
+<div class="form-group">
     <label for="claseSelect" class="form-label">Selecciona una clase:</label>
     <select id="claseSelect" class="form-select" @onchange="OnClaseChanged">
         <option value="">-- Seleccionar --</option>
@@ -19,41 +19,147 @@
 
 @if (NotasEstudiantes != null && NotasEstudiantes.Any())
 {
-    <table class="table table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Estudiante</th>
-                @foreach (var tarea in Tareas)
-                {
-                    <th>@tarea.Titulo</th>
-                }
-                <th>Promedio</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var notaEst in NotasEstudiantes)
-            {
+    <div class="table-container">
+        <table class="table-notas">
+            <thead>
                 <tr>
-                    <td>@notaEst.NombreEstudiante</td>
+                    <th>Estudiante</th>
                     @foreach (var tarea in Tareas)
                     {
-                        var nota = notaEst.Notas.FirstOrDefault(n => n.TareaId == tarea.Id)?.Nota;
-                        <td>@(nota.HasValue ? nota.Value.ToString("F2") : "N/A")</td>
+                        <th>@tarea.Titulo</th>
                     }
+                    <th>Promedio</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var notaEst in NotasEstudiantes)
+                {
+                    <tr>
+                        <td>@notaEst.NombreEstudiante</td>
+                        @foreach (var tarea in Tareas)
+                        {
+                            var nota = notaEst.Notas.FirstOrDefault(n => n.TareaId == tarea.Id)?.Nota;
+                            <td>@(nota.HasValue? nota.Value.ToString("F2") : "N/A")</td>
+                        }
                     <td>
                         @(notaEst.Notas.Any(n => n.Nota.HasValue)
-                            ? notaEst.Notas.Where(n => n.Nota.HasValue).Average(n => n.Nota!.Value).ToString("F2")
-                            : "N/A")
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                            ? notaEst.Notas.Where(n => n.Nota.HasValue).Average(n => n.Nota!.Value).ToString("F2")
+                                            : "N/A")
+                </td>
+            </tr>
+                        }
+            </tbody>
+        </table>
+    </div>
 }
 else if (ClaseSeleccionadaId != null)
 {
-    <p>No hay calificaciones disponibles para esta clase.</p>
+    <p class="no-data">No hay calificaciones disponibles para esta clase.</p>
 }
+
+<style>
+    .page-title {
+        text-align: center;
+        color: #2e7d32; 
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+
+    .form-group {
+        max-width: 400px;
+        margin: 0 auto 30px auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #388e3c; 
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid black; 
+        font-size: 1rem;
+        color: black; 
+        background-color: white !important; 
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+     .form-select:hover,
+     .form-select:focus {
+          border-color: #333; 
+          outline: none;
+          background-color: #f0f0f0; 
+      }
+
+
+    .table-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        overflow-x: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15); 
+        background-color: white;
+        padding: 20px;
+    }
+
+    .table-notas {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        .table-notas thead tr {
+            background-color: #2e7d32; 
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 12px;
+        }
+
+        .table-notas thead th {
+            padding: 12px 20px;
+            text-align: left;
+        }
+
+        .table-notas tbody tr {
+            background-color: #e8f5e9; 
+            border-radius: 12px;
+            transition: background-color 0.2s ease;
+        }
+
+            .table-notas tbody tr:hover {
+                background-color: #c8e6c9; 
+                cursor: default;
+            }
+
+        .table-notas tbody td {
+            padding: 12px 20px;
+            vertical-align: middle;
+            color: #2e7d32; 
+            font-weight: 500;
+            border-top: 1px solid #a5d6a7; 
+        }
+
+            .table-notas tbody td:first-child {
+                font-weight: 700;
+                color: #388e3c; 
+
+    .no-data {
+        text-align: center;
+        font-style: italic;
+        color: #4caf50; /* verde */
+        margin-top: 40px;
+        font-size: 1.1rem;
+    }
+</style>
 
 @code {
     private List<Clase> Clases = new();
@@ -73,6 +179,12 @@ else if (ClaseSeleccionadaId != null)
             ClaseSeleccionadaId = claseId;
             Tareas = await ClaseService.ObtenerTareasPorClaseAsync(claseId);
             NotasEstudiantes = await ClaseService.ObtenerNotasPorClaseAsync(claseId);
+        }
+        else
+        {
+            ClaseSeleccionadaId = null;
+            Tareas.Clear();
+            NotasEstudiantes.Clear();
         }
     }
 }

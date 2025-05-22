@@ -16,8 +16,8 @@
         <p>
             <i class="fas fa-clock"></i>
             Horario: @(HorarioClaseSeleccionado != null
-            ? $"{HorarioClaseSeleccionado.HoraInicio:hh\\:mm} - {HorarioClaseSeleccionado.HoraFin:hh\\:mm} en {HorarioClaseSeleccionado.Aula}"
-            : "No asignado")
+                        ? $"{HorarioClaseSeleccionado.HoraInicio:hh\\:mm} - {HorarioClaseSeleccionado.HoraFin:hh\\:mm} en {HorarioClaseSeleccionado.Aula}"
+                        : "No asignado")
         </p>
     </div>
 </div>
@@ -40,7 +40,12 @@
         }
     </div>
 
-    <h2><i class="fas fa-tasks"></i> Tareas</h2>
+    <div class="tareas-header">
+        <h2><i class="fas fa-tasks"></i> Tareas</h2>
+        <button class="btn-add-tarea" @onclick="() => MostrarModal = true">
+            <i class="fas fa-plus"></i> Nueva
+        </button>
+    </div>
 
     @if (Tareas.Count > 0)
     {
@@ -65,10 +70,6 @@
     {
         <p class="no-data">No hay tareas asignadas.</p>
     }
-
-    <button class="btn-fab" @onclick="() => MostrarModal = true">
-        <i class="fas fa-plus"></i>
-    </button>
 </div>
 
 @if (MostrarModal)
@@ -111,6 +112,31 @@
         margin: auto;
     }
 
+    .tareas-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .btn-add-tarea {
+        background: #43a047;
+        color: white;
+        border: none;
+        padding: 8px 24px; 
+        font-size: 1rem;
+        border-radius: 9999px; 
+        cursor: pointer;
+        display: inline-flex; 
+        align-items: center;
+        gap: 8px; 
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-add-tarea:hover {
+            background: #388e3c;
+        }
+
     .tarea-card {
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -147,25 +173,6 @@
         margin-left: 20px;
         white-space: nowrap;
     }
-
-    .btn-fab {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        background: #43a047;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 56px;
-        height: 56px;
-        font-size: 24px;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-        .btn-fab:hover {
-            background: #388e3c;
-        }
 
     .students-list {
         display: flex;
@@ -250,6 +257,13 @@
         font-size: 0.75rem;
         margin-left: 10px;
     }
+
+    .checkbox-examen {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
 </style>
 
 @code {
@@ -268,7 +282,6 @@
     private byte[]? ContenidoArchivo;
     private bool MostrarModal = false;
     private bool EsExamen = false;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -303,7 +316,7 @@
             link: NuevoLink,
             archivoNombre: NombreArchivo,
             archivoContenido: ContenidoArchivo,
-            esExamen: EsExamen // ✅ nuevo parámetro
+            esExamen: EsExamen
         );
 
         if (exito)
@@ -315,7 +328,7 @@
             NuevoLink = null;
             NombreArchivo = null;
             ContenidoArchivo = null;
-            EsExamen = false; // ✅ reseteamos
+            EsExamen = false;
         }
     }
 

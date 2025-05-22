@@ -8,7 +8,7 @@
 @inject AsistenciaService AsistenciaService
 @inject NavigationManager Navigation
 
-<h2 class="titulo"><i class="fas fa-clipboard-check"></i> Registro de Asistencia</h2>
+<h2 class="titulo-verde"><i class="fas fa-clipboard-check"></i> Registro de Asistencia</h2>
 
 @if (UsuarioAutenticado == null)
 {
@@ -42,10 +42,10 @@ else
     {
         <div class="tabla-asistencia">
             <table class="table table-bordered table-striped mt-4">
-                <thead class="table-primary">
+                <thead class="table-success">
                     <tr>
                         <th><i class="fas fa-user"></i> Estudiante</th>
-                        <th><i class="fas fa-check-circle"></i> Asistencía</th>
+                        <th><i class="fas fa-check-circle"></i> Asistencia</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,14 +64,12 @@ else
             <button class="btn btn-primary mt-3" @onclick="GuardarAsistencia">
                 <i class="fas fa-save"></i> Guardar Asistencia
             </button>
-            @if (Estudiantes.Count > 0)
-            {
-                <div class="resumen-asistencia">
-                    <p><i class="fas fa-users"></i> Total estudiantes: <strong>@Estudiantes.Count</strong></p>
-                    <p><i class="fas fa-user-check text-green"></i> Asistieron: <strong>@TotalAsistieron</strong></p>
-                    <p><i class="fas fa-user-times text-red"></i> Faltaron: <strong>@TotalFaltaron</strong></p>
-                </div>
-            }
+
+            <div class="resumen-asistencia">
+                <p><i class="fas fa-users"></i> Total estudiantes: <strong>@Estudiantes.Count</strong></p>
+                <p><i class="fas fa-user-check text-green"></i> Asistieron: <strong>@TotalAsistieron</strong></p>
+                <p><i class="fas fa-user-times text-red"></i> Faltaron: <strong>@TotalFaltaron</strong></p>
+            </div>
         </div>
     }
 }
@@ -97,17 +95,18 @@ else
 }
 
 <style>
-    .titulo {
+    .titulo-verde {
         text-align: center;
-        color: #2c3e50;
+        color: #2e7d32;
         margin-bottom: 25px;
         font-size: 2rem;
+        font-weight: 600;
     }
 
     .asistencia-form {
         max-width: 700px;
         margin: auto;
-        background: #ecf0f1;
+        background: #f1f8e9;
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -131,12 +130,15 @@ else
 
     .resumen-asistencia {
         margin-top: 20px;
-        background-color: #f1f8e9;
+        background-color: #e8f5e9;
         padding: 15px;
-        border: 1px solid #c5e1a5;
+        border: 1px solid #a5d6a7;
         border-radius: 10px;
         font-size: 1rem;
         color: #33691e;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .text-green {
@@ -157,7 +159,6 @@ else
     private bool MostrarModal = false;
     private int TotalAsistieron => Estudiantes.Count(e => e.Asistio);
     private int TotalFaltaron => Estudiantes.Count(e => !e.Asistio);
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -180,10 +181,10 @@ else
             {
                 var reg = registros.FirstOrDefault(r => r.UsuarioId == e.Id);
                 return new AsistenciaRegistro
-                    {
-                        Usuario = e,
-                        Asistio = reg?.Asistio ?? false
-                    };
+                {
+                    Usuario = e,
+                    Asistio = reg?.Asistio ?? false
+                };
             }).ToList();
     }
 
