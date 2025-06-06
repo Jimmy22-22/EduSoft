@@ -35,13 +35,15 @@ namespace EduSoft.Services
             var clases = await _context.UsuarioClases
                 .Where(uc => uc.UsuarioId == estudianteId)
                 .Include(uc => uc.Clase)
-                .ThenInclude(c => c.Horarios)
+                    .ThenInclude(c => c.Horarios)
+                .Include(uc => uc.Clase)
+                    .ThenInclude(c => c.Tareas)
                 .ToListAsync();
 
-            var tareasEntregadas = await _context.EntregasTareasEstudiantes
+            var entregas = await _context.EntregasTareasEstudiantes
                 .Where(e => e.UsuarioId == estudianteId)
                 .Include(e => e.Tarea)
-                .ThenInclude(t => t.Clase)
+                    .ThenInclude(t => t.Clase)
                 .ToListAsync();
 
             var asistencias = await _context.AsistenciasEstudiantes
@@ -69,15 +71,46 @@ namespace EduSoft.Services
                 }
             }
 
-            sb.AppendLine("\n📝 Tareas entregadas:");
-            foreach (var entrega in tareasEntregadas.OrderByDescending(e => e.FechaEntrega))
+            sb.AppendLine("\n✅ Tareas y exámenes entregados:");
+            foreach (var entrega in entregas.OrderByDescending(e => e.FechaEntrega))
             {
-                sb.AppendLine($"- {entrega.Tarea.Titulo} ({entrega.Tarea.Clase.Nombre})");
+                string tipo = entrega.Tarea.EsExamen ? "Examen" : "Tarea";
+                sb.AppendLine($"- {tipo}: {entrega.Tarea.Titulo} ({entrega.Tarea.Clase.Nombre})");
                 sb.AppendLine($"  📅 Entregada: {entrega.FechaEntrega:dd/MM/yyyy} | Nota: {(entrega.Nota.HasValue ? entrega.Nota.Value.ToString("0.0") : "N/A")}");
                 if (!string.IsNullOrWhiteSpace(entrega.Retroalimentacion))
                 {
                     sb.AppendLine($"  💬 Retroalimentación: {entrega.Retroalimentacion}");
                 }
+            }
+
+            sb.AppendLine("\n⌛ Pendientes por entregar:");
+            var tareasEntregadasIds = entregas.Select(e => e.TareaId).ToHashSet();
+
+            var tareasPendientes = clases
+                .SelectMany(uc => uc.Clase.Tareas)
+                .Where(t => !tareasEntregadasIds.Contains(t.Id) && t.FechaEntrega >= DateTime.Today)
+                .OrderBy(t => t.FechaEntrega)
+                .ToList();
+
+            foreach (var tarea in tareasPendientes)
+            {
+                string tipo = tarea.EsExamen ? "Examen" : "Tarea";
+                sb.AppendLine($"- {tipo}: {tarea.Titulo} ({tarea.Clase.Nombre})");
+                sb.AppendLine($"  📅 Vence: {tarea.FechaEntrega:dd/MM/yyyy}");
+            }
+
+            sb.AppendLine("\n⚠️ Tareas y exámenes vencidos no entregados:");
+            var tareasVencidas = clases
+                .SelectMany(uc => uc.Clase.Tareas)
+                .Where(t => !tareasEntregadasIds.Contains(t.Id) && t.FechaEntrega < DateTime.Today)
+                .OrderBy(t => t.FechaEntrega)
+                .ToList();
+
+            foreach (var tarea in tareasVencidas)
+            {
+                string tipo = tarea.EsExamen ? "Examen" : "Tarea";
+                sb.AppendLine($"- {tipo}: {tarea.Titulo} ({tarea.Clase.Nombre})");
+                sb.AppendLine($"  ❗ Venció: {tarea.FechaEntrega:dd/MM/yyyy}");
             }
 
             sb.AppendLine("\n🗓️ Asistencias:");
@@ -89,4 +122,4 @@ namespace EduSoft.Services
             return sb.ToString();
         }
     }
-}
+    }

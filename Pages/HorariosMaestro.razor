@@ -6,6 +6,7 @@
 @inject HorarioService HorarioService
 @inject AuthService AuthService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <h2 class="schedule-title"><i class="fas fa-calendar-alt"></i> Horarios de Clases</h2>
 
@@ -407,6 +408,12 @@ else
 
     private async Task GuardarHorario()
     {
+        if ((HoraFin - HoraInicio).TotalMinutes < 30)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "La duración del horario debe ser de al menos 30 minutos.");
+            return;
+        }
+
         if (ModoEdicion)
         {
             await HorarioService.EditarHorarioAsync(HorarioIdEditar, ClaseSeleccionadaId, FechaHorario, HoraInicio, HoraFin, Aula);
@@ -415,10 +422,12 @@ else
         {
             await HorarioService.AgregarHorarioAsync(ClaseSeleccionadaId, FechaHorario, HoraInicio, HoraFin, Aula, UsuarioAutenticado.Nombre);
         }
+
         await CargarDatos();
         MostrarModal = false;
         StateHasChanged();
     }
+
     private async Task EliminarHorario(int id)
     {
         await HorarioService.EliminarHorarioAsync(id);

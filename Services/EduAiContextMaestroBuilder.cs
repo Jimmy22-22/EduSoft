@@ -32,58 +32,87 @@ namespace EduSoft.Services
         public async Task<string> ConstruirContextoMaestroAsync(string nombreMaestro)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Datos del maestro: {nombreMaestro}\n");
+            sb.AppendLine($"📘 Maestro: {nombreMaestro}\n");
 
             // Clases creadas por el maestro
             var clases = await _context.Clases
                 .Where(c => c.Profesor == nombreMaestro)
+                .Include(c => c.Tareas)
                 .ToListAsync();
 
-            sb.AppendLine("Clases creadas:");
+            sb.AppendLine("📚 Clases creadas:");
             foreach (var clase in clases)
                 sb.AppendLine($"- {clase.Nombre} (Código: {clase.CodigoClase})");
 
-            // Tareas asignadas por el maestro
+            // Tareas asignadas
             var tareas = await _context.Tareas
                 .Where(t => t.Usuario.Nombre == nombreMaestro)
                 .Include(t => t.Clase)
                 .ToListAsync();
 
-            sb.AppendLine("\nTareas asignadas:");
-            foreach (var tarea in tareas)
+            sb.AppendLine("\n📝 Tareas y exámenes asignados:");
+            foreach (var tarea in tareas.OrderBy(t => t.FechaEntrega))
             {
                 var tipo = tarea.EsExamen ? "[Examen]" : "[Tarea]";
                 sb.AppendLine($"- {tipo} {tarea.Titulo} | Clase: {tarea.Clase.Nombre} | Entrega: {tarea.FechaEntrega:dd/MM/yyyy}");
             }
 
-            // Entregas realizadas por estudiantes en tareas del maestro
+            // Entregas realizadas por estudiantes
             var entregas = await _context.EntregasTareasEstudiantes
                 .Include(e => e.Tarea)
+                    .ThenInclude(t => t.Clase)
                 .Include(e => e.Usuario)
                 .Where(e => e.Tarea.Usuario.Nombre == nombreMaestro)
                 .ToListAsync();
 
-            sb.AppendLine("\nEntregas de estudiantes:");
-            foreach (var entrega in entregas)
+            sb.AppendLine("\n✅ Entregas de estudiantes:");
+            foreach (var entrega in entregas.OrderByDescending(e => e.FechaEntrega))
             {
-                sb.AppendLine($"- {entrega.Usuario.Nombre} entregó '{entrega.Tarea.Titulo}' el {entrega.FechaEntrega:dd/MM/yyyy} | Nota: {entrega.Nota?.ToString("0.0") ?? "N/A"}");
+                var tipo = entrega.Tarea.EsExamen ? "el examen" : "la tarea";
+                sb.AppendLine($"- {entrega.Usuario.Nombre} entregó {tipo} '{entrega.Tarea.Titulo}' de {entrega.Tarea.Clase.Nombre} el {entrega.FechaEntrega:dd/MM/yyyy} | Nota: {(entrega.Nota.HasValue ? entrega.Nota.Value.ToString("0.0") : "N/A")}");
             }
 
-            // Asistencias registradas en clases del maestro
+            // Estudiantes que no han entregado
+            var entregasPorTarea = entregas
+                .GroupBy(e => e.TareaId)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.UsuarioId).ToHashSet());
+
+            sb.AppendLine("\n⚠️ Estudiantes que no han entregado:");
+            foreach (var clase in clases)
+            {
+                var estudiantes = await _context.UsuarioClases
+                    .Where(uc => uc.ClaseId == clase.Id)
+                    .Select(uc => uc.Usuario)
+                    .ToListAsync();
+
+                foreach (var tarea in clase.Tareas)
+                {
+                    var tipo = tarea.EsExamen ? "Examen" : "Tarea";
+                    var entregados = entregasPorTarea.ContainsKey(tarea.Id) ? entregasPorTarea[tarea.Id] : new HashSet<int>();
+
+                    var noEntregaron = estudiantes.Where(e => !entregados.Contains(e.Id)).ToList();
+                    foreach (var e in noEntregaron)
+                    {
+                        sb.AppendLine($"- {e.Nombre} no entregó {tipo} '{tarea.Titulo}' de {clase.Nombre}");
+                    }
+                }
+            }
+
+            // Asistencias
             var asistencias = await _context.AsistenciasEstudiantes
                 .Include(a => a.Clase)
                 .Where(a => a.Clase.Profesor == nombreMaestro)
                 .ToListAsync();
 
-            sb.AppendLine("\nResumen de asistencias registradas:");
+            sb.AppendLine("\n🗓️ Resumen de asistencias:");
             foreach (var grupo in asistencias.GroupBy(a => a.Clase.Nombre))
             {
                 var total = grupo.Count();
                 var presentes = grupo.Count(a => a.Asistio);
-                sb.AppendLine($"- {grupo.Key}: {presentes}/{total} asistencias");
+                sb.AppendLine($"- {grupo.Key}: {presentes}/{total} asistencias registradas");
             }
 
-            // Horarios asignados al maestro
+            // Horarios
             var horarios = await _context.HorariosClases
                 .Include(h => h.Clase)
                 .Where(h => h.Profesor == nombreMaestro)
@@ -91,7 +120,7 @@ namespace EduSoft.Services
                 .ThenBy(h => h.HoraInicio)
                 .ToListAsync();
 
-            sb.AppendLine("\nHorarios de clase:");
+            sb.AppendLine("\n📅 Horarios de clases:");
             foreach (var h in horarios)
             {
                 sb.AppendLine($"- {h.Fecha:dd/MM/yyyy} | {h.Clase.Nombre} | {h.HoraInicio:hh\\:mm} - {h.HoraFin:hh\\:mm} | Aula: {h.Aula}");
@@ -100,4 +129,4 @@ namespace EduSoft.Services
             return sb.ToString();
         }
     }
-}
+    }
