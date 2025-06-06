@@ -28,9 +28,6 @@ namespace EduSoft.Services
         /// <summary>
         /// Crea una nueva clase con un código único y asigna el nombre del profesor.
         /// </summary>
-        /// <param name="nombre">Nombre de la clase.</param>
-        /// <param name="profesor">Nombre del profesor.</param>
-        /// <returns>True si la clase fue creada correctamente.</returns>
         public async Task<bool> CrearClase(string nombre, string profesor)
         {
             string codigoClase = GenerarCodigoUnico();
@@ -50,26 +47,17 @@ namespace EduSoft.Services
         /// <summary>
         /// Permite que un usuario se una a una clase usando un código.
         /// </summary>
-        /// <param name="usuarioId">ID del usuario.</param>
-        /// <param name="codigoClase">Código único de la clase.</param>
-        /// <returns>True si el usuario se unió exitosamente, false si ya estaba inscrito o no existe la clase.</returns>
         public async Task<bool> UnirseAClase(int usuarioId, string codigoClase)
         {
             var clase = await _context.Clases.FirstOrDefaultAsync(c => c.CodigoClase == codigoClase);
             if (clase == null)
                 return false;
 
-            bool yaInscrito = await _context.UsuarioClases
-                .AnyAsync(uc => uc.UsuarioId == usuarioId && uc.ClaseId == clase.Id);
-
+            bool yaInscrito = await _context.UsuarioClases.AnyAsync(uc => uc.UsuarioId == usuarioId && uc.ClaseId == clase.Id);
             if (yaInscrito)
                 return false;
 
-            var usuarioClase = new UsuarioClase
-            {
-                UsuarioId = usuarioId,
-                ClaseId = clase.Id
-            };
+            var usuarioClase = new UsuarioClase { UsuarioId = usuarioId, ClaseId = clase.Id };
 
             _context.UsuarioClases.Add(usuarioClase);
             await _context.SaveChangesAsync();
@@ -79,8 +67,6 @@ namespace EduSoft.Services
         /// <summary>
         /// Obtiene una clase por su ID.
         /// </summary>
-        /// <param name="claseId">ID de la clase.</param>
-        /// <returns>La clase encontrada o null si no existe.</returns>
         public async Task<Clase?> GetClasePorIdAsync(int claseId)
         {
             return await _context.Clases.FirstOrDefaultAsync(c => c.Id == claseId);
@@ -89,8 +75,6 @@ namespace EduSoft.Services
         /// <summary>
         /// Obtiene la lista de estudiantes inscritos en una clase.
         /// </summary>
-        /// <param name="claseId">ID de la clase.</param>
-        /// <returns>Lista de estudiantes inscritos.</returns>
         public async Task<List<Usuario>> GetEstudiantesPorClaseAsync(int claseId)
         {
             return await _context.UsuarioClases
@@ -102,8 +86,6 @@ namespace EduSoft.Services
         /// <summary>
         /// Obtiene la lista de tareas asociadas a una clase ordenadas por fecha de entrega.
         /// </summary>
-        /// <param name="claseId">ID de la clase.</param>
-        /// <returns>Lista de tareas.</returns>
         public async Task<List<Tarea>> GetTareasPorClaseAsync(int claseId)
         {
             return await _context.Tareas
@@ -113,13 +95,8 @@ namespace EduSoft.Services
         }
 
         /// <summary>
-        /// Crea una tarea para una clase específica y asigna un usuario responsable.
+        /// Crea una tarea para una clase específica.
         /// </summary>
-        /// <param name="claseId">ID de la clase.</param>
-        /// <param name="descripcion">Descripción de la tarea.</param>
-        /// <param name="fechaEntrega">Fecha de entrega de la tarea.</param>
-        /// <param name="usuarioId">ID del usuario que la crea.</param>
-        /// <returns>True si la tarea fue creada correctamente.</returns>
         public async Task<bool> CrearTarea(int claseId, string titulo, string descripcion, DateTime fechaEntrega, int usuarioId, string? link, string? archivoNombre, byte[]? archivoContenido, bool esExamen)
         {
             var tarea = new Tarea
@@ -141,10 +118,8 @@ namespace EduSoft.Services
         }
 
         /// <summary>
-        /// Obtiene el primer horario asignado a una clase, ordenado por hora de inicio.
+        /// Obtiene el primer horario asignado a una clase.
         /// </summary>
-        /// <param name="claseId">ID de la clase.</param>
-        /// <returns>Un objeto <see cref="HorarioClase"/> o null si no existe.</returns>
         public async Task<HorarioClase?> GetHorarioPorClaseAsync(int claseId)
         {
             return await _context.HorariosClases
@@ -154,32 +129,26 @@ namespace EduSoft.Services
         }
 
         /// <summary>
-        /// Genera un código alfanumérico único de 6 caracteres para una nueva clase.
+        /// Genera un código alfanumérico único de 6 caracteres para una clase.
         /// </summary>
-        /// <returns>Un string que representa el código generado.</returns>
         private string GenerarCodigoUnico()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, 6)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return new string(Enumerable.Repeat(chars, 6).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         /// <summary>
-        /// Obtiene una tarea por su ID con todos sus datos (título, descripción, enlace y archivo).
+        /// Obtiene una tarea por su ID.
         /// </summary>
-        /// <param name="tareaId">ID de la tarea.</param>
-        /// <returns>La tarea encontrada o null si no existe.</returns>
         public async Task<Tarea?> GetTareaPorIdAsync(int tareaId)
         {
             return await _context.Tareas.FirstOrDefaultAsync(t => t.Id == tareaId);
         }
 
         /// <summary>
-        /// Obtiene todas las clases creadas por un profesor específico (por su nombre).
+        /// Obtiene todas las clases de un profesor.
         /// </summary>
-        /// <param name="nombreProfesor">Nombre del profesor.</param>
-        /// <returns>Lista de clases creadas por ese profesor.</returns>
         public async Task<List<Clase>> GetClasesPorProfesorAsync(string nombreProfesor)
         {
             return await _context.Clases
@@ -188,34 +157,26 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene todas las notas de los estudiantes en una clase.
+        /// </summary>
         public async Task<List<NotaEstudianteDto>> ObtenerNotasPorClaseAsync(int claseId)
         {
-            var tareas = await _context.Tareas
-                .Where(t => t.ClaseId == claseId)
-                .ToListAsync();
-
-            var estudiantes = await _context.UsuarioClases
-                .Where(uc => uc.ClaseId == claseId)
-                .Select(uc => uc.Usuario)
-                .ToListAsync();
-
-            var notas = await _context.EntregasTareasEstudiantes
-                .Where(e => tareas.Select(t => t.Id).Contains(e.TareaId))
-                .ToListAsync();
+            var tareas = await _context.Tareas.Where(t => t.ClaseId == claseId).ToListAsync();
+            var estudiantes = await _context.UsuarioClases.Where(uc => uc.ClaseId == claseId).Select(uc => uc.Usuario).ToListAsync();
+            var notas = await _context.EntregasTareasEstudiantes.Where(e => tareas.Select(t => t.Id).Contains(e.TareaId)).ToListAsync();
 
             var resultado = new List<NotaEstudianteDto>();
 
             foreach (var estudiante in estudiantes)
             {
-                var notasEstudiante = notas
-                    .Where(n => n.UsuarioId == estudiante.Id)
+                var notasEstudiante = notas.Where(n => n.UsuarioId == estudiante.Id)
                     .Select(n => new NotaTareaDto
                     {
                         TareaId = n.TareaId,
                         TituloTarea = tareas.First(t => t.Id == n.TareaId).Titulo,
                         Nota = n.Nota
-                    })
-                    .ToList();
+                    }).ToList();
 
                 resultado.Add(new NotaEstudianteDto
                 {
@@ -228,13 +189,17 @@ namespace EduSoft.Services
             return resultado;
         }
 
+        /// <summary>
+        /// Obtiene todas las clases disponibles.
+        /// </summary>
         public async Task<List<Clase>> ObtenerClasesAsync()
         {
-            return await _context.Clases
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
+            return await _context.Clases.OrderBy(c => c.Nombre).ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene las tareas de una clase.
+        /// </summary>
         public async Task<List<Tarea>> ObtenerTareasPorClaseAsync(int claseId)
         {
             return await _context.Tareas
@@ -243,17 +208,22 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Actualiza la nota de una entrega.
+        /// </summary>
         public async Task ActualizarNotaAsync(EntregaTareaEstudiante entrega)
         {
-            var entregaExistente = await _context.EntregasTareasEstudiantes
-                .FirstOrDefaultAsync(e => e.Id == entrega.Id);
-
+            var entregaExistente = await _context.EntregasTareasEstudiantes.FirstOrDefaultAsync(e => e.Id == entrega.Id);
             if (entregaExistente != null)
             {
                 entregaExistente.Nota = entrega.Nota;
                 await _context.SaveChangesAsync();
             }
         }
+
+        /// <summary>
+        /// Obtiene todas las entregas asociadas a una tarea.
+        /// </summary>
         public async Task<List<EntregaTareaEstudiante>> ObtenerEntregasPorTareaAsync(int tareaId)
         {
             return await _context.EntregasTareasEstudiantes
@@ -262,6 +232,9 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene las tareas de una clase que no son exámenes.
+        /// </summary>
         public async Task<List<Tarea>> ObtenerTareasPorClaseSinExamenAsync(int claseId)
         {
             return await _context.Tareas
@@ -270,6 +243,9 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene los exámenes de una clase.
+        /// </summary>
         public async Task<List<Tarea>> ObtenerExamenesPorClaseAsync(int claseId)
         {
             return await _context.Tareas
@@ -278,6 +254,9 @@ namespace EduSoft.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Guarda la nota y retroalimentación de una entrega.
+        /// </summary>
         public async Task GuardarNotaYRetroalimentacion(int entregaId, decimal? nota, string? retroalimentacion)
         {
             var entrega = await _context.EntregasTareasEstudiantes.FindAsync(entregaId);
@@ -289,17 +268,13 @@ namespace EduSoft.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene las notas agrupadas por clase de un estudiante.
+        /// </summary>
         public async Task<List<NotasClaseDto>> ObtenerNotasPorEstudianteAsync(int estudianteId)
         {
-            var clases = await _context.UsuarioClases
-                .Where(uc => uc.UsuarioId == estudianteId)
-                .Include(uc => uc.Clase)
-                .ToListAsync();
-
-            var entregas = await _context.EntregasTareasEstudiantes
-                .Where(e => e.UsuarioId == estudianteId)
-                .ToListAsync();
-
+            var clases = await _context.UsuarioClases.Where(uc => uc.UsuarioId == estudianteId).Include(uc => uc.Clase).ToListAsync();
+            var entregas = await _context.EntregasTareasEstudiantes.Where(e => e.UsuarioId == estudianteId).ToListAsync();
             var tareas = await _context.Tareas.ToListAsync();
 
             var resultado = new List<NotasClaseDto>();
@@ -327,6 +302,9 @@ namespace EduSoft.Services
             return resultado;
         }
 
+        /// <summary>
+        /// Obtiene las clases en las que está inscrito un estudiante.
+        /// </summary>
         public async Task<List<Clase>> GetClasesPorEstudianteAsync(int usuarioId)
         {
             return await _context.UsuarioClases

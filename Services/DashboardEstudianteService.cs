@@ -79,6 +79,8 @@ namespace EduSoft.Services
         /// <summary>
         /// Obtiene notificaciones relacionadas a tareas próximas, calificaciones, asistencias y nuevos horarios.
         /// </summary>
+        /// <param name="estudianteId">ID del estudiante.</param>
+        /// <returns>Lista de mensajes de notificación personalizados.</returns>
         public async Task<List<string>> ObtenerNotificacionesAsync(int estudianteId)
         {
             using var context = _contextFactory.CreateDbContext();

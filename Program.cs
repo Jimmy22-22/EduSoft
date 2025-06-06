@@ -23,6 +23,8 @@ builder.Services.AddScoped<EduAiContextMaestroBuilder>();
 builder.Services.AddScoped<EduAiContextEstudianteBuilder>();
 builder.Services.AddScoped<EduAiHistoryService>();
 
+builder.Services.AddScoped<TestSuiteService>();
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>

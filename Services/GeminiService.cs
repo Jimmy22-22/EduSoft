@@ -4,18 +4,36 @@ using EduSoft.Data;
 
 namespace CHATBOT.Services
 {
+    /// <summary>
+    /// Servicio que se comunica con la API de Gemini de Google para generar contenido
+    /// basado en mensajes del usuario, incluyendo instrucciones internas y contexto oculto.
+    /// </summary>
     public class GeminiService
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey = "AIzaSyCXwvt-no3MiISuYmlWhGlpiLZhv5bwPTE";
 
+        /// <summary>
+        /// Lista de mensajes intercambiados con la IA, incluyendo el historial de conversación.
+        /// </summary>
         public List<ChatMessage> Messages { get; } = new();
 
+        /// <summary>
+        /// Constructor del servicio que inicializa el cliente HTTP para llamadas a la API de Gemini.
+        /// </summary>
+        /// <param name="httpClient">Instancia de <see cref="HttpClient"/> inyectada para realizar peticiones.</param>
         public GeminiService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Envía un mensaje a la API de Gemini junto con instrucciones internas y opcionalmente un contexto oculto.
+        /// </summary>
+        /// <param name="userMessage">Mensaje escrito por el usuario.</param>
+        /// <param name="hiddenContext">Contexto interno opcional que no debe mencionarse explícitamente en la respuesta.</param>
+        /// <param name="esPrimeraInteraccion">Indica si es el primer mensaje de la conversación para dar un saludo inicial.</param>
+        /// <returns>Respuesta generada por Gemini como texto plano.</returns>
         public async Task<string> SendMessageAsync(string userMessage, string? hiddenContext = null, bool esPrimeraInteraccion = false)
         {
             Messages.Add(new ChatMessage { Role = "user", Content = userMessage });
@@ -29,9 +47,9 @@ No debes decir frases como: 'basado en la información proporcionada', 'según l
 Mantén siempre un tono profesional, respetuoso y útil.";
 
             var parts = new List<object>
-    {
-        new { text = systemPrompt }
-    };
+            {
+                new { text = systemPrompt }
+            };
 
             if (!string.IsNullOrWhiteSpace(hiddenContext))
             {
@@ -44,11 +62,11 @@ Mantén siempre un tono profesional, respetuoso y útil.";
             {
                 contents = new[]
                 {
-            new
-            {
-                parts = parts.ToArray()
-            }
-        }
+                    new
+                    {
+                        parts = parts.ToArray()
+                    }
+                }
             };
 
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key={_apiKey}";

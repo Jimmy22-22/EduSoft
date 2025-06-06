@@ -77,6 +77,12 @@ namespace EduSoft.Services
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
+        /// <summary>
+        /// Obtiene una lista de notificaciones relevantes para el maestro,
+        /// como entregas recientes de tareas o exámenes por parte de los estudiantes.
+        /// </summary>
+        /// <param name="nombreMaestro">Nombre del maestro.</param>
+        /// <returns>Lista de notificaciones como cadenas de texto.</returns>
         public async Task<List<string>> ObtenerNotificacionesMaestroAsync(string nombreMaestro)
         {
             using var context = _contextFactory.CreateDbContext();

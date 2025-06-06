@@ -4,15 +4,29 @@ using System.Text;
 
 namespace EduSoft.Services
 {
+    /// <summary>
+    /// Servicio que construye un contexto textual completo para un estudiante,
+    /// utilizado por Edu AI para responder con base en los datos académicos reales del usuario.
+    /// </summary>
     public class EduAiContextEstudianteBuilder
     {
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Constructor que inyecta el contexto de base de datos.
+        /// </summary>
+        /// <param name="context">Instancia de <see cref="AppDbContext"/> para acceder a los datos.</param>
         public EduAiContextEstudianteBuilder(AppDbContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Construye un contexto personalizado para un estudiante específico, incluyendo
+        /// sus clases inscritas, horarios, tareas entregadas, notas y asistencias.
+        /// </summary>
+        /// <param name="estudianteId">ID del estudiante.</param>
+        /// <returns>Un string descriptivo con toda la información académica relevante del estudiante.</returns>
         public async Task<string> ConstruirContextoEstudianteAsync(int estudianteId)
         {
             var usuario = await _context.Usuarios.FindAsync(estudianteId);

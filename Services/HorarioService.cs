@@ -1,9 +1,5 @@
 ﻿using EduSoft.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EduSoft.Services
 {
@@ -153,6 +149,8 @@ namespace EduSoft.Services
         /// <summary>
         /// Obtiene todos los horarios de las clases en las que el estudiante está inscrito.
         /// </summary>
+        /// <param name="estudianteId">ID del estudiante.</param>
+        /// <returns>Lista de horarios con detalle de clase.</returns>
         public async Task<List<HorarioClase>> GetHorariosPorEstudianteAsync(int estudianteId)
         {
             using var context = _contextFactory.CreateDbContext();
