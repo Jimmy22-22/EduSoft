@@ -111,7 +111,7 @@
 @if (MostrarModal)
 {
     <div class="modal-overlay">
-        <div class="modal-box">
+        <div class="modal-box-estudiante">
             <h2><i class="fas fa-sign-in-alt"></i> Unirse a una Clase</h2>
             <div class="modal-content">
                 <input type="text" @bind="CodigoClaseIngresado" class="modal-input" placeholder="Código de Clase" tabindex="100" />
@@ -479,6 +479,114 @@
             background: linear-gradient(135deg, #d2e3fc, #90caf9);
             cursor: default;
         }
+
+    .modal-box-estudiante {
+        width: 400px;
+        padding: 35px 25px;
+        text-align: center;
+        border-radius: 20px;
+        color: white;
+        position: relative;
+        animation: scaleIn 0.4s ease-out;
+        background: linear-gradient(270deg, #4facfe, #00f2fe, #4facfe, #00f2fe);
+        background-size: 600% 600%;
+        animation: gradientMove 6s ease infinite;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
+
+    @@keyframes gradientMove {
+        0%
+
+    {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+
+    }
+
+    .modal-box-estudiante h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .modal-box-estudiante .modal-input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        background: white;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        box-shadow: 0 0 0 2px rgba(0, 82, 212, 0.2);
+    }
+
+        .modal-box-estudiante .modal-input:focus {
+            outline: none !important;
+            border-color: #00f2fe;
+            box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.4), 0 0 8px rgba(0, 242, 254, 0.6), 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+    .modal-box-estudiante .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .modal-box-estudiante .modal-button {
+        flex: 1;
+        padding: 10px 0;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+    .modal-box-estudiante .confirm {
+        background: #0052D4;
+        color: white;
+    }
+
+        .modal-box-estudiante .confirm:hover {
+            background: #003c9d;
+            transform: scale(1.05);
+        }
+
+    .modal-box-estudiante .cancel {
+        background: #E74C3C;
+        color: white;
+    }
+
+        .modal-box-estudiante .cancel:hover {
+            background: #C0392B;
+            transform: scale(1.05);
+        }
+
+    @@keyframes scaleIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
 </style>
 
 @code {

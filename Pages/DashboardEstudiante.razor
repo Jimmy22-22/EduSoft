@@ -20,7 +20,6 @@
             <div class="class-grid">
                 @foreach (var clase in Clases.Select((valor, indice) => (valor, indice)))
                 {
-                    // usamos múltiplos de 10 para mantener orden flexible
                     <div class="class-card"
                          tabindex="@((clase.indice + 1) * 10)"
                          @onclick="() => IrAClase(clase.valor.Id)">

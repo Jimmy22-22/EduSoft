@@ -108,18 +108,20 @@
 @if (MostrarModal)
 {
     <div class="modal-overlay">
-        <div class="modal-box">
-            <h2>Crear Nueva Clase</h2>
-            <div class="modal-content">
-                <input type="text" @bind="NuevaClaseNombre" class="modal-input" placeholder="Nombre de la Clase" tabindex="100" />
-                <div class="modal-actions">
-                    <button @onclick="CrearClase" class="modal-button confirm" tabindex="101">
-                        <i class="fas fa-check"></i> Crear
-                    </button>
-                    <button @onclick="CerrarModal" class="modal-button cancel" tabindex="102">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                </div>
+        <div class="modal-box enhanced">
+            <div class="modal-header">
+                <i class="fas fa-plus-circle modal-icon"></i>
+                <h2>Crear Nueva Clase</h2>
+            </div>
+            <p class="modal-subtitle">Define el nombre de la clase que deseas crear.</p>
+            <input type="text" @bind="NuevaClaseNombre" class="modal-input enhanced-input" placeholder="Ej. Matemática 2025" tabindex="100" />
+            <div class="modal-actions">
+                <button @onclick="CrearClase" class="modal-button confirm enhanced-btn" tabindex="101">
+                    <i class="fas fa-check-circle"></i> Crear
+                </button>
+                <button @onclick="CerrarModal" class="modal-button cancel enhanced-btn" tabindex="102">
+                    <i class="fas fa-times-circle"></i> Cancelar
+                </button>
             </div>
         </div>
     </div>
@@ -453,6 +455,121 @@
         font-size: 0.9rem;
         color: #888;
         text-align: center;
+    }
+
+    .modal-box.enhanced {
+        width: 420px;
+        padding: 35px 25px;
+        text-align: center;
+        border-radius: 20px;
+        color: white;
+        position: relative;
+        animation: scaleIn 0.5s ease-out;
+        background: linear-gradient(270deg, #ffcc70, #32e0c4, #4facfe);
+        background-size: 800% 800%;
+        animation: gradientFlow 6s ease infinite;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
+
+    @@keyframes gradientFlow {
+        0%
+
+    {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+
+    }
+
+    .modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .modal-icon {
+        font-size: 2.5rem;
+        color: #2ECC71;
+        animation: pulse 1s infinite alternate;
+        margin-bottom: 10px;
+    }
+
+    .modal-subtitle {
+        color: #555;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .enhanced-input {
+        font-size: 1.05rem;
+        padding: 12px;
+        border: 2px solid #2ECC71;
+        border-radius: 12px;
+        transition: border 0.3s, box-shadow 0.3s;
+    }
+
+        .enhanced-input:focus {
+            border-color: #1ABC9C;
+            box-shadow: 0 0 6px rgba(26, 188, 156, 0.4);
+            outline: none;
+        }
+
+    .enhanced-btn {
+        font-weight: bold;
+        font-size: 1rem;
+        padding: 12px 18px;
+        border-radius: 12px;
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    .confirm.enhanced-btn {
+        background: #2ECC71;
+    }
+
+    .cancel.enhanced-btn {
+        background: #E74C3C;
+    }
+
+    .enhanced-btn:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+        color: white;
+    }
+
+    @@keyframes scaleIn {
+        from
+
+    {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    }
+
+    @@keyframes pulse {
+        from
+
+    {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+
     }
 </style>
 
