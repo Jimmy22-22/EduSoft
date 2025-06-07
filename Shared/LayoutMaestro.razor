@@ -584,6 +584,8 @@
     private bool MostrarBadge = true;
     private List<string> Notificaciones = new();
 
+    [Inject] private IJSRuntime JS { get; set; }
+
     private void ToggleNotificaciones()
     {
         MostrarNotificaciones = !MostrarNotificaciones;
@@ -600,17 +602,22 @@
     private void IrExamenes() => Navigation.NavigateTo("/examenes-maestro");
     private async Task CerrarSesion()
     {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "edu_token");
         await AuthService.EliminarSesion(UsuarioAutenticado.Id);
         UsuarioAutenticado = null;
         Navigation.NavigateTo("/", true);
     }
+
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "edu_token");
+        UsuarioAutenticado = await AuthService.VerificarSesion(token);
+
         if (UsuarioAutenticado != null)
         {
             Notificaciones = await DashboardMaestroService.ObtenerNotificacionesMaestroAsync(UsuarioAutenticado.Nombre);
             MostrarBadge = Notificaciones.Count > 0;
+            await CargarDatos();
         }
     }
 

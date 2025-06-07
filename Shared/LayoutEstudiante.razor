@@ -602,6 +602,7 @@
     private bool MostrarBadge = true;
     private bool BadgeVisible = false;
     private List<string> Notificaciones = new();
+    [Inject] private IJSRuntime JS { get; set; }
 
 
     private void ToggleNotificaciones()
@@ -614,7 +615,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UsuarioAutenticado = await AuthService.VerificarSesion();
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "edu_token");
+        UsuarioAutenticado = await AuthService.VerificarSesion(token);
+
         if (UsuarioAutenticado != null)
         {
             await CargarDatos();
@@ -677,6 +680,7 @@
 
     private async Task CerrarSesion()
     {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "edu_token");
         await AuthService.EliminarSesion(UsuarioAutenticado.Id);
         UsuarioAutenticado = null;
         Navigation.NavigateTo("/", true);

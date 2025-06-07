@@ -5,6 +5,8 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
+@inject IJSRuntime JS
+
 @if (isLoading)
 {
     <div class="body2"></div>
@@ -182,7 +184,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var usuario = await AuthService.VerificarSesion();
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "edu_token");
+
+        var usuario = await AuthService.VerificarSesion(token);
         if (usuario != null)
         {
             RedirigirSegunRol(usuario);
@@ -192,12 +196,14 @@ else
         isLoading = false;
         StateHasChanged();
     }
+
     private async Task PerformLogin()
     {
         var usuario = await AuthService.Login(Email, Password);
 
         if (usuario != null)
         {
+            await JS.InvokeVoidAsync("GuardarTokenSesion", usuario.SesionToken);
             RedirigirSegunRol(usuario);
         }
         else
@@ -205,6 +211,7 @@ else
             ErrorMessage = "❌ Credenciales incorrectas. Inténtalo de nuevo.";
         }
     }
+
     private void RedirigirSegunRol(Usuario usuario)
     {
         if (usuario.Rol == RolUsuario.Estudiante)
