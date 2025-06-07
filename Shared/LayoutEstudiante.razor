@@ -628,7 +628,11 @@
         }
     }
 
-    private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-estudiante/{claseId}");
+    private void IrAClase(int claseId)
+    {
+        Navigation.NavigateTo($"/clase-estudiante/{claseId}", forceLoad: true);
+    }
+
     private void IrDashboardEstudiante() => Navigation.NavigateTo("/dashboard-estudiante");
     private void IrTareas() => Navigation.NavigateTo("/tareas-estudiante");
     private void IrExamenes() => Navigation.NavigateTo("/examenes-estudiante");

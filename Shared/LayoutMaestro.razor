@@ -614,9 +614,10 @@
             StateHasChanged();
         }
     }
+
     private void IrAClase(int claseId)
     {
-        Navigation.NavigateTo($"/clase-maestro/{claseId}");
+        Navigation.NavigateTo($"/clase-maestro/{claseId}", forceLoad: true);
     }
 
     private async Task CrearClase()
