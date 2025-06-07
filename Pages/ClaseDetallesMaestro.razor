@@ -75,22 +75,42 @@
 @if (MostrarModal)
 {
     <div class="modal-overlay">
-        <div class="modal-box">
-            <h3>Crear Nueva Tarea</h3>
-            <input type="text" placeholder="Título" @bind="NuevoTitulo" class="modal-input" />
-            <textarea placeholder="Descripción" @bind="NuevoDescripcion" class="modal-input"></textarea>
-            <input type="date" @bind="NuevaFechaEntrega" class="modal-input" />
-            <input type="text" placeholder="Enlace externo (opcional)" @bind="NuevoLink" class="modal-input" />
-            <InputFile OnChange="CargarArchivo" />
+        <div class="modal-box enhanced">
+            <div class="modal-header">
+                <i class="fas fa-pen-to-square modal-icon"></i>
+                <h3>Crear Nueva Tarea</h3>
+                <p class="modal-subtitle">Completa los campos para agregar una nueva tarea o examen.</p>
+            </div>
 
-            <label class="checkbox-examen">
-                <input type="checkbox" @bind="EsExamen" />
-                <span>¿Es un examen?</span>
-            </label>
+            <input type="text" placeholder="Título" @bind="NuevoTitulo" class="modal-input enhanced-input" />
+            <textarea placeholder="Descripción" @bind="NuevoDescripcion" class="modal-input enhanced-input"></textarea>
+            <input type="date"
+                   @bind="NuevaFechaEntrega"
+                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                   class="modal-input enhanced-input" />
+            <input type="text" placeholder="Enlace externo (opcional)" @bind="NuevoLink" class="modal-input enhanced-input" />
+            <div class="upload-wrapper">
+                <label for="archivo-input" class="upload-label">
+                    <i class="fas fa-upload"></i> Seleccionar archivo
+                </label>
+                <InputFile id="archivo-input" class="input-hidden" OnChange="CargarArchivo" />
+                @if (!string.IsNullOrEmpty(NombreArchivo))
+                {
+                    <p class="archivo-nombre"><i class="fas fa-file"></i> @NombreArchivo</p>
+                }
+            </div>
+
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" @bind="EsExamen" />
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label"><i class="fas fa-file-signature"></i> ¿Es un examen?</span>
+            </div>
 
             <div class="modal-actions">
-                <button class="btn-confirm" @onclick="CrearTarea"><i class="fas fa-check"></i> Guardar</button>
-                <button class="btn-cancel" @onclick="() => MostrarModal = false"><i class="fas fa-times"></i> Cancelar</button>
+                <button class="btn-confirm enhanced-btn" @onclick="CrearTarea"><i class="fas fa-check-circle"></i> Guardar</button>
+                <button class="btn-cancel enhanced-btn" @onclick="() => MostrarModal = false"><i class="fas fa-times-circle"></i> Cancelar</button>
             </div>
         </div>
     </div>
@@ -264,6 +284,203 @@
         gap: 10px;
         margin-top: 10px;
     }
+
+    .modal-box.enhanced {
+    width: 450px;
+    padding: 35px 25px;
+    text-align: center;
+    border-radius: 20px;
+    color: white;
+    position: relative;
+    animation: scaleIn 0.5s ease-out;
+    background: linear-gradient(270deg, #fff176, #81c784, #ffeb3b);
+    background-size: 600% 600%;
+    animation: gradientFlow 8s ease infinite;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+@@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@@keyframes scaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-icon {
+    font-size: 2.5rem;
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: pulse 1s infinite alternate;
+    margin-bottom: 10px;
+}
+
+.modal-subtitle {
+    font-size: 0.95rem;
+    color: #fdfdfd;
+    opacity: 0.9;
+    margin-top: -5px;
+    margin-bottom: 15px;
+}
+
+@@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+.enhanced-input {
+    font-size: 1rem;
+    padding: 10px;
+    margin-bottom: 12px;
+    width: 100%;
+    border-radius: 10px;
+    border: 2px solid #c5e1a5;
+    transition: border 0.3s, box-shadow 0.3s;
+}
+
+.enhanced-input:focus {
+    border-color: #aed581;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    outline: none;
+    background: #f9fbe7;
+    color: #33691e;
+}
+
+.enhanced-btn {
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    width: 48%;
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.btn-confirm.enhanced-btn {
+    background: #66bb6a;
+    color: white;
+}
+
+.btn-cancel.enhanced-btn {
+    background: #ef5350;
+    color: white;
+}
+
+.enhanced-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+    .upload-wrapper {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .upload-label {
+        display: inline-block;
+        background: #ffee58;
+        color: #33691e;
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 0.95rem;
+        cursor: pointer;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+        .upload-label:hover {
+            background: #d4e157;
+            transform: scale(1.05);
+        }
+
+    .input-hidden {
+        display: none;
+    }
+
+    .archivo-nombre {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #ffffff;
+        background: rgba(0,0,0,0.2);
+        padding: 6px 10px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 15px 0;
+        justify-content: center;
+    }
+
+    .toggle-label {
+        font-size: 1rem;
+        color: #fffde7;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        background-color: #ccc;
+        border-radius: 26px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: .4s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+    .switch input:checked + .slider {
+        background-color: #8bc34a;
+    }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(24px);
+        }
 </style>
 
 @code {
@@ -307,13 +524,19 @@
         if (UsuarioAutenticado == null || string.IsNullOrWhiteSpace(NuevoTitulo))
             return;
 
+        string? linkFormateado = string.IsNullOrWhiteSpace(NuevoLink)
+    ? null
+    : (NuevoLink.StartsWith("http://") || NuevoLink.StartsWith("https://")
+        ? NuevoLink
+        : $"https://{NuevoLink}");
+
         bool exito = await ClaseService.CrearTarea(
             claseId: ClaseId,
             titulo: NuevoTitulo,
             descripcion: NuevoDescripcion,
             fechaEntrega: NuevaFechaEntrega,
             usuarioId: UsuarioAutenticado.Id,
-            link: NuevoLink,
+            link: linkFormateado,
             archivoNombre: NombreArchivo,
             archivoContenido: ContenidoArchivo,
             esExamen: EsExamen

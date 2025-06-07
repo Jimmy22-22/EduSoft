@@ -3,6 +3,8 @@
 @using EduSoft.Services
 @inject ClaseService ClaseService
 @layout LayoutMaestro
+@inject AuthService AuthService
+
 
 <h2 class="titulo-principal"><i class="fas fa-tasks"></i> Gestión de Tareas</h2>
 
@@ -58,12 +60,26 @@ else if (ClaseSeleccionadaId != null)
                 <tr>
                     <td>@entrega.Usuario.Nombre</td>
                     <td>
-                        <input type="number" @bind="entrega.Nota" min="0" max="100" class="nota-input" />
+                        @if (entrega.Nota.HasValue)
+                        {
+                            <input type="number" @bind="entrega.Nota" min="0" max="100" class="nota-input" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">No entregado</span>
+                        }
                     </td>
                     <td>
-                        <button class="btn-guardar" @onclick="() => CalificarEntrega(entrega)">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
+                        @if (entrega.Nota.HasValue)
+                        {
+                            <button class="btn-guardar" @onclick="() => CalificarEntrega(entrega)">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">N/A</span>
+                        }
                     </td>
                 </tr>
             }
@@ -259,10 +275,16 @@ else if (ClaseSeleccionadaId != null)
     private List<EntregaTareaEstudiante> Entregas = new();
     private int? ClaseSeleccionadaId;
     private bool MostrarEntregas = false;
+    private Usuario? UsuarioAutenticado;
 
     protected override async Task OnInitializedAsync()
     {
-        Clases = await ClaseService.ObtenerClasesAsync();
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+
+        if (UsuarioAutenticado != null)
+        {
+            Clases = await ClaseService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
+        }
     }
 
     private async Task OnClaseChanged(ChangeEventArgs e)
@@ -278,7 +300,7 @@ else if (ClaseSeleccionadaId != null)
 
     private async Task VerEntregas(int tareaId)
     {
-        Entregas = await ClaseService.ObtenerEntregasPorTareaAsync(tareaId);
+        Entregas = await ClaseService.ObtenerEntregasPorTareaConEstudiantes2Async(tareaId);
         MostrarEntregas = true;
     }
 

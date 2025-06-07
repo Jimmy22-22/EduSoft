@@ -312,5 +312,45 @@ namespace EduSoft.Services
                 .Select(uc => uc.Clase)
                 .ToListAsync();
         }
+
+        public async Task<List<EntregaTareaEstudiante>> ObtenerEntregasPorTareaConEstudiantes2Async(int tareaId)
+        {
+            var tarea = await _context.Tareas.Include(t => t.Clase).FirstOrDefaultAsync(t => t.Id == tareaId);
+            if (tarea == null) return new List<EntregaTareaEstudiante>();
+
+            var estudiantes = await _context.UsuarioClases
+                .Where(uc => uc.ClaseId == tarea.ClaseId)
+                .Select(uc => uc.Usuario)
+                .ToListAsync();
+
+            var entregas = await _context.EntregasTareasEstudiantes
+                .Where(e => e.TareaId == tareaId)
+                .ToListAsync();
+
+            var listaFinal = new List<EntregaTareaEstudiante>();
+
+            foreach (var estudiante in estudiantes)
+            {
+                var entrega = entregas.FirstOrDefault(e => e.UsuarioId == estudiante.Id);
+                if (entrega != null)
+                {
+                    entrega.Usuario = estudiante;
+                    listaFinal.Add(entrega);
+                }
+                else
+                {
+                    listaFinal.Add(new EntregaTareaEstudiante
+                    {
+                        UsuarioId = estudiante.Id,
+                        Usuario = estudiante,
+                        TareaId = tareaId,
+                        Nota = null,
+                        FechaEntrega = DateTime.MinValue
+                    });
+                }
+            }
+
+            return listaFinal;
+        }
     }
 }

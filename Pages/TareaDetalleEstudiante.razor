@@ -9,25 +9,25 @@
 @inject TareaEstudianteService TareaEstudianteService
 @inject IJSRuntime JS
 
-<h2 class="tarea-titulo">@Tarea?.Titulo</h2>
+<h2 class="tarea-titulo"><i class="fas fa-book-open me-2"></i> @Tarea?.Titulo</h2>
 
 @if (Tarea != null)
 {
     <div class="tarea-detalle-box">
-        <p><strong>Descripción:</strong> @Tarea.Descripcion</p>
-        <p><strong>Fecha de Entrega:</strong> @Tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
+        <p><i class="fas fa-align-left me-1"></i> <strong>Descripción:</strong> @Tarea.Descripcion</p>
+        <p><i class="fas fa-calendar-alt me-1"></i> <strong>Fecha de Entrega:</strong> @Tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
 
         @if (!string.IsNullOrWhiteSpace(Tarea.Link))
         {
-            <p><strong>Enlace:</strong> <a href="@Tarea.Link" target="_blank">@Tarea.Link</a></p>
+            <p><i class="fas fa-link me-1"></i> <strong>Enlace:</strong> <a href="@Tarea.Link" target="_blank">@Tarea.Link</a></p>
         }
 
         @if (!string.IsNullOrEmpty(Tarea.ArchivoNombre))
         {
             <p>
-                <strong>Archivo del Profesor:</strong>
+                <i class="fas fa-file-alt me-1"></i> <strong>Archivo del Profesor:</strong>
                 <button class="descargar-btn" @onclick="() => VerArchivoStream(Tarea.ArchivoNombre, Tarea.ArchivoContenido)">
-                    <i class="fas fa-download"></i> Ver/Descargar @Tarea.ArchivoNombre
+                    <i class="fas fa-download me-1"></i> Ver/Descargar @Tarea.ArchivoNombre
                 </button>
             </p>
         }
@@ -37,22 +37,25 @@
         @if (Entrega != null)
         {
             <div class="entrega-previa">
-                <h4><i class="fas fa-check-circle text-green"></i> Ya has entregado esta tarea</h4>
-                <p><strong>Fecha:</strong> @Entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
+                <h4><i class="fas fa-check-circle text-green me-2"></i> Ya has entregado esta tarea</h4>
+                <p><i class="fas fa-clock me-1"></i> <strong>Fecha:</strong> @Entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
+
                 @if (!string.IsNullOrEmpty(Entrega.Comentario))
                 {
-                    <p><strong>Comentario:</strong> @Entrega.Comentario</p>
+                    <p><i class="fas fa-comment-alt me-1"></i> <strong>Comentario:</strong> @Entrega.Comentario</p>
                 }
+
                 @if (!string.IsNullOrEmpty(Entrega.Link))
                 {
-                    <p><strong>Enlace enviado:</strong> <a href="@Entrega.Link" target="_blank">@Entrega.Link</a></p>
+                    <p><i class="fas fa-link me-1"></i> <strong>Enlace enviado:</strong> <a href="@Entrega.Link" target="_blank">@Entrega.Link</a></p>
                 }
+
                 @if (!string.IsNullOrEmpty(Entrega.ArchivoNombre))
                 {
                     <p>
-                        <strong>Archivo enviado:</strong>
+                        <i class="fas fa-file me-1"></i> <strong>Archivo enviado:</strong>
                         <button class="descargar-btn" @onclick="() => VerArchivoStream(Entrega.ArchivoNombre, Entrega.ArchivoContenido)">
-                            <i class="fas fa-file-download"></i> Ver/Descargar @Entrega.ArchivoNombre
+                            <i class="fas fa-file-download me-1"></i> Ver/Descargar @Entrega.ArchivoNombre
                         </button>
                     </p>
                 }
@@ -60,15 +63,25 @@
         }
         else
         {
-            <h4>Entregar Tarea</h4>
-            <textarea class="input-textarea" placeholder="Comentario privado (opcional)" @bind="Comentario"></textarea>
-            <input class="input-link" placeholder="Enlace externo (opcional)" @bind="LinkEstudiante" />
-            <InputFile OnChange="CargarArchivoEstudiante" />
-            <button class="btn-entregar" @onclick="ActivarModal"><i class="fas fa-paper-plane"></i> Enviar</button>
+            <h4><i class="fas fa-upload me-2"></i> Entregar Tarea</h4>
+            <textarea class="input-textarea" placeholder="✏️ Comentario privado (opcional)" @bind="Comentario"></textarea>
+            <input class="input-link" placeholder="🔗 Enlace externo (opcional)" @bind="LinkEstudiante" />
+
+            <label class="upload-label">
+                <i class="fas fa-upload me-1"></i> Subir archivo
+                <InputFile OnChange="CargarArchivoEstudiante" class="input-file-hidden" />
+            </label>
+
+            @if (NombreArchivo != null)
+            {
+                <p class="archivo-subido"><i class="fas fa-file me-1"></i> @NombreArchivo</p>
+            }
+
+            <button class="btn-entregar" @onclick="ActivarModal"><i class="fas fa-paper-plane me-1"></i> Enviar</button>
         }
 
         <button class="btn-volver" @onclick="VolverAClase">
-            <i class="fas fa-arrow-left"></i> Volver a la clase
+            <i class="fas fa-arrow-left me-1"></i> Volver a la clase
         </button>
     </div>
 }
@@ -77,15 +90,16 @@
 {
     <div class="modal-overlay">
         <div class="modal-box">
-            <h3>¿Confirmar entrega?</h3>
+            <h3><i class="fas fa-question-circle me-2"></i> ¿Confirmar entrega?</h3>
             <p>Estás a punto de entregar esta tarea. ¿Deseas continuar?</p>
             <div class="modal-actions">
-                <button class="btn-confirm" @onclick="EntregarTarea">Sí, Entregar</button>
-                <button class="btn-cancel" @onclick="() => MostrarModal = false">Cancelar</button>
+                <button class="btn-confirm" @onclick="EntregarTarea"><i class="fas fa-check me-1"></i> Sí, Entregar</button>
+                <button class="btn-cancel" @onclick="() => MostrarModal = false"><i class="fas fa-times me-1"></i> Cancelar</button>
             </div>
         </div>
     </div>
 }
+
 
 <style>
     .tarea-titulo {
@@ -120,6 +134,7 @@
         border-radius: 8px;
         cursor: pointer;
         margin-top: 10px;
+        margin-right: 3px;
     }
 
     .btn-volver, .btn-cancel {
@@ -177,6 +192,34 @@
 
     .text-green {
         color: #2e7d32;
+    }
+
+    .upload-label {
+        display: inline-block;
+        background: #1e88e5;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: background 0.3s ease;
+        font-weight: 500;
+        user-select: none;
+        margin-right: 200px;
+    }
+
+        .upload-label:hover {
+            background: #1565c0;
+        }
+
+    .input-file-hidden {
+        display: none;
+    }
+
+    .archivo-subido {
+        margin-top: 10px;
+        font-style: italic;
+        color: #333;
     }
 </style>
 
@@ -251,12 +294,23 @@
         if (UsuarioAutenticado == null || Tarea == null)
             return;
 
+        // Forzar que el enlace comience con https:// si no lo tiene
+        string? enlaceFinal = null;
+        if (!string.IsNullOrWhiteSpace(LinkEstudiante))
+        {
+            enlaceFinal = LinkEstudiante.Trim();
+            if (!enlaceFinal.StartsWith("http://") && !enlaceFinal.StartsWith("https://"))
+            {
+                enlaceFinal = "https://" + enlaceFinal;
+            }
+        }
+
         var entrega = new EntregaTareaEstudiante
             {
                 TareaId = Tarea.Id,
                 UsuarioId = UsuarioAutenticado.Id,
                 Comentario = Comentario,
-                Link = LinkEstudiante,
+                Link = enlaceFinal,
                 ArchivoNombre = NombreArchivo,
                 ArchivoContenido = ContenidoArchivo,
                 FechaEntrega = DateTime.Now

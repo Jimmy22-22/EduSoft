@@ -4,6 +4,10 @@
 @inject ClaseService ClaseService
 @layout LayoutMaestro
 
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+
 <h2 class="page-title"><i class="fas fa-graduation-cap"></i> Calificaciones por Clase</h2>
 
 <div class="form-group">
@@ -155,7 +159,7 @@ else if (ClaseSeleccionadaId != null)
     .no-data {
         text-align: center;
         font-style: italic;
-        color: #4caf50; /* verde */
+        color: #4caf50; 
         margin-top: 40px;
         font-size: 1.1rem;
     }
@@ -166,10 +170,16 @@ else if (ClaseSeleccionadaId != null)
     private List<Tarea> Tareas = new();
     private List<NotaEstudianteDto> NotasEstudiantes = new();
     private int? ClaseSeleccionadaId;
+    private Usuario? UsuarioAutenticado;
 
     protected override async Task OnInitializedAsync()
     {
-        Clases = await ClaseService.ObtenerClasesAsync();
+        UsuarioAutenticado = await AuthService.VerificarSesion();
+
+        if (UsuarioAutenticado != null)
+        {
+            Clases = await ClaseService.GetClasesPorProfesorAsync(UsuarioAutenticado.Nombre);
+        }
     }
 
     private async Task OnClaseChanged(ChangeEventArgs e)
