@@ -5,8 +5,6 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-@inject IJSRuntime JS
-
 @if (isLoading)
 {
     <div class="body2"></div>
@@ -57,6 +55,7 @@ else
         height: 100vh;
         margin: 0;
     }
+
     .body2 {
         background: #ffffff;
         width: 100vw;
@@ -95,6 +94,7 @@ else
         margin-bottom: 15px;
         font-size: 0.9rem;
     }
+
     .input-group {
         text-align: left;
         margin-bottom: 15px;
@@ -139,6 +139,7 @@ else
             background: #2B6CB0;
             transform: scale(1.05);
         }
+
     .register-link {
         margin-top: 15px;
         font-size: 0.9rem;
@@ -156,15 +157,15 @@ else
             }
 
     @@keyframes fadeIn {
-        from
-    {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .input-field:focus,
@@ -173,7 +174,6 @@ else
         outline: 2px solid #3182CE;
         box-shadow: 0 0 5px #3182CE;
     }
-
 </style>
 
 @code {
@@ -184,9 +184,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var token = await JS.InvokeAsync<string>("localStorage.getItem", "edu_token");
-
-        var usuario = await AuthService.VerificarSesion(token);
+        var usuario = await AuthService.VerificarSesion();
         if (usuario != null)
         {
             RedirigirSegunRol(usuario);
@@ -196,14 +194,12 @@ else
         isLoading = false;
         StateHasChanged();
     }
-
     private async Task PerformLogin()
     {
         var usuario = await AuthService.Login(Email, Password);
 
         if (usuario != null)
         {
-            await JS.InvokeVoidAsync("GuardarTokenSesion", usuario.SesionToken);
             RedirigirSegunRol(usuario);
         }
         else
@@ -211,7 +207,6 @@ else
             ErrorMessage = "❌ Credenciales incorrectas. Inténtalo de nuevo.";
         }
     }
-
     private void RedirigirSegunRol(Usuario usuario)
     {
         if (usuario.Rol == RolUsuario.Estudiante)

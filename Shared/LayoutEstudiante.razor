@@ -495,20 +495,17 @@
     }
 
     @@keyframes gradientMove {
-        0%
+        0% {
+            background-position: 0% 50%;
+        }
 
-    {
-        background-position: 0% 50%;
-    }
+        50% {
+            background-position: 100% 50%;
+        }
 
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-
+        100% {
+            background-position: 0% 50%;
+        }
     }
 
     .modal-box-estudiante h2 {
@@ -574,18 +571,15 @@
         }
 
     @@keyframes scaleIn {
-        from
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
 
-    {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 </style>
 
@@ -602,7 +596,6 @@
     private bool MostrarBadge = true;
     private bool BadgeVisible = false;
     private List<string> Notificaciones = new();
-    [Inject] private IJSRuntime JS { get; set; }
 
 
     private void ToggleNotificaciones()
@@ -615,9 +608,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var token = await JS.InvokeAsync<string>("localStorage.getItem", "edu_token");
-        UsuarioAutenticado = await AuthService.VerificarSesion(token);
-
+        UsuarioAutenticado = await AuthService.VerificarSesion();
         if (UsuarioAutenticado != null)
         {
             await CargarDatos();
@@ -660,14 +651,14 @@
 
     private void AbrirModal()
     {
-        CodigoClaseIngresado = ""; 
+        CodigoClaseIngresado = "";
         MostrarModal = true;
         StateHasChanged();
     }
 
     private void CerrarModal()
     {
-        CodigoClaseIngresado = ""; 
+        CodigoClaseIngresado = "";
         MostrarModal = false;
         StateHasChanged();
     }
@@ -680,7 +671,6 @@
 
     private async Task CerrarSesion()
     {
-        await JS.InvokeVoidAsync("localStorage.removeItem", "edu_token");
         await AuthService.EliminarSesion(UsuarioAutenticado.Id);
         UsuarioAutenticado = null;
         Navigation.NavigateTo("/", true);

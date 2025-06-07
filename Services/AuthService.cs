@@ -87,23 +87,16 @@ namespace EduSoft.Services
             context.Usuarios.Update(usuario);
             await context.SaveChangesAsync();
 
-            return usuario; 
+            return usuario;
         }
 
         /// <summary>
         /// Verifica si hay una sesión activa actualmente y devuelve el usuario correspondiente.
         /// </summary>
         /// <returns>El usuario con sesión activa, o null si no hay ninguna sesión activa.</returns>
-        public async Task<Usuario?> VerificarSesion(string? token = null)
+        public async Task<Usuario?> VerificarSesion()
         {
             using var context = _contextFactory.CreateDbContext();
-
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                return await context.Usuarios
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.SesionToken == token && u.SesionActiva);
-            }
 
             return await context.Usuarios
                 .AsNoTracking()
