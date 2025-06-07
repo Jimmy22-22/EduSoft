@@ -5,13 +5,19 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
+@using System.Text.RegularExpressions;
+
 <div class="register-container">
     <div class="register-box">
         <h2><i class="fas fa-user-plus"></i> Crear Cuenta</h2>
 
-        @if (!string.IsNullOrEmpty(Message))
+        @if (!string.IsNullOrEmpty(SuccessMessage))
         {
-            <p class="success-message"><i class="fas fa-check-circle"></i> @Message</p>
+            <p class="success-message"><i class="fas fa-check-circle"></i> @SuccessMessage</p>
+        }
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <p class="error-message"><i class="fas fa-exclamation-circle"></i> @ErrorMessage</p>
         }
 
         <div class="input-group">
@@ -169,15 +175,25 @@
         outline: 2px solid #3182CE;
         box-shadow: 0 0 5px #3182CE;
     }
+
+    .error-message {
+    color: #E53E3E;
+    background: rgba(229, 62, 62, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
 </style>
 
 @code {
     private string Nombre { get; set; } = string.Empty;
     private string Email { get; set; } = string.Empty;
     private string Password { get; set; } = string.Empty;
-
     private RolUsuario Rol { get; set; } = RolUsuario.Estudiante;
-    private string Message { get; set; } = string.Empty;
+
+    private string SuccessMessage { get; set; } = string.Empty;
+    private string ErrorMessage { get; set; } = string.Empty;
     private bool IsLoading { get; set; } = false;
 
     private async Task PerformRegister()
@@ -185,19 +201,55 @@
         if (IsLoading) return;
         IsLoading = true;
 
+        SuccessMessage = string.Empty;
+        ErrorMessage = string.Empty;
+
+        if (!EsEmailValido(Email))
+        {
+            ErrorMessage = "El correo ingresado no es válido.";
+            IsLoading = false;
+            return;
+        }
+
+        if (Password.Length < 8)
+        {
+            ErrorMessage = "La contraseña debe tener al menos 8 caracteres.";
+            IsLoading = false;
+            return;
+        }
+
+        if (!char.IsUpper(Password[0]))
+        {
+            ErrorMessage = "La contraseña debe comenzar con una letra mayúscula.";
+            IsLoading = false;
+            return;
+        }
+
+        if (!Password.Any(char.IsDigit))
+        {
+            ErrorMessage = "La contraseña debe contener al menos un número.";
+            IsLoading = false;
+            return;
+        }
+
         var result = await AuthService.RegisterUser(Nombre, Email, Password, Rol);
+
         if (result)
         {
-            Message = "Usuario registrado con éxito.";
+            SuccessMessage = "Usuario registrado con éxito.";
             await Task.Delay(100);
             Navigation.NavigateTo("/");
         }
         else
         {
-            Message = "El email ya está en uso.";
+            ErrorMessage = "El email ya está en uso.";
         }
 
         IsLoading = false;
+    }
 
+    private bool EsEmailValido(string email)
+    {
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
     }
 }

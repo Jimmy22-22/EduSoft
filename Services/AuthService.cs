@@ -35,11 +35,15 @@ namespace EduSoft.Services
         {
             using var context = _contextFactory.CreateDbContext();
 
-            var existingUser = await context.Usuarios
+            var existeEmail = await context.Usuarios
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .AnyAsync(u => u.Email == email);
 
-            if (existingUser != null)
+            var existeNombre = await context.Usuarios
+                .AsNoTracking()
+                .AnyAsync(u => u.Nombre == nombre);
+
+            if (existeEmail || existeNombre)
                 return false;
 
             var usuario = new Usuario
