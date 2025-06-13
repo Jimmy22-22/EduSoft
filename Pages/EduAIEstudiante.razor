@@ -3,11 +3,10 @@
 @using EduSoft.Services
 @inject CHATBOT.Services.GeminiService ChatService
 @inject AuthService AuthService
-@layout LayoutEstudiante
 @inject IJSRuntime JSRuntime
 @inject EduAiContextEstudianteBuilder EduAiContextEstudianteBuilder
 @inject EduAiHistoryService EduAiHistoryService
-
+@layout LayoutEstudiante
 
 @if (UsuarioAutenticado == null)
 {
@@ -34,12 +33,36 @@ else
                     </div>
                 </div>
             }
+
+            @if (Escribiendo)
+            {
+                <div class="message assistant">
+                    <div class="bubble typing-indicator">
+                        <div class="bubble-header">
+                            <i class="fas fa-robot"></i> <span>EDU AI</span>
+                        </div>
+                        <div class="bubble-body"><em>Escribiendo...</em></div>
+                    </div>
+                </div>
+            }
+
+            <div id="scroll-anchor"></div>
         </div>
+
+        @if (Grabando)
+        {
+            <div class="grabando-indicador">
+                <i class="fas fa-microphone"></i> Grabando...
+            </div>
+        }
 
         <div class="chat-input-area">
             <input @bind="mensajeUsuario" @bind:event="oninput" placeholder="Escribe tu mensaje..." class="chat-input" />
-            <button @onclick="EnviarMensaje" class="chat-send-button">
+            <button @onclick="EnviarMensaje" class="chat-send-button" title="Enviar">
                 <i class="fas fa-paper-plane"></i>
+            </button>
+            <button @onclick="IniciarGrabacion" class="mic-button" title="Hablar">
+                <i class="fas fa-microphone"></i>
             </button>
         </div>
     </div>
@@ -57,16 +80,16 @@ else
         display: flex;
         flex-direction: column;
         height: calc(100vh - 170px);
-        background: #eaf3fc;
+        background: linear-gradient(135deg, #eaf6ff, #d0ecfd);
         padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
     }
 
     .chat-title {
         text-align: center;
-        font-size: 1.6rem;
-        color: #0052D4;
+        font-size: 1.7rem;
+        color: #007bff;
         margin-bottom: 15px;
         font-weight: bold;
     }
@@ -74,15 +97,15 @@ else
     .chat-box {
         flex: 1;
         overflow-y: auto;
-        padding: 15px;
+        padding: 18px;
         background: #ffffff;
-        border-radius: 10px;
-        box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+        border-radius: 12px;
+        box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
     }
 
     .message {
         display: flex;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
         .message.user {
@@ -90,44 +113,64 @@ else
         }
 
     .bubble {
-        background-color: #dbeafe;
-        padding: 10px 15px;
-        border-radius: 12px;
-        max-width: 60%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 12px 16px;
+        border-radius: 16px;
+        max-width: 65%;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.07);
     }
 
     .message.user .bubble {
-        background-color: #c7e0ff;
-        color: #0a3d91;
+        background-color: #cceeff;
+        color: #00578a;
+        border-radius: 20px 20px 20px 0;
         text-align: right;
     }
 
     .bubble-header {
         font-weight: bold;
-        font-size: 0.9rem;
-        margin-bottom: 5px;
-        color: #1d3557;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
     }
 
     .message.user .bubble-header {
         justify-content: flex-end;
-        color: #0a3d91;
+        color: #007bff;
     }
+
+    .message.assistant .bubble {
+        background-color: #fff4cc;
+        color: #664c00;
+        border-radius: 20px 20px 0 20px;
+    }
+
+    .message.assistant .bubble-header {
+        color: #f3b400;
+    }
+
 
     .bubble-body {
         font-size: 1rem;
         white-space: pre-wrap;
     }
 
+    .typing-indicator .bubble-body {
+        font-style: italic;
+        color: #666;
+    }
+
     .chat-input-area {
         display: flex;
         align-items: center;
-        margin-top: 15px;
-        gap: 10px;
+        margin-top: 18px;
+        gap: 12px;
+        padding: 10px 14px;
+        background: white;
+        border: 1px solid #cce0f5;
+        border-radius: 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
     .chat-input {
@@ -135,24 +178,77 @@ else
         padding: 12px;
         font-size: 1rem;
         border-radius: 10px;
-        border: 1px solid #ccc;
+        border: none;
         outline: none;
+        background: transparent;
+        color: #333;
     }
 
     .chat-send-button {
-        background: #0052D4;
+        background: #007bff;
         color: white;
         padding: 12px 16px;
-        font-size: 1rem;
+        font-size: 1.2rem;
         border: none;
-        border-radius: 10px;
+        border-radius: 50%;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: transform 0.2s ease, background 0.3s ease;
     }
 
         .chat-send-button:hover {
-            background: #003c9d;
+            background: #0056b3;
+            transform: scale(1.1);
         }
+
+    .mic-button {
+        background: #17c3ce;
+        color: white;
+        padding: 12px 16px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+        .mic-button:hover {
+            background: #10a8b4;
+            transform: scale(1.1);
+        }
+
+    .grabando-indicador {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #b3e5fc; /* celeste muy claro brillante */
+        color: #0288d1; /* azul cielo intenso y feliz */
+        font-weight: 600;
+        padding: 6px 14px;
+        margin: 10px 0;
+        border-radius: 10px;
+        font-size: 1rem;
+        animation: pulse 1s infinite;
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    }
 
     @@media (max-width: 768px) {
         .bubble
@@ -162,7 +258,7 @@ else
     }
 
     .chat-title {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
     }
 
     }
@@ -173,7 +269,9 @@ else
     private List<ChatMessage> mensajes = new();
     private ElementReference ChatScrollRef;
     private Usuario? UsuarioAutenticado;
-
+    private DotNetObjectReference<EduAIEstudiante>? dotNetHelper;
+    private bool Grabando = false;
+    private bool Escribiendo = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -184,10 +282,32 @@ else
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await ScrollToBottom();
+        }
+    }
+
+    private async Task IniciarGrabacion()
+    {
+        if (dotNetHelper == null)
+            dotNetHelper = DotNetObjectReference.Create(this);
+
+        await JSRuntime.InvokeVoidAsync("voiceRecognition.startRecognition", dotNetHelper);
+    }
+
     private async Task EnviarMensaje()
     {
         if (!string.IsNullOrWhiteSpace(mensajeUsuario) && UsuarioAutenticado != null)
         {
+            Escribiendo = true;
+            StateHasChanged();
+            await Task.Delay(50);
+            await ScrollToBottom();
+
             var contexto = await EduAiContextEstudianteBuilder.ConstruirContextoEstudianteAsync(UsuarioAutenticado.Id);
             bool esPrimera = !mensajes.Any();
 
@@ -196,15 +316,43 @@ else
             await EduAiHistoryService.GuardarMensajeAsync(UsuarioAutenticado.Id, "user", mensajeUsuario);
             await EduAiHistoryService.GuardarMensajeAsync(UsuarioAutenticado.Id, "assistant", respuesta);
 
-            mensajeUsuario = string.Empty;
+            mensajeUsuario = "";
             mensajes = await EduAiHistoryService.ObtenerConversacionAsync(UsuarioAutenticado.Id);
+
+            Escribiendo = false;
+            StateHasChanged();
+
+            await JSRuntime.InvokeVoidAsync("hablarTexto", respuesta);
+            await Task.Delay(100);
             await ScrollToBottom();
         }
     }
 
     private async Task ScrollToBottom()
     {
-        await Task.Delay(100);
-        await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('.chat-box').scrollTop = document.querySelector('.chat-box').scrollHeight");
+        await JSRuntime.InvokeVoidAsync("scrollChatToBottom");
+    }
+
+    [JSInvokable]
+    public async Task TextoDesdeVoz(string texto)
+    {
+        mensajeUsuario = texto;
+        await EnviarMensaje();
+    }
+
+    [JSInvokable]
+    public Task MostrarGrabando()
+    {
+        Grabando = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task OcultarGrabando()
+    {
+        Grabando = false;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 }

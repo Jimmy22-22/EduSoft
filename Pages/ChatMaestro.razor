@@ -1,0 +1,525 @@
+﻿@page "/chat-educativo-maestro"
+@layout LayoutMaestro
+
+<PageTitle>Chat Educativo</PageTitle>
+
+<div class="chat-page fade-in">
+    <div class="user-list">
+        <h4>Usuarios</h4>
+
+        @foreach (var user in usuarios)
+        {
+            <div class="user-item" @onclick="@(() => CargarMensajes(user))">
+                <div class="user-icon" style="background-color:@Colores[user]">@user[0]</div>
+                <div class="user-info">
+                    <span class="user-name">@user</span>
+                    <span class="last-message">@GetLastMessagePreview(user)</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="chat-content">
+        @if (!string.IsNullOrEmpty(UsuarioSeleccionado))
+        {
+            <div class="chat-header">
+                <div class="user-icon" style="background-color:@Colores[UsuarioSeleccionado]">@UsuarioSeleccionado[0]</div>
+                <div class="user-name">@UsuarioSeleccionado</div>
+            </div>
+
+            <div class="messages">
+                @foreach (var msg in mensajes.Where(m => m.ConversacionCon == UsuarioSeleccionado))
+                {
+                    <div class="message @(msg.Nombre == "Tú" ? "sent" : "received")">
+                        <strong>@msg.Nombre:</strong>
+                        <span>@msg.Texto</span>
+                        <span class="timestamp">@msg.Hora.ToString("HH:mm")</span>
+                    </div>
+                }
+            </div>
+
+            <div class="input-container">
+                <label class="attach-btn">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="file" @onchange="EventCallback.Factory.Create<ChangeEventArgs>(this, HandleFileSelected)" hidden />
+                </label>
+
+                <input type="text" @bind="nuevoMensaje" class="form-control" placeholder="Escribe un mensaje..." />
+
+                <button class="btn-primary" @onclick="EnviarMensaje">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(nombreArchivo))
+            {
+                <div class="file-preview">
+                    <span>📎 Archivo: @nombreArchivo</span>
+                    <button class="send-file-btn" @onclick="EnviarArchivo">Enviar archivo</button>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-selection">Selecciona un usuario para comenzar a chatear.</p>
+        }
+    </div>
+</div>
+
+<style>
+    /* Animación de entrada */
+    .fade-in {
+        animation: fadeInZoom 0.8s ease-in-out;
+        opacity: 0;
+        transform: scale(0.95);
+        animation-fill-mode: forwards;
+    }
+
+    @@keyframes fadeInZoom {
+        0% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .chat-page {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        height: calc(100vh - 4rem);
+        gap: 1rem;
+        background: #ffffff;
+        padding: 1rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow-y: hidden;
+    }
+
+    .chat-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+        background-color: #f0f9ff;
+        border-radius: 10px 10px 0 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+        .chat-header .user-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .chat-header .user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+    /* Lista de usuarios */
+    .user-list {
+        background: #f0f9ff;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        position: relative;
+        background: #ffffff;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .user-item:hover {
+            background-color: #e0f2fe;
+            transform: scale(1.02);
+        }
+
+        .user-item.unread {
+            background-color: #ffeeba;
+        }
+
+    .user-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .user-info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .user-name {
+        font-weight: bold;
+        color: #2563eb;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: calc(13ch);
+        display: inline-block;
+        cursor: default;
+    }
+
+    .last-message {
+        font-size: 0.9rem;
+        color: gray;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
+
+    /* Contenido del chat */
+    .chat-content {
+        display: flex;
+        flex-direction: column;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .message {
+        margin-bottom: 0.8rem;
+        padding: 0.8rem 1rem;
+        border-radius: 15px;
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+
+        .message.sent {
+            background-color: #d1f7c4;
+            align-self: flex-end;
+            text-align: right;
+            margin-left: auto;
+        }
+
+        .message.received {
+            background-color: #e9ecef;
+            align-self: flex-start;
+            text-align: left;
+            margin-right: auto;
+        }
+
+    .timestamp {
+        display: block;
+        font-size: 0.8rem;
+        color: gray;
+        margin-top: 0.2rem;
+    }
+
+    .input-container {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .form-control {
+        flex-grow: 1;
+        padding: 0.8rem;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+    }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+        }
+
+    /* 📎 Botón de Adjuntar Archivo */
+    .attach-btn {
+        background-color: transparent;
+        border: none;
+        font-size: 1.4rem;
+        cursor: pointer;
+        color: #3b82f6;
+        transition: transform 0.2s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+    }
+
+        .attach-btn:hover {
+            transform: scale(1.2);
+            color: #2563eb;
+        }
+
+    /* 🎞 Vista previa del archivo */
+    .file-preview {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f0f9ff;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    /* 📷 Vista previa de imágenes */
+    .preview-image {
+        max-width: 150px;
+        max-height: 150px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    /* 🎥 Vista previa de videos */
+    .preview-video {
+        max-width: 200px;
+        max-height: 200px;
+        margin-top: 10px;
+    }
+
+    /* 📤 Botón de enviar archivo */
+    .send-file-btn {
+        margin-top: 10px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        font-size: 1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .send-file-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+    /* 🖼 Miniaturas en el chat */
+    .preview-thumbnail {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 5px;
+        margin-top: 5px;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .preview-thumbnail:hover {
+            transform: scale(1.1);
+        }
+
+    /* 📎 Archivos */
+    .fa-file {
+        font-size: 1.5rem;
+        color: #3b82f6;
+    }
+
+    .no-selection {
+        padding: 1rem;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
+
+    .user-name {
+    font-weight: bold;
+    color: #2563eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    cursor: default;
+}
+
+</style>
+
+@code {
+    private IBrowserFile archivoSeleccionado;
+private string nombreArchivo = "";
+
+private async Task HandleFileSelected(ChangeEventArgs e)
+{
+    if (e?.Value is not null && e.Value is IBrowserFile archivo)
+    {
+        archivoSeleccionado = archivo;
+        nombreArchivo = archivo.Name;
+    }
+    else if (e?.Value is not null && e.Value is not string) // caso de múltiples archivos o casting indirecto
+    {
+        var files = (e.Value as Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs);
+        archivoSeleccionado = files?.File;
+        nombreArchivo = archivoSeleccionado?.Name ?? "";
+    }
+}
+
+
+    private List<string> usuarios = new()
+{
+    "Profesor Juan", "Profesora Marta", "Profesor Carlos",
+    "Directora Gabriela", // Nuevo usuario
+    "Ana", "Mario", "Luisa", "Sofía"
+};
+
+    private Dictionary<string, string> Colores = new()
+        {
+            ["Profesor Juan"] = "#3b82f6",
+            ["Profesora Marta"] = "#f59e0b",
+            ["Profesor Carlos"] = "#8b5cf6",
+            ["Directora Gabriela"] = "#9333ea", // Color lila intenso
+            ["Ana"] = "#10b981",
+            ["Mario"] = "#6366f1",
+            ["Luisa"] = "#ec4899",
+            ["Sofía"] = "#14b8a6"
+        };
+
+    private string UsuarioSeleccionado = "";
+    private string nuevoMensaje = "";
+
+    private List<MensajeChat> mensajes = new()
+{
+    // Profesor Juan
+    new MensajeChat { ConversacionCon = "Profesor Juan", Nombre = "Tú", Texto = "Juan, ¿confirmaste el contenido para el examen?", Hora = DateTime.Now.AddMinutes(-20), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Profesor Juan", Nombre = "Profesor Juan", Texto = "Sí, ya revisé los temas y todo está listo.", Hora = DateTime.Now.AddMinutes(-19), EsProfesor = false },
+
+    // Profesora Marta
+    new MensajeChat { ConversacionCon = "Profesora Marta", Nombre = "Tú", Texto = "¿Tienes lista la presentación de biología?", Hora = DateTime.Now.AddMinutes(-18), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Profesora Marta", Nombre = "Profesora Marta", Texto = "Sí, ya está preparada para mañana.", Hora = DateTime.Now.AddMinutes(-17), EsProfesor = false },
+
+    // Directora Gabriela
+    new MensajeChat { ConversacionCon = "Directora Gabriela", Nombre = "Tú", Texto = "Directora, ¿puede revisar el informe mensual?", Hora = DateTime.Now.AddMinutes(-25), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Directora Gabriela", Nombre = "Directora Gabriela", Texto = "Claro, lo reviso esta tarde con calma.", Hora = DateTime.Now.AddMinutes(-24), EsProfesor = false },
+
+    // Ana
+    new MensajeChat { ConversacionCon = "Ana", Nombre = "Tú", Texto = "Ana, ¿cómo vas con los ejercicios?", Hora = DateTime.Now.AddMinutes(-16), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Ana", Nombre = "Ana", Texto = "Voy bien profe, solo tengo dudas del último.", Hora = DateTime.Now.AddMinutes(-15), EsProfesor = false },
+
+    // Mario
+    new MensajeChat { ConversacionCon = "Mario", Nombre = "Tú", Texto = "Mario, no olvides traer la tarea.", Hora = DateTime.Now.AddMinutes(-14), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Mario", Nombre = "Mario", Texto = "¡Sí profe! Ya la terminé.", Hora = DateTime.Now.AddMinutes(-13), EsProfesor = false },
+
+    // Luisa
+    new MensajeChat { ConversacionCon = "Luisa", Nombre = "Tú", Texto = "Luisa, revisa el tema 3 antes del examen.", Hora = DateTime.Now.AddMinutes(-12), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Luisa", Nombre = "Luisa", Texto = "Entendido profe, lo repasaré esta noche.", Hora = DateTime.Now.AddMinutes(-11), EsProfesor = false },
+
+    // Profesor Carlos
+    new MensajeChat { ConversacionCon = "Profesor Carlos", Nombre = "Tú", Texto = "Carlos, ¿podrías compartir la rúbrica del ensayo?", Hora = DateTime.Now.AddMinutes(-10), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Profesor Carlos", Nombre = "Profesor Carlos", Texto = "Claro, te la envío en un momento.", Hora = DateTime.Now.AddMinutes(-9), EsProfesor = false },
+
+    // Sofía
+    new MensajeChat { ConversacionCon = "Sofía", Nombre = "Tú", Texto = "Sofía, tu avance en química es excelente.", Hora = DateTime.Now.AddMinutes(-8), EsProfesor = true },
+    new MensajeChat { ConversacionCon = "Sofía", Nombre = "Sofía", Texto = "¡Gracias profe! Me esforcé mucho.", Hora = DateTime.Now.AddMinutes(-7), EsProfesor = false }
+};
+
+
+    private void CargarMensajes(string usuario)
+    {
+        UsuarioSeleccionado = usuario;
+        nuevoMensaje = "";
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && string.IsNullOrEmpty(UsuarioSeleccionado) && usuarios.Count > 0)
+        {
+            CargarMensajes(usuarios[0]);
+            StateHasChanged(); // Forzar recarga visual
+        }
+    }
+
+    private void EnviarMensaje()
+    {
+        if (string.IsNullOrWhiteSpace(nuevoMensaje) || string.IsNullOrEmpty(UsuarioSeleccionado))
+            return;
+
+        mensajes.Add(new MensajeChat
+            {
+                ConversacionCon = UsuarioSeleccionado,
+                Nombre = "Tú",                 // Ahora es tú
+                Texto = nuevoMensaje,
+                Hora = DateTime.Now,
+                EsProfesor = true             // Para que se renderice a la derecha
+            });
+
+        nuevoMensaje = "";
+    }
+
+    private string GetLastMessagePreview(string usuario)
+    {
+        var conv = mensajes.Where(m => m.ConversacionCon == usuario).LastOrDefault();
+        return conv?.Texto.Length > 20 ? conv.Texto[..20] + "…" : conv?.Texto ?? "";
+    }
+
+    private class MensajeChat
+    {
+        public string ConversacionCon { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string Texto { get; set; } = "";
+        public DateTime Hora { get; set; }
+        public bool EsProfesor { get; set; }
+    }
+
+private void EnviarArchivo()
+{
+    if (archivoSeleccionado is null || string.IsNullOrEmpty(UsuarioSeleccionado))
+        return;
+
+    mensajes.Add(new MensajeChat
+    {
+        ConversacionCon = UsuarioSeleccionado,
+        Nombre = "Tú",
+        Texto = $"📎 Archivo enviado: {nombreArchivo}",
+        Hora = DateTime.Now,
+        EsProfesor = true
+    });
+
+    archivoSeleccionado = null;
+    nombreArchivo = "";
+}
+
+}
+

@@ -79,6 +79,10 @@
             <i class="fas fa-user-check"></i>
             <span>Asistencia</span>
         </div>
+        <div class="nav-item" @onclick="IrChat" tabindex="9">
+            <i class="fas fa-comments"></i>
+            <span>Chat</span>
+        </div>
     </nav>
 
     <div class="content-container">
@@ -664,6 +668,10 @@
             background-color: white;
         }
 
+    .notification-btn:hover {
+        color: #ffd700;
+    }
+
 </style>
 
 @code {
@@ -784,4 +792,6 @@
     };
         return colores[index % colores.Count];
     }
+
+    private void IrChat() => Navigation.NavigateTo("/chat-educativo-estudiante");
 }

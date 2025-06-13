@@ -38,9 +38,11 @@
                     </div>
                 }
             </div>
-            <button class="btn btn-back" @onclick="VolverAClase">
-                <i class="fa-solid fa-arrow-left me-1"></i> Volver a la clase
-            </button>
+            <div class="center-content">
+                <button class="btn btn-back" @onclick="VolverAClase">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Volver a la clase
+                </button>
+            </div>
         </div>
     </div>
 
@@ -85,8 +87,19 @@
             <div class="card gradient-blanco">
                 <h4 class="card-title"><i class="fa-solid fa-upload me-2"></i> Entregar Tarea</h4>
                 <div class="card-content">
-                    <textarea class="input input-textarea" placeholder="✏️ Comentario privado (opcional)" @bind="Comentario"></textarea>
-                    <input class="input input-link" placeholder="🔗 Enlace externo (opcional)" @bind="LinkEstudiante" />
+                    <div class="input-wrapper">
+                        <label for="comentario">
+                            <i class="fa-regular fa-pen-to-square me-1"></i> Comentario privado (opcional)
+                        </label>
+                        <textarea id="comentario" class="input input-textarea" @bind="Comentario"></textarea>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="enlace">
+                            <i class="fa-solid fa-link me-1"></i> Enlace externo (opcional)
+                        </label>
+                        <input id="enlace" class="input input-link" @bind="LinkEstudiante" />
+                    </div>
 
                     <label class="upload-label">
                         <i class="fa-solid fa-upload me-1"></i> Subir archivo
@@ -98,9 +111,11 @@
                         <p class="archivo-subido"><i class="fa-solid fa-file me-1"></i> @NombreArchivo</p>
                     }
 
-                    <button class="btn btn-submit" @onclick="ActivarModal">
-                        <i class="fa-solid fa-paper-plane me-1"></i> Enviar
-                    </button>
+                    <div class="center-content">
+                        <button class="btn btn-submit" @onclick="ActivarModal">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Enviar
+                        </button>
+                    </div>
                 </div>
             </div>
         }
@@ -239,8 +254,12 @@
     .btn-back {
         background: #546e7a;
         color: white;
-        width: 100%;
+        padding: 10px 24px;
+        border-radius: 10px;
         margin-top: 20px;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        box-shadow: 0 2px 6px rgba(84, 110, 122, 0.3);
     }
 
         .btn-back:hover {
@@ -316,6 +335,100 @@
         background: linear-gradient(to bottom right, #ffffff, #f4faff);
     }
 
+
+    .input {
+        width: 100%;
+        padding: 12px 16px;
+        margin-top: 10px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+        border: 1.5px solid #90caf9;
+        font-size: 0.95rem;
+        background: linear-gradient(to right, #ffffff, #e3f2fd);
+        color: #0d47a1;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 1px 4px rgba(66, 165, 245, 0.1);
+    }
+
+        .input:focus {
+            outline: none;
+            border-color: #42a5f5;
+            box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
+            background: linear-gradient(to right, #e3f2fd, #bbdefb);
+        }
+
+    .input-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .input-link {
+        margin-top: 6px;
+    }
+
+    .input-file-hidden {
+        display: none;
+    }
+
+    .upload-label {
+        background: linear-gradient(to right, #42a5f5, #64b5f6);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-top: 16px;
+        font-weight: 600;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        text-wrap: balance;
+        box-shadow: 0 2px 6px rgba(66, 165, 245, 0.3);
+    }
+
+        .upload-label:hover {
+            background: linear-gradient(to right, #2196f3, #42a5f5);
+        }
+
+    .archivo-subido {
+        background: #e3f2fd;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        color: #0d47a1;
+        margin-top: 12px;
+        word-break: break-word;
+        box-shadow: inset 0 1px 4px rgba(66, 165, 245, 0.2);
+    }
+
+    .btn-submit {
+        background: linear-gradient(to right, #66bb6a, #43a047);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: bold;
+        box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+        .btn-submit:hover {
+            background: linear-gradient(to right, #388e3c, #2e7d32);
+            transform: translateY(-1px);
+        }
+
+    .center-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sidebar-card .card-title {
+        color: #0064e3; /* Celeste claro */
+    }
+
+        .sidebar-card .card-title i {
+            color: #0064e3;
+        }
 </style>
 
 @code {
