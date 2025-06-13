@@ -8,7 +8,11 @@
 @inject AsistenciaService AsistenciaService
 @inject NavigationManager Navigation
 
-<h2 class="titulo-verde"><i class="fas fa-clipboard-check"></i> Registro de Asistencia</h2>
+<div class="header-container">
+    <h2 class="asistencia-title">
+        <i class="fas fa-clipboard-check"></i> Registro de Asistencia
+    </h2>
+</div>
 
 @if (UsuarioAutenticado == null)
 {
@@ -20,9 +24,9 @@ else if (Clases.Count == 0)
 }
 else
 {
-    <div class="asistencia-form">
+    <div class="asistencia-form card-style">
         <label><i class="fas fa-chalkboard-teacher"></i> Selecciona una clase:</label>
-        <select @bind="ClaseSeleccionadaId" class="form-control">
+        <select @bind="ClaseSeleccionadaId" class="form-control input-blue">
             <option value="">-- Seleccionar --</option>
             @foreach (var clase in Clases)
             {
@@ -31,123 +35,451 @@ else
         </select>
 
         <label><i class="fas fa-calendar-day"></i> Fecha:</label>
-        <input type="date" @bind="FechaSeleccionada" class="form-control" />
+        <input type="date" @bind="FechaSeleccionada" class="form-control input-blue" />
 
-        <button class="btn btn-success" @onclick="CargarEstudiantes">
+        <button class="btn-blue" @onclick="CargarEstudiantes">
             <i class="fas fa-users"></i> Cargar Estudiantes
         </button>
     </div>
+}
 
-    @if (Estudiantes.Count > 0)
-    {
-        <div class="tabla-asistencia">
-            <table class="table table-bordered table-striped mt-4">
-                <thead class="table-success">
-                    <tr>
-                        <th><i class="fas fa-user"></i> Estudiante</th>
-                        <th><i class="fas fa-check-circle"></i> Asistencia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var est in Estudiantes)
-                    {
-                        <tr>
-                            <td>@est.Usuario.Nombre</td>
-                            <td>
-                                <input type="checkbox" @bind="est.Asistio" class="form-check-input" />
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+@if (MostrarVistaPrevia)
+{
+    <div class="modal-overlay">
+        <div class="modal-box enhanced-schedule">
+            <div class="modal-header">
+                <i class="fas fa-users modal-icon"></i>
+                <h2>Vista Previa de Asistencia</h2>
+            </div>
+            <div class="modal-content">
+                @if (Estudiantes.Count == 0)
+                {
+                    <p>No se encontraron estudiantes para esta clase y fecha.</p>
+                }
+                else
+                {
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user"></i> Estudiante</th>
+                                <th><i class="fas fa-check-circle"></i> Asistencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var est in Estudiantes)
+                            {
+                                <tr>
+                                    <td>
+                                        @est.Usuario.Nombre
+                                        @if (est.Asistio)
+                                        {
+                                            <span class="badge-asistio">
+                                                <i class="fas fa-check-circle icono-asistio"></i> Asistió
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-falto">
+                                                <i class="fas fa-times-circle icono-falto"></i> Faltó
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" @bind="est.Asistio" class="form-check-input" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
 
-            <button class="btn btn-primary mt-3" @onclick="GuardarAsistencia">
-                <i class="fas fa-save"></i> Guardar Asistencia
-            </button>
+                    <div class="resumen-asistencia">
+                        <p><i class="fas fa-users"></i> Total estudiantes: <strong>@Estudiantes.Count</strong></p>
+                        <p><i class="fas fa-user-check text-green"></i> Asistieron: <strong>@TotalAsistieron</strong></p>
+                        <p><i class="fas fa-user-times text-red"></i> Faltaron: <strong>@TotalFaltaron</strong></p>
+                    </div>
 
-            <div class="resumen-asistencia">
-                <p><i class="fas fa-users"></i> Total estudiantes: <strong>@Estudiantes.Count</strong></p>
-                <p><i class="fas fa-user-check text-green"></i> Asistieron: <strong>@TotalAsistieron</strong></p>
-                <p><i class="fas fa-user-times text-red"></i> Faltaron: <strong>@TotalFaltaron</strong></p>
+                    <div class="modal-actions">
+                        <button class="modal-btn-green" @onclick="GuardarAsistencia">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        <button class="modal-btn-red" @onclick="() => MostrarVistaPrevia = false">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                    </div>
+                }
             </div>
         </div>
-    }
+    </div>
 }
 
 @if (MostrarModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-overlay">
+        <div class="modal-box enhanced-schedule">
+            <div class="modal-header">
+                <i class="fas fa-check-circle modal-icon"></i>
+                <h2>¡Asistencia guardada!</h2>
+            </div>
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-check-circle"></i> ¡Asistencia guardada!</h5>
-                    <button type="button" class="btn-close" @onclick="() => MostrarModal = false"></button>
-                </div>
-                <div class="modal-body">
-                    <p>La asistencia ha sido registrada correctamente para la fecha <strong>@FechaSeleccionada.ToString("dd MMM yyyy")</strong>.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-success" @onclick="() => MostrarModal = false">Aceptar</button>
-                </div>
+                <p>
+                    La asistencia ha sido registrada correctamente para la fecha
+                    <strong>@FechaSeleccionada.ToString("dd MMM yyyy")</strong>.
+                </p>
+                <button class="modal-btn-green" @onclick="() => MostrarModal = false">
+                    <i class="fas fa-check"></i> Aceptar
+                </button>
             </div>
         </div>
     </div>
 }
 
+
 <style>
-    .titulo-verde {
-        text-align: center;
-        color: #2e7d32;
-        margin-bottom: 25px;
-        font-size: 2rem;
-        font-weight: 600;
+    .header-container {
+        background: linear-gradient(90deg, #e3f2fd, #bbdefb);
+        padding: 16px 24px;
+        border-radius: 14px;
+        box-shadow: 0 4px 10px rgba(21, 101, 192, 0.12);
+        margin: 0 auto 30px auto;
+        max-width: 700px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    .asistencia-form {
-        max-width: 700px;
-        margin: auto;
-        background: #f1f8e9;
+    .asistencia-title {
+        text-align: center;
+        color: #003dd3;
+        font-size: 2.4rem;
+        font-weight: bold;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+
+    .card-style {
+        background: #f9fbfd;
+        padding: 35px 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 123, 255, 0.1);
+        margin: 30px auto;
+        max-width: 960px;
+        width: 90%;
+    }
+
+    .input-blue {
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 2px solid #a5d6f9;
+        background: #eaf4fd;
+        color: #1a3c5a;
+        width: 100%;
+        font-size: 1rem;
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .input-blue:focus {
+            border-color: #42a5f5;
+            outline: none;
+            box-shadow: 0 0 6px rgba(66, 165, 245, 0.4);
+        }
+
+    select.input-blue option {
+        background-color: #ceeaff; /* celeste suave */
+        color: #0d47a1; /* azul oscuro para el texto */
+    }
+
+
+    .btn-blue {
+        background-color: #42a5f5;
+        color: white;
+        padding: 14px 24px;
+        border-radius: 12px;
+        border: none;
+        font-weight: bold;
+        font-size: 1.05rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 25px;
+    }
+
+        .btn-blue:hover {
+            background-color: #1e88e5;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(30, 136, 229, 0.25);
+        }
+
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+        .custom-table thead {
+            background-color: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 14px;
+            border: 1px solid #e3f2fd;
+            text-align: left;
+        }
+
+        .custom-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+    .resumen-asistencia {
+        margin-top: 30px;
         padding: 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: #e3f2fd;
+        color: #0d47a1;
+        font-size: 1rem;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.05);
     }
 
-    .form-control {
-        margin-bottom: 15px;
+        .resumen-asistencia p {
+            margin: 6px 0;
+        }
+
+    .text-green {
+        color: #388e3c;
     }
 
-    .tabla-asistencia {
-        max-width: 800px;
-        margin: auto;
+    .text-red {
+        color: #d32f2f;
+    }
+
+    .badge-asistio {
+        background-color: #e8f5e9;
+        color: #388e3c;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .badge-falto {
+        background-color: #ffebee;
+        color: #d32f2f;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .form-check-input {
+        transform: scale(1.3);
+        accent-color: #42a5f5;
+    }
+
+    .icono-asistio {
+        color: #388e3c;
+        font-size: 1.1rem;
+        margin-right: 6px;
+    }
+
+    .icono-falto {
+        color: #d32f2f;
+        font-size: 1.1rem;
+        margin-right: 6px;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-box.enhanced-schedule {
+        width: 400px;
+        padding: 30px;
+        text-align: center;
+        border-radius: 18px;
+        color: white;
+        position: relative;
+        animation: fadeIn 0.4s ease-out;
+        background: linear-gradient(270deg, #64b5f6, #42a5f5, #81d4fa);
+        background-size: 600% 600%;
+        animation: gradientFlow 6s ease infinite;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .modal-icon {
+        font-size: 2.5rem;
+        color: #ffffff;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        margin-bottom: 10px;
+        animation: pulse 1s infinite alternate;
+    }
+
+    .modal-header h2 {
+        font-size: 1.4rem;
+        margin: 0;
+        color: white;
+    }
+
+    .modal-content {
+        margin-top: 10px;
+        color: white;
     }
 
     .no-data {
         text-align: center;
         margin-top: 30px;
         font-size: 1.1rem;
-        color: #888;
+        color: #607d8b;
     }
 
-    .resumen-asistencia {
-        margin-top: 20px;
-        background-color: #e8f5e9;
-        padding: 15px;
-        border: 1px solid #a5d6a7;
-        border-radius: 10px;
-        font-size: 1rem;
-        color: #33691e;
+    .asistencia-form label {
+        font-weight: 600;
+        color: #0d47a1;
+        margin-top: 10px;
+        display: block;
+    }
+
+    .tabla-asistencia {
         max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 0 auto;
+        margin-top: 30px;
     }
 
-    .text-green {
-        color: #2e7d32;
+    @@keyframes gradientFlow {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
     }
 
-    .text-red {
-        color: #c62828;
+    @@keyframes pulse {
+        from {
+            transform: scale(1);
+        }
+
+        to {
+            transform: scale(1.1);
+        }
     }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-box.mini-vista {
+        width: 480px;
+        max-height: 500px;
+        overflow-y: auto;
+        background: white;
+        color: #0d47a1;
+        padding: 25px;
+        border-radius: 16px;
+        text-align: left;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+        .modal-box.mini-vista .modal-header {
+            align-items: center;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+    .preview-list {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+        .preview-list li {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .modal-btn-green {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .modal-btn-green:hover {
+            background-color: #388e3c;
+            transform: scale(1.05);
+        }
+
+    .modal-btn-red {
+        background-color: #e53935;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(229, 57, 53, 0.3);
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .modal-btn-red:hover {
+            background-color: #c62828;
+            transform: scale(1.05);
+        }
+
 </style>
 
 @code {
@@ -159,6 +491,8 @@ else
     private bool MostrarModal = false;
     private int TotalAsistieron => Estudiantes.Count(e => e.Asistio);
     private int TotalFaltaron => Estudiantes.Count(e => !e.Asistio);
+    private bool MostrarVistaPrevia = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,12 +515,15 @@ else
             {
                 var reg = registros.FirstOrDefault(r => r.UsuarioId == e.Id);
                 return new AsistenciaRegistro
-                {
-                    Usuario = e,
-                    Asistio = reg?.Asistio ?? false
-                };
+                    {
+                        Usuario = e,
+                        Asistio = reg?.Asistio ?? false
+                    };
             }).ToList();
+
+        MostrarVistaPrevia = true; // ✅ Mostrar el modal al cargar
     }
+
 
     private async Task GuardarAsistencia()
     {

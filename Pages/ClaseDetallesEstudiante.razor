@@ -1,189 +1,231 @@
 ﻿@page "/clase-estudiante/{ClaseId:int}"
-
 @layout LayoutEstudiante
 @using EduSoft.Data
 @using EduSoft.Services
 @inject ClaseService ClaseService
-@inject NavigationManager Navigation
 @inject HorarioService HorarioService
-@inject AuthService AuthService
+@inject NavigationManager Navigation
 
-<div class="class-details-container">
-    @if (ClaseSeleccionada != null)
-    {
-        <div class="class-card">
-            <h2 class="class-title"><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada.Nombre</h2>
-            <div class="class-info">
-                <p><i class="fas fa-user-tie"></i> Profesor: <strong>@ClaseSeleccionada.Profesor</strong></p>
+<div class="class-header">
+    <div class="class-banner">
+        <h1><i class="fas fa-chalkboard-teacher"></i> @ClaseSeleccionada?.Nombre</h1>
+        <p><i class="fas fa-user"></i> Profesor: <strong>@ClaseSeleccionada?.Profesor</strong></p>
+        <p><i class="fas fa-key"></i> Código: @ClaseSeleccionada?.CodigoClase</p>
+        <p>
+            <i class="fas fa-clock"></i>
+            Horario: @(HorarioClaseSeleccionado != null
+            ? $"{HorarioClaseSeleccionado.HoraInicio:hh\\:mm} - {HorarioClaseSeleccionado.HoraFin:hh\\:mm} en {HorarioClaseSeleccionado.Aula}"
+            : "No asignado")
+        </p>
+    </div>
+</div>
 
-                @if (HorarioClaseSeleccionado != null)
-                {
-                    <p><i class="fas fa-clock"></i> Horario: <strong>@HorarioClaseSeleccionado.HoraInicio.ToString(@"hh\:mm") - @HorarioClaseSeleccionado.HoraFin.ToString(@"hh\:mm")</strong></p>
-                    <p><i class="fas fa-door-open"></i> Aula: <strong>@HorarioClaseSeleccionado.Aula</strong></p>
-                }
-                else
-                {
-                    <p><i class="fas fa-clock"></i> Horario: <strong>No asignado</strong></p>
-                }
+<div class="video-call-button-container">
+    <button class="btn-video-call" @onclick="() => Navigation.NavigateTo(VideoLlamadaUrl, true)">
+        <i class="fas fa-video"></i> Unirse a la Videollamada
+    </button>
+</div>
 
-                <p><i class="fas fa-key"></i> Código de Clase: <strong>@ClaseSeleccionada.CodigoClase</strong></p>
-            </div>
-
-            <h3 class="task-title"><i class="fas fa-tasks"></i> Tareas Asignadas</h3>
-            <div class="task-container">
-                @if (Tareas.Count > 0)
-                {
-                    @foreach (var tarea in Tareas)
-                    {
-                        <div class="task-card" @onclick="() => IrADetalleTarea(tarea.Id)">
-                            <p><i class="fas fa-file-alt"></i> @tarea.Titulo</p>
-                            <span class="due-date"><i class="fas fa-calendar-alt"></i> Entrega: @tarea.FechaEntrega.ToShortDateString()</span>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="no-tasks"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
-                }
-            </div>
-            <button @onclick="VolverAlDashboard" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
+<div class="tareas-container">
+    <div class="contenedor-titulo">
+        <div class="seccion-titulo">
+            <i class="fas fa-tasks"></i> Tareas Asignadas
         </div>
+    </div>
+
+
+    @if (Tareas.Count > 0)
+    {
+        @foreach (var tarea in Tareas)
+        {
+            <div class="tarea-card" @onclick="() => IrADetalleTarea(tarea.Id)">
+                <div class="tarea-header">
+                    @tarea.Titulo
+                    @if (tarea.EsExamen)
+                    {
+                        <span class="badge-examen"><i class="fas fa-file-signature"></i> Examen</span>
+                    }
+                </div>
+                <div class="tarea-body">
+                    <p class="descripcion">@tarea.Descripcion</p>
+                    <span class="fecha"><i class="fas fa-calendar-day"></i> @tarea.FechaEntrega.ToString("dd MMM yyyy")</span>
+                </div>
+            </div>
+        }
     }
     else
     {
-        <div class="error-container">
-            <p class="error-message"><i class="fas fa-exclamation-triangle"></i> No se encontró la clase.</p>
-            <button @onclick="VolverAlDashboard" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
-        </div>
+        <p class="no-data"><i class="fas fa-exclamation-circle"></i> No hay tareas asignadas.</p>
     }
 </div>
 
+<div class="boton-volver-container">
+    <button class="btn-volver" @onclick="VolverAlDashboard">
+        <i class="fas fa-arrow-left"></i> Volver al Dashboard
+    </button>
+</div>
+
 <style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #e2f4ff, #95d6ff);
-        margin: 0;
-        padding: 20px;
-    }
-
-    .class-details-container {
-        max-width: 800px;
-        margin: auto;
-        background: #ffffff;
-        padding: 30px;
+    .class-header {
+        background: linear-gradient(to right, #6ec6ff, #2196f3);
+        color: white;
+        padding: 25px;
+        text-align: center;
         border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        animation: fadeIn 0.8s ease-in-out;
+        margin-bottom: 30px;
     }
 
-    .class-card {
-        text-align: center;
-    }
-
-    .class-title {
-        color: #1E40AF;
-        font-size: 1.8rem;
-        margin-bottom: 10px;
-    }
-
-    .class-info {
-        background: #E3F2FD;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-
-        .class-info p {
-            font-size: 1rem;
-            color: #2C5282;
-            margin: 5px 0;
+        .class-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
         }
 
-    .task-title {
-        color: #1E3A8A;
-        font-size: 1.5rem;
-        margin-bottom: 10px;
+    .video-call-button-container {
+        margin-top: 10px;
+        text-align: center;
+        margin-bottom: 30px;
     }
 
-    .task-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .task-card {
-        background: #E3F2FD;
-        padding: 15px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 1rem;
-        color: #2C5282;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-    }
-
-    .due-date {
-        font-size: 0.9rem;
-        color: #E53E3E;
-        font-weight: bold;
-    }
-
-    .no-tasks {
-        font-size: 1rem;
-        color: #A0AEC0;
-    }
-
-    .btn-back {
-        background: #3182CE;
+    .btn-video-call {
+        background: linear-gradient(to right, #42a5f5, #1e88e5);
         color: white;
         border: none;
-        padding: 12px;
-        border-radius: 8px;
+        padding: 12px 28px;
+        border-radius: 30px;
         font-size: 1rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         cursor: pointer;
-        margin-top: 20px;
-        transition: background 0.3s, transform 0.2s;
-        width: 100%;
+        transition: transform 0.2s ease, background 0.3s ease;
     }
 
-        .btn-back:hover {
-            background: #2B6CB0;
+        .btn-video-call:hover {
+            background: linear-gradient(to right, #1976d2, #1565c0);
             transform: scale(1.05);
         }
 
-    .error-container {
+    .tareas-container {
+        padding: 20px 40px; /* más horizontal */
+        width: 100%;
+        max-width: none; /* elimina restricción de ancho */
+        box-sizing: border-box;
+    }
+
+    .tarea-card {
+        width: 100%;
+    }
+
+        .tareas-container h2 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+    .tarea-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        cursor: pointer;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+        .tarea-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .tarea-header {
+        background: #2196f3;
+        color: white;
+        padding: 12px 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .tarea-body {
+        background: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .descripcion {
+        margin: 0;
+        color: #2c3e50;
+        flex: 1;
+    }
+
+    .fecha {
+        font-size: 0.9rem;
+        color: #e53935;
+        font-weight: 500;
+        margin-left: 20px;
+        white-space: nowrap;
+    }
+
+    .badge-examen {
+        background: #e53935;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        margin-left: 12px;
+    }
+
+    .no-data {
         text-align: center;
-        background: #FFE4E1;
-        padding: 20px;
-        border-radius: 8px;
+        color: #999;
+        font-style: italic;
+        font-size: 1.05rem;
     }
 
-    .error-message {
-        color: #E53E3E;
+    .boton-volver-container {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .btn-volver {
+        background: #1565c0;
+        color: white;
+        border: none;
+        padding: 12px 28px;
         font-size: 1rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
     }
 
-    @@keyframes fadeIn {
-        from
+        .btn-volver:hover {
+            background: #0d47a1;
+            transform: scale(1.05);
+        }
 
-    {
-        opacity: 0;
-        transform: translateY(-10px);
+    .contenedor-titulo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 25px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .seccion-titulo {
+        background-color: #e1f2ff; /* celeste suave */
+        color: #1565c0; /* azul más vivo */
+        padding: 10px 22px;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(21, 101, 192, 0.15);
+        text-align: center;
+        transition: transform 0.2s ease;
     }
 
-    }
+        .seccion-titulo i {
+            font-size: 1.1rem;
+        }
+
 </style>
 
 @code {
@@ -191,6 +233,7 @@
     private Clase? ClaseSeleccionada;
     private HorarioClase? HorarioClaseSeleccionado;
     private List<Tarea> Tareas = new();
+    private string VideoLlamadaUrl = "https://meet.google.com/mfy-tbgg-jyw?authuser=5";
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,13 +245,13 @@
         }
     }
 
-    private void VolverAlDashboard()
-    {
-        Navigation.NavigateTo("/dashboard-estudiante");
-    }
-
     private void IrADetalleTarea(int tareaId)
     {
         Navigation.NavigateTo($"/tarea-detalle-estudiante/{tareaId}");
+    }
+
+    private void VolverAlDashboard()
+    {
+        Navigation.NavigateTo("/dashboard-estudiante");
     }
 }

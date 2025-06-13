@@ -12,7 +12,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 
     <link href="css/site.css" rel="stylesheet" />
     <link href="EduSoft.styles.css" rel="stylesheet" />
@@ -54,6 +54,121 @@
             window.open(url, '_blank');
         };
     </script>
+
+    <script>
+        window.voiceRecognition = {
+            recognizer: null,
+            isRecording: false,
+
+            startRecognition: function (dotNetHelper) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("Tu navegador no soporta reconocimiento de voz.");
+                    return;
+                }
+
+                const recognition = new SpeechRecognition();
+                recognition.lang = "es-ES";
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                this.recognizer = recognition;
+                this.isRecording = true;
+
+                recognition.onstart = () => {
+                    console.log("🎙️ Reconocimiento iniciado");
+                    dotNetHelper.invokeMethodAsync("MostrarGrabando");
+                };
+
+                recognition.onresult = async function (event) {
+                    const texto = event.results[0][0].transcript;
+                    console.log("🎤 Texto reconocido:", texto);
+
+                    // ✅ Envía a Blazor
+                    await dotNetHelper.invokeMethodAsync("TextoDesdeVoz", texto);
+
+                    // ✅ Detiene después de enviar
+                    voiceRecognition.recognizer.stop();
+                };
+
+                recognition.onerror = function (event) {
+                    console.error("❌ Error en reconocimiento:", event.error);
+                    dotNetHelper.invokeMethodAsync("OcultarGrabando");
+                };
+
+                recognition.onend = function () {
+                    console.log("🎤 Grabación finalizada");
+                    voiceRecognition.isRecording = false;
+                    dotNetHelper.invokeMethodAsync("OcultarGrabando");
+                };
+
+                recognition.start();
+            },
+
+            stopRecognition: function () {
+                if (this.recognizer && this.isRecording) {
+                    this.recognizer.stop();
+                    this.isRecording = false;
+                }
+            }
+        };
+    </script>
+
+    <script>
+        window.scrollChatToBottom = () => {
+            const box = document.querySelector('.chat-box');
+            if (box) {
+                box.scrollTop = box.scrollHeight;
+            }
+        };
+    </script>
+
+    <script>
+        window.scrollChatToBottom = () => {
+            setTimeout(() => {
+                const anchor = document.getElementById("scroll-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: "smooth", block: "end" });
+                }
+            }, 100); // 👈 Espera un poco para asegurar render completo
+        };
+    </script>
+
+    <script>
+        window.hablarTexto = (texto) => {
+            if (!('speechSynthesis' in window)) return;
+
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = "es-ES";
+            utterance.rate = 0.95;
+            utterance.pitch = 1.2;
+            utterance.volume = 1;
+
+            const asignarVozYHablar = () => {
+                const voces = speechSynthesis.getVoices();
+                const vozFemenina = voces.find(v =>
+                    v.name.toLowerCase().includes("female")
+                );
+
+                if (vozFemenina) {
+                    utterance.voice = vozFemenina;
+                }
+
+                speechSynthesis.speak(utterance);
+            };
+
+            if (speechSynthesis.getVoices().length === 0) {
+                const handler = () => {
+                    asignarVozYHablar();
+                    speechSynthesis.onvoiceschanged = null; // ❌ no repetir
+                };
+                speechSynthesis.onvoiceschanged = handler;
+            } else {
+                asignarVozYHablar();
+            }
+        };
+    </script>
+
 
 
 

@@ -5,110 +5,189 @@
 @inject AuthService AuthService
 @inject ClaseService ClaseService
 
-<h2 class="titulo"><i class="fas fa-star-half-alt"></i> Mis Calificaciones</h2>
+<div class="calificaciones-wrapper">
+    <h2 class="titulo-notas"><i class="fas fa-star-half-alt"></i> Mis Calificaciones</h2>
 
-@if (NotasPorClase.Count == 0)
-{
-    <p class="no-data">No hay calificaciones registradas.</p>
-}
-else
-{
-    @foreach (var claseNotas in NotasPorClase)
+    @if (NotasPorClase.Count == 0)
     {
-        <div class="clase-card">
-            <h3><i class="fas fa-book-open"></i> @claseNotas.NombreClase</h3>
-            <table class="tabla-notas">
-                <thead>
-                    <tr>
-                        <th>Tarea</th>
-                        <th>Nota</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var nota in claseNotas.Notas)
-                    {
-                        <tr>
-                            <td>@nota.TituloTarea</td>
-                            <td>
-                                @if (nota.Nota.HasValue)
-                                {
-                                    <span class="badge-nota">@nota.Nota.Value</span>
-                                }
-                                else
-                                {
-                                    <span class="badge-pendiente">Pendiente</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="no-data-box">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No hay calificaciones registradas aún.</p>
         </div>
     }
-}
+    else
+    {
+        <div class="grid-clases">
+            @foreach (var item in NotasPorClase.Select((clase, i) => (clase, i)))
+            {
+                var colorClase = ColoresPastel[item.i % ColoresPastel.Length];
+
+                <div class="nota-card" style="border-left-color:@colorClase.Color;">
+                    <div class="nota-header" style="color:@colorClase.Color;">
+                        <i class="@colorClase.Icono"></i>
+                        <h3>@item.clase.NombreClase</h3>
+                    </div>
+                    <div class="tabla-wrapper">
+                        <table class="tabla-notas" style="border-color:@colorClase.Color;">
+                            <thead style="background-color:@colorClase.Bg; color:@colorClase.Text;">
+                                <tr>
+                                    <th>Tarea</th>
+                                    <th>Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var nota in item.clase.Notas)
+                                {
+                                    <tr>
+                                        <td>@nota.TituloTarea</td>
+                                        <td>
+                                            @if (nota.Nota.HasValue)
+                                            {
+                                                <span class="badge-nota">@nota.Nota.Value</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-pendiente">Pendiente</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 <style>
-    .titulo {
-        text-align: center;
-        color: #0052D4;
-        margin-bottom: 30px;
+    .calificaciones-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
     }
 
-    .clase-card {
-        background: #f5f8fd;
-        padding: 20px;
-        margin-bottom: 25px;
+    .titulo-notas {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #87cefa, #00bfff);
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .no-data-box {
+        text-align: center;
+        padding: 30px;
+        background: #fff5e6;
+        color: #d35400;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        font-size: 1.1rem;
     }
 
-        .clase-card h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
+        .no-data-box i {
+            font-size: 2rem;
+            margin-bottom: 10px;
         }
+
+    .grid-clases {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 25px;
+    }
+
+    .nota-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+        border-left: 6px solid;
+    }
+
+    .nota-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+        .nota-header i {
+            font-size: 1.5rem;
+        }
+
+        .nota-header h3 {
+            margin: 0;
+            font-size: 1.7rem;
+        }
+
+    .tabla-wrapper {
+        display: flex;
+        justify-content: center;
+    }
 
     .tabla-notas {
         width: 100%;
         border-collapse: collapse;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        text-align: center;
     }
 
-        .tabla-notas th, .tabla-notas td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: left;
+        .tabla-notas th,
+        .tabla-notas td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
         }
 
         .tabla-notas th {
-            background-color: #e0e7ff;
-            color: #2c3e50;
+            font-weight: 600;
         }
 
     .badge-nota {
         background: #2ecc71;
         color: white;
-        padding: 5px 10px;
-        border-radius: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
         font-weight: bold;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .badge-pendiente {
         background: #e67e22;
         color: white;
-        padding: 5px 10px;
-        border-radius: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
         font-weight: bold;
-    }
-
-    .no-data {
-        text-align: center;
-        font-style: italic;
-        color: #777;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 </style>
 
 @code {
     private Usuario? UsuarioAutenticado;
     private List<NotasClaseDto> NotasPorClase = new();
+
+    private (string Icono, string Color, string Bg, string Text)[] ColoresPastel = new[]
+    {
+        ("fas fa-book", "#42a5f5", "#e3f2fd", "#1565c0"),
+        ("fas fa-book-reader", "#66bb6a", "#e8f5e9", "#2e7d32"),
+        ("fas fa-book-open", "#ffb74d", "#fff3e0", "#e65100"),
+        ("fas fa-scroll", "#ba68c8", "#f3e5f5", "#6a1b9a"),
+        ("fas fa-flask", "#26c6da", "#e0f7fa", "#006064"),
+        ("fas fa-brain", "#ec407a", "#fce4ec", "#880e4f"),
+        ("fas fa-globe", "#ab47bc", "#ede7f6", "#4527a0"),
+        ("fas fa-laptop-code", "#ffa726", "#fff8e1", "#ef6c00")
+    };
 
     protected override async Task OnInitializedAsync()
     {

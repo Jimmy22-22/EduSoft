@@ -5,8 +5,11 @@
 @layout LayoutMaestro
 @inject AuthService AuthService
 
-
-<h2 class="titulo-principal"><i class="fas fa-tasks"></i> Gestión de Tareas</h2>
+<div class="header-container">
+    <h2 class="titulo-principal">
+        <i class="fas fa-tasks"></i> Gestión de Tareas
+    </h2>
+</div>
 
 <div class="selector-clase">
     <label for="claseSelect">Selecciona una clase:</label>
@@ -24,10 +27,15 @@
     <div class="tarjetas-tareas">
         @foreach (var tarea in Tareas)
         {
-            <div class="tarjeta-tarea">
+            var claseColor = ObtenerClaseColorAleatorio();
+            <!-- Este llama al método que retorna una clase random -->
+
+            <div class="tarjeta-tarea @claseColor">
                 <div class="tarjeta-header">
                     <i class="fas fa-book"></i> @tarea.Titulo
-                    <span class="fecha-entrega"><i class="fas fa-calendar-day"></i> @tarea.FechaEntrega.ToString("dd MMM yyyy")</span>
+                    <span class="fecha-entrega">
+                        <i class="fas fa-calendar-day"></i> @tarea.FechaEntrega.ToString("dd MMM yyyy")
+                    </span>
                 </div>
                 <div class="tarjeta-footer">
                     <button class="btn-ver" @onclick="() => VerEntregas(tarea.Id)">
@@ -38,6 +46,7 @@
         }
     </div>
 }
+
 else if (ClaseSeleccionadaId != null)
 {
     <p class="sin-tareas">No hay tareas disponibles para esta clase.</p>
@@ -45,53 +54,64 @@ else if (ClaseSeleccionadaId != null)
 
 @if (MostrarEntregas && Entregas != null)
 {
-    <h3 class="subtitulo">Entregas de la Tarea</h3>
-    <table class="tabla-entregas">
-        <thead>
-            <tr>
-                <th><i class="fas fa-user"></i> Estudiante</th>
-                <th><i class="fas fa-star"></i> Calificación</th>
-                <th><i class="fas fa-cog"></i> Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entrega in Entregas)
-            {
-                <tr>
-                    <td>@entrega.Usuario.Nombre</td>
-                    <td>
-                        @if (entrega.Nota.HasValue)
+    <div class="modal-overlay">
+        <div class="modal-box tareas-modal">
+            <div class="modal-header">
+                <i class="fas fa-folder-open modal-icon"></i>
+                <h2>Entregas de la Tarea</h2>
+            </div>
+            <div class="modal-content">
+                <table class="tabla-entregas">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-user"></i> Estudiante</th>
+                            <th><i class="fas fa-star"></i> Calificación</th>
+                            <th><i class="fas fa-cog"></i> Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entrega in Entregas)
                         {
-                            <input type="number" @bind="entrega.Nota" min="0" max="100" class="nota-input" />
+                            <tr>
+                                <td>@entrega.Usuario.Nombre</td>
+                                <td>
+                                    @if (entrega.Nota.HasValue)
+                                    {
+                                        <input type="number" @bind="entrega.Nota" min="0" max="100" class="nota-input" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No entregado</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (entrega.Nota.HasValue)
+                                    {
+                                        <button class="btn-guardar" @onclick="() => CalificarEntrega(entrega)">
+                                            <i class="fas fa-save"></i> Guardar
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span class="text-muted">No entregado</span>
-                        }
-                    </td>
-                    <td>
-                        @if (entrega.Nota.HasValue)
-                        {
-                            <button class="btn-guardar" @onclick="() => CalificarEntrega(entrega)">
-                                <i class="fas fa-save"></i> Guardar
-                            </button>
-                        }
-                        else
-                        {
-                            <span class="text-muted">N/A</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </tbody>
+                </table>
+                <button class="btn-cerrar-modal" @onclick="() => MostrarEntregas = false">Cerrar</button>
+            </div>
+        </div>
+    </div>
 }
 
 <style>
-
     .titulo-principal {
         text-align: center;
-        color: #2e7d32; 
+        color: #1565c0;
+        font-size: 2.2rem;
+        font-weight: bold;
         margin-bottom: 30px;
     }
 
@@ -105,33 +125,28 @@ else if (ClaseSeleccionadaId != null)
             font-weight: 600;
             display: block;
             margin-bottom: 6px;
-            color: black;
+            color: #0d47a1;
         }
-
 
     .form-select {
         width: 100%;
         padding: 10px 14px;
-        border: 1.5px solid black;
+        border: 2px solid #90caf9;
         border-radius: 10px;
         font-size: 1rem;
-        color: black;
-        background-color: white !important;
+        color: #0d47a1;
+        background-color: #e3f2fd;
         appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        transition: border-color 0.3s ease, background-color 0.3s ease;
-        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
         .form-select:hover,
         .form-select:focus {
-            border-color: #1b5e20; 
+            border-color: #42a5f5;
             outline: none;
-            background-color: #f0f0f0;
+            background-color: #f0f8ff;
         }
 
-    /* Tarjetas */
     .tarjetas-tareas {
         display: flex;
         flex-wrap: wrap;
@@ -140,9 +155,9 @@ else if (ClaseSeleccionadaId != null)
     }
 
     .tarjeta-tarea {
-        background: #c8e6c9; 
+        background: #f0f7ff;
         border-radius: 12px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         width: 300px;
         padding: 15px;
         display: flex;
@@ -153,7 +168,7 @@ else if (ClaseSeleccionadaId != null)
     .tarjeta-header {
         font-weight: 600;
         font-size: 1.1rem;
-        color: #2e7d32; 
+        color: #1565c0;
         margin-bottom: 10px;
     }
 
@@ -168,9 +183,8 @@ else if (ClaseSeleccionadaId != null)
         text-align: right;
     }
 
-
     .btn-ver {
-        background: #388e3c; 
+        background: #1976d2;
         color: white;
         border: none;
         padding: 8px 14px;
@@ -180,41 +194,40 @@ else if (ClaseSeleccionadaId != null)
     }
 
         .btn-ver:hover {
-            background: #2e7d32;
+            background: #1565c0;
         }
-
 
     .subtitulo {
         text-align: center;
         margin-top: 40px;
         margin-bottom: 20px;
-        color: #333;
+        color: #0d47a1;
+        font-weight: 600;
+        font-size: 1.4rem;
     }
-
 
     .tabla-entregas {
         width: 100%;
         max-width: 900px;
         margin: auto;
         border-collapse: collapse;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         background-color: white;
-        border: 1.5px solid black;
-        border-radius: 10px;
+        border: 2px solid #bbdefb;
+        border-radius: 12px;
         overflow: hidden;
     }
 
         .tabla-entregas th, .tabla-entregas td {
-            border-bottom: 1.5px solid black;
+            border-bottom: 1px solid #e3f2fd;
             padding: 12px;
             text-align: center;
-            color: black;
+            color: #0d47a1;
         }
 
         .tabla-entregas th {
-            background-color: #c8e6c9; 
+            background-color: #bbdefb;
             font-weight: 700;
-            border-bottom: 2px solid #2e7d32; 
         }
 
         .tabla-entregas tbody tr:nth-child(even) {
@@ -222,32 +235,29 @@ else if (ClaseSeleccionadaId != null)
         }
 
         .tabla-entregas tbody tr:hover {
-            background-color: #dcedc8; 
+            background-color: #e3f2fd;
             cursor: default;
         }
-
-
 
     .nota-input {
         width: 80px;
         padding: 5px;
         border-radius: 6px;
         text-align: center;
-        border: 1.5px solid black;
-        color: black;
-        background-color: white;
+        border: 2px solid #90caf9;
+        color: #0d47a1;
+        background-color: #ffffff;
         transition: border-color 0.3s ease;
     }
 
         .nota-input:focus {
-            border-color: #2e7d32;
+            border-color: #42a5f5;
             outline: none;
-            background-color: #f9fff9;
+            background-color: #f0f8ff;
         }
 
-
     .btn-guardar {
-        background: #43a047; 
+        background: #1e88e5;
         color: white;
         border: none;
         padding: 6px 12px;
@@ -257,16 +267,161 @@ else if (ClaseSeleccionadaId != null)
     }
 
         .btn-guardar:hover {
-            background: #2e7d32;
+            background: #1565c0;
         }
-
 
     .sin-tareas {
         text-align: center;
         font-style: italic;
-        color: #999;
+        color: #607d8b;
         margin-top: 20px;
     }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-box.tareas-modal {
+        width: 90%;
+        max-width: 800px;
+        background: #e3f2fd;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-icon {
+        font-size: 2.2rem;
+        color: #1e88e5;
+        margin-bottom: 10px;
+    }
+
+    .modal-content {
+        color: #0d47a1;
+    }
+
+    .btn-cerrar-modal {
+        background-color: #1565c0;
+        color: white;
+        padding: 10px 16px;
+        margin-top: 20px;
+        border-radius: 10px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        float: right;
+    }
+
+        .btn-cerrar-modal:hover {
+            background-color: #0d47a1;
+        }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .tarjeta-rojo {
+        background: #ffebee;
+        border-left: 6px solid #e53935;
+    }
+
+    .tarjeta-azul {
+        background: #e3f2fd;
+        border-left: 6px solid #1e88e5;
+    }
+
+    .tarjeta-amarillo {
+        background: #fffde7;
+        border-left: 6px solid #fdd835;
+    }
+
+    .tarjeta-naranja {
+        background: #fff3e0;
+        border-left: 6px solid #fb8c00;
+    }
+
+    .tarjeta-verde {
+        background: #e8f5e9;
+        border-left: 6px solid #43a047;
+    }
+
+    .tarjeta-violeta {
+        background: #f3e5f5;
+        border-left: 6px solid #8e24aa;
+    }
+
+    /* Variantes para más alegría */
+    .tarjeta-celeste {
+        background: #e0f7fa;
+        border-left: 6px solid #00acc1;
+    }
+
+    .tarjeta-magenta {
+        background: #fce4ec;
+        border-left: 6px solid #d81b60;
+    }
+
+    .tarjeta-lima {
+        background: #f9fbe7;
+        border-left: 6px solid #c0ca33;
+    }
+
+    .tarjeta-rosado {
+        background: #fce4ec;
+        border-left: 6px solid #ec407a;
+    }
+
+    .header-container {
+        background: linear-gradient(90deg, #e3f2fd, #bbdefb);
+        padding: 16px 24px;
+        border-radius: 14px;
+        box-shadow: 0 4px 10px rgba(21, 101, 192, 0.12);
+        margin: 0 auto 30px auto;
+        max-width: 700px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .titulo-principal {
+        text-align: center;
+        color: #003dd3;
+        font-size: 2.2rem;
+        font-weight: bold;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
 </style>
 
 @code {
@@ -297,6 +452,28 @@ else if (ClaseSeleccionadaId != null)
             MostrarEntregas = false;
         }
     }
+
+    private string ObtenerClaseColorAleatorio()
+    {
+        var clases = new List<string>
+    {
+        "tarjeta-rojo",
+        "tarjeta-azul",
+        "tarjeta-amarillo",
+        "tarjeta-naranja",
+        "tarjeta-verde",
+        "tarjeta-violeta",
+        "tarjeta-celeste",
+        "tarjeta-magenta",
+        "tarjeta-lima",
+        "tarjeta-rosado"
+    };
+
+        var random = new Random();
+        int index = random.Next(clases.Count);
+        return clases[index];
+    }
+
 
     private async Task VerEntregas(int tareaId)
     {

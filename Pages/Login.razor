@@ -70,91 +70,107 @@ else
     }
 
     .login-box {
-        background: #F1F8FF;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background: #E3F2FD;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         text-align: center;
         max-width: 400px;
         width: 100%;
         animation: fadeIn 0.8s ease-in-out;
     }
 
-        .login-box h2 {
-            color: #2C5282;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-        }
+    .login-box h2 {
+        color: #1565C0;
+        margin-bottom: 25px;
+        font-size: 1.9rem;
+        font-weight: 700;
+    }
 
     .error-message {
-        color: #E53E3E;
-        background: rgba(229, 62, 62, 0.1);
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        font-size: 0.9rem;
+        color: #C62828;
+        background: rgba(198, 40, 40, 0.1);
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+        font-size: 0.95rem;
     }
 
     .input-group {
         text-align: left;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
     }
 
-        .input-group label {
-            font-weight: bold;
-            color: #2C5282;
-            font-size: 0.9rem;
-        }
+    .input-group label {
+        font-weight: 600;
+        color: #0D47A1;
+        font-size: 0.95rem;
+        margin-left: 5px;
+    }
 
     .input-field {
         width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border: 1px solid #63B3ED;
-        border-radius: 8px;
+        padding: 12px;
+        margin-top: 6px;
+        border: 2px solid #90CAF9;
+        border-radius: 14px;
         font-size: 1rem;
-        background: #EDF2F7;
-        color: #2C5282;
-        transition: border-color 0.3s;
+        background: #EAF4FE;
+        color: #0D47A1;
+        font-weight: 500;
+        transition: all 0.3s ease;
     }
 
-        .input-field:focus {
-            border-color: #4299E1;
-            outline: none;
-        }
+    .input-field:focus {
+        border-color: #42A5F5;
+        outline: none;
+        box-shadow: 0 0 6px rgba(66, 165, 245, 0.3);
+    }
 
     .btn-login {
-        background: #3182CE;
+        background: #1E88E5;
         color: white;
         border: none;
-        padding: 12px;
-        border-radius: 8px;
+        padding: 14px;
+        border-radius: 16px;
         font-size: 1rem;
+        font-weight: bold;
         cursor: pointer;
         width: 100%;
-        transition: background 0.3s, transform 0.2s;
+        margin-top: 20px;
+        transition: all 0.3s ease;
     }
 
-        .btn-login:hover {
-            background: #2B6CB0;
-            transform: scale(1.05);
-        }
+    .btn-login:hover {
+        background: #1565C0;
+        transform: scale(1.04);
+        box-shadow: 0 4px 10px rgba(21, 101, 192, 0.2);
+    }
 
     .register-link {
-        margin-top: 15px;
+        margin-top: 18px;
         font-size: 0.9rem;
-        color: #2C5282;
+        color: #0D47A1;
     }
 
-        .register-link a {
-            color: #3182CE;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    .register-link a {
+        color: #1E88E5;
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 4px;
+    }
 
-            .register-link a:hover {
-                text-decoration: underline;
-            }
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .input-field:focus,
+    .btn-login:focus,
+    a:focus {
+        outline: 2px solid #64B5F6;
+        box-shadow: 0 0 8px rgba(100, 181, 246, 0.5);
+        border-radius: 14px;
+    }
 
     @@keyframes fadeIn {
         from {
@@ -167,14 +183,8 @@ else
             transform: translateY(0);
         }
     }
-
-    .input-field:focus,
-    .btn-login:focus,
-    a:focus {
-        outline: 2px solid #3182CE;
-        box-shadow: 0 0 5px #3182CE;
-    }
 </style>
+
 
 @code {
     private string Email { get; set; } = string.Empty;

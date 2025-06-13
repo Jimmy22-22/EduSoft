@@ -8,31 +8,39 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<h2 class="schedule-title"><i class="fas fa-calendar-alt"></i> Horarios de Clases</h2>
+<div class="header-container">
+    <h2 class="schedule-title">
+        <i class="fas fa-calendar-alt"></i> Horarios de Clases
+    </h2>
 
-<div class="filter-container">
-    <label>Filtrar por Fecha:</label>
-    <input type="date" @bind="FechaFiltro" @bind:after="async () => await CargarDatos()" class="filter-input" />
-    <i class="fas fa-sync-alt reset-icon" @onclick="RestablecerFiltro" title="Restablecer"></i>
-    <i class="fas fa-plus-circle add-icon" @onclick="AbrirModalAgregar" title="Agregar Horario"></i>
+    <div class="filter-container">
+        <label>Filtrar por Fecha:</label>
+        <input type="date" @bind="FechaFiltro" @bind:after="async () => await CargarDatos()" class="filter-input" />
+        <i class="fas fa-sync-alt reset-icon" @onclick="RestablecerFiltro" title="Restablecer"></i>
+        <i class="fas fa-plus-circle add-icon" @onclick="AbrirModalAgregar" title="Agregar Horario"></i>
+    </div>
 </div>
+
 
 @if (Horarios.Count > 0)
 {
-    <div class="schedule-container">
+    <div class="schedule-grid">
         @foreach (var horario in Horarios)
         {
-            <div class="day-section">
-                <h3 class="day-title">
-                    <i class="fas fa-calendar-day"></i> @horario.Fecha.ToString("dddd, dd MMMM yyyy")
+            var colorClase = ObtenerClaseColorOrdenado(horario.ClaseId);
+            <div class="day-section" style="border-left: 6px solid @colorClase">
+                <h3 class="day-title" style="color:@colorClase">
+                    <i class="fas fa-calendar-day" style="color:@colorClase"></i> @horario.Fecha.ToString("dddd, dd MMMM yyyy")
                 </h3>
 
                 <ul class="schedule-list">
-                    <li class="schedule-item">
-                        <span class="time"><i class="fas fa-clock"></i> @horario.HoraInicio - @horario.HoraFin</span>
-                        <span class="subject"><i class="fas fa-book"></i> @horario.NombreClase</span>
-                        <span class="room"><i class="fas fa-door-open"></i> Aula: @horario.Aula</span>
-
+                    <li class="schedule-item" style="border-left: 6px solid @colorClase">
+                        <div class="schedule-item-content">
+                            <span class="time" style="color:@colorClase"><i class="fas fa-clock"></i> @horario.HoraInicio - @horario.HoraFin</span>
+                            <span class="subject" style="color:@colorClase"><i class="fas fa-book"></i> @horario.NombreClase</span>
+                            <span class="room" style="color:@colorClase"><i class="fas fa-door-open"></i> Aula: @horario.Aula</span>
+                        </div>
+                        <div class="divider" style="background:@colorClase"></div>
                         <div class="action-icons">
                             <i class="fas fa-edit edit-icon" @onclick="() => AbrirModalEditar(horario)" title="Editar"></i>
                             <i class="fas fa-trash-alt delete-icon" @onclick="() => EliminarHorario(horario.Id)" title="Eliminar"></i>
@@ -43,7 +51,6 @@
         }
     </div>
 }
-
 else
 {
     <p class="no-schedule"><i class="fas fa-calendar-times"></i> No tienes clases registradas en la fecha seleccionada.</p>
@@ -108,65 +115,157 @@ else
 
 
 <style>
-    .reset-icon,
-    .add-icon {
+    .horarios-page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #0d47a1;
+    }
+
+    .schedule-title {
+        font-size: 2rem;
+        text-align: center;
+        color: #1565c0;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .filter-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .filter-input {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 2px solid #90caf9;
+        font-size: 1rem;
+        background: #e3f2fd;
+        color: #0d47a1;
+    }
+
+    .reset-icon, .add-icon {
         font-size: 1.5rem;
-        color: #16A085;
+        color: #1976d2;
         cursor: pointer;
-        margin-left: 10px;
-        transition: transform 0.2s, color 0.3s;
+        transition: transform 0.3s, color 0.3s;
     }
 
-        .reset-icon:hover {
-            color: #138D75;
-            transform: rotate(180deg);
+        .reset-icon:hover, .add-icon:hover {
+            color: #0d47a1;
+            transform: scale(1.2);
         }
 
-        .add-icon:hover {
-            color: #1ABC9C;
-            transform: scale(1.1);
-        }
-
-    .edit-icon,
-    .delete-icon {
-        font-size: 1.3rem;
-        cursor: pointer;
-        margin-left: 10px;
-        transition: color 0.3s, transform 0.2s;
+    .schedule-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
     }
 
+    .day-section {
+        background: #f1f8ff;
+        border: 2px solid #bbdefb;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+        flex: 1 1 48%;
+        max-width: 48%;
+        box-sizing: border-box;
+    }
+
+    .day-title {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .schedule-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .schedule-item {
+        background: #ffffff;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .schedule-item span {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .divider {
+        height: 1px;
+        background: #bbdefb;
+        margin: 12px 0;
+        border-radius: 4px;
+    }
+
+    .no-schedule {
+        text-align: center;
+        font-size: 1.1rem;
+        color: #90a4ae;
+        margin-top: 40px;
+    }
+
+    .action-icons {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    .edit-icon, .delete-icon {
+        font-size: 1rem;
+        padding: 10px;
+        border-radius: 50%;
+        background-color: white;
+        border: 2px solid transparent;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+    }
 
     .edit-icon {
-        color: #F39C12;
+        color: #1565c0;
+        border-color: #90caf9;
     }
-
-        .edit-icon:hover {
-            color: #E67E22;
-            transform: scale(1.1);
-        }
 
     .delete-icon {
-        color: #E74C3C;
+        color: #d32f2f;
+        border-color: #ef9a9a;
     }
 
-        .delete-icon:hover {
-            color: #C0392B;
-            transform: scale(1.1);
-        }
-
-    @@keyframes fadeIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(-10px);
+    .edit-icon:hover {
+        background-color: #e3f2fd;
+        transform: scale(1.1);
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+    .delete-icon:hover {
+        background-color: #ffebee;
+        transform: scale(1.1);
     }
 
     .modal-overlay {
@@ -182,208 +281,37 @@ else
         z-index: 1000;
     }
 
-    .modal-box {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        width: 350px;
-    }
-
-    .modal-content {
-        margin-top: 15px;
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 1rem;
-    }
-
-    .modal-actions {
-        margin-top: 20px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .modal-button {
-        border: none;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        width: 48%;
-        transition: background 0.3s, transform 0.2s;
-    }
-
-    .confirm {
-        background: #16A085;
-        color: white;
-    }
-
-        .confirm:hover {
-            background: #138D75;
-            transform: scale(1.05);
-        }
-
-    .cancel {
-        background: #E74C3C;
-        color: white;
-    }
-
-        .cancel:hover {
-            background: #C0392B;
-            transform: scale(1.05);
-        }
-
-    .schedule-title {
-        color: #16A085;
-        text-align: center;
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-    }
-
-    .filter-container {
-        text-align: center;
-        margin-bottom: 15px;
-    }
-
-    .filter-input {
-        padding: 8px;
-        font-size: 1rem;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-    }
-
-    .schedule-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .day-section {
-        background: #E8F8F5;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .day-title {
-        font-size: 1.4rem;
-        color: #138D75;
-        margin-bottom: 10px;
-    }
-
-    .schedule-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .schedule-item {
-        background: #D1F2EB;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        font-size: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-        .schedule-item span {
-            color: #0E6251;
-        }
-
-     .time {
-        font-weight: bold;
-    }
-
-    .no-class, .no-schedule {
-        text-align: center;
-        font-size: 1.1rem;
-        color: #AAB7B8;
-    }
-
-    .add-schedule-title {
-        text-align: center;
-        color: #16A085;
-        font-size: 1.5rem;
-        margin-top: 30px;
-    }
-
-    .add-schedule-container {
-        background: #F8F9F9;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-        margin: 20px auto;
-    }
-
-    .input-group {
-        margin-bottom: 15px;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #B2BABB;
-        border-radius: 8px;
-        font-size: 1rem;
-    }
-
-     .btn-add-schedule {
-        background: #16A085;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        width: 100%;
-        transition: background 0.3s, transform 0.2s;
-    }
-
-        .btn-add-schedule:hover {
-            background: #138D75;
-            transform: scale(1.05);
-        }
-
     .modal-box.enhanced-schedule {
-        width: 360px;
-        padding: 25px 20px;
+        width: 400px;
+        padding: 30px;
         text-align: center;
-        border-radius: 16px;
+        border-radius: 18px;
         color: white;
         position: relative;
-        animation: fadeIn 0.4s ease-out;
-        background: linear-gradient(270deg, #a0f0d0, #16a085, #f9f871);
+        background: linear-gradient(270deg, #64b5f6, #42a5f5, #81d4fa);
         background-size: 600% 600%;
-        animation: gradientFlow 8s ease infinite;
-        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.08);
+        animation: gradientFlow 6s ease infinite;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+        animation: fadeIn 0.4s ease-out;
     }
 
     .modal-header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
     }
 
     .modal-icon {
-        font-size: 2.2rem;
-        color: #ffffff !important;
+        font-size: 2.5rem;
+        color: #ffffff;
         text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         animation: pulse 1s infinite alternate;
     }
 
     .modal-header h2 {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
         margin: 0;
         color: white;
     }
@@ -400,30 +328,30 @@ else
         .input-group label {
             display: block;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin-bottom: 5px;
             color: #ffffff;
         }
 
-    .enhanced-input {
-        font-size: 0.9rem;
-        padding: 8px;
+    .modal-input.enhanced-input {
+        font-size: 0.95rem;
+        padding: 10px;
         width: 100%;
         border-radius: 10px;
-        border: 2px solid #d0f0e0;
+        border: 2px solid #bbdefb;
         background: #ffffff;
-        color: #1e4d4b;
+        color: #1e3a5f;
         transition: border 0.3s, box-shadow 0.3s;
     }
 
-        .enhanced-input:focus {
-            border-color: #81c784;
-            box-shadow: 0 0 5px rgba(0, 255, 128, 0.3);
+        .modal-input.enhanced-input:focus {
+            border-color: #64b5f6;
+            box-shadow: 0 0 6px rgba(100, 181, 246, 0.6);
             outline: none;
         }
 
     .modal-actions {
-        margin-top: 15px;
+        margin-top: 20px;
         display: flex;
         justify-content: space-between;
         gap: 10px;
@@ -431,9 +359,9 @@ else
 
     .enhanced-btn {
         font-weight: bold;
-        font-size: 0.9rem;
-        padding: 10px 14px;
-        border-radius: 10px;
+        font-size: 0.95rem;
+        padding: 12px 16px;
+        border-radius: 12px;
         border: none;
         cursor: pointer;
         flex: 1;
@@ -441,12 +369,12 @@ else
     }
 
     .confirm.enhanced-btn {
-        background: #2ecc71;
-        color: white;
+        background: #4CAF50 !important;
+        color: white !important;
     }
 
     .cancel.enhanced-btn {
-        background: #e74c3c;
+        background: #e53935;
         color: white;
     }
 
@@ -455,6 +383,7 @@ else
         filter: brightness(1.1);
     }
 
+    /* Animaciones */
     @@keyframes gradientFlow {
         0%
 
@@ -499,7 +428,70 @@ else
     }
 
     }
+
+    .header-container {
+        background: linear-gradient(to right, #42a5f5, #64b5f6);
+        padding: 16px 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(66, 165, 245, 0.25);
+        margin-bottom: 25px;
+    }
+
+    .schedule-title {
+        font-size: 1.5rem;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px; /* 🔽 reducido */
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-container {
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 0; /* 🔽 sin espacio extra */
+    }
+
+    .filter-input {
+        padding: 6px 10px; /* 🔽 más compacto */
+        border-radius: 8px;
+        border: 2px solid #bbdefb;
+        font-size: 0.95rem;
+        background: #e3f2fd;
+        color: #0d47a1;
+        height: 36px; /* ✅ más bajito */
+    }
+
+    .reset-icon,
+    .add-icon {
+        font-size: 1.3rem;
+        color: #ffffff;
+        cursor: pointer;
+        transition: transform 0.3s, color 0.3s;
+        padding: 6px;
+        height: 36px;
+        width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+        .reset-icon:hover,
+        .add-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+        }
+
 </style>
+
 
 @code {
     private Usuario? UsuarioAutenticado;
@@ -551,6 +543,11 @@ else
     private void AbrirModalAgregar()
     {
         ModoEdicion = false;
+        ClaseSeleccionadaId = 0;
+        FechaHorario = DateTime.Today;
+        HoraInicio = default;
+        HoraFin = default;
+        Aula = string.Empty;
         MostrarModal = true;
         StateHasChanged();
     }
@@ -619,5 +616,24 @@ else
     {
         MostrarModal = false;
         StateHasChanged();
+    }
+
+    private readonly List<string> ColoresEnOrden = new()
+{
+    "#e53935", "#1e88e5", "#fdd835", "#fb8c00",
+    "#43a047", "#8e24aa", "#00acc1", "#d81b60",
+    "#c0ca33", "#ec407a"
+};
+
+    private Dictionary<int, string> ColoresPorClaseId = new();
+
+    private string ObtenerClaseColorOrdenado(int claseId)
+    {
+        if (!ColoresPorClaseId.ContainsKey(claseId))
+        {
+            var index = ColoresPorClaseId.Count % ColoresEnOrden.Count;
+            ColoresPorClaseId[claseId] = ColoresEnOrden[index];
+        }
+        return ColoresPorClaseId[claseId];
     }
 }

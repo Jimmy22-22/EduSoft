@@ -7,28 +7,97 @@
 @inject DashboardEstudianteService DashboardEstudianteService
 @inject NavigationManager Navigation
 
-
 <div class="dashboard-container">
-    <h2 class="dashboard-title">
-        <i class="fas fa-user-graduate"></i> Bienvenido, @UsuarioAutenticado?.Nombre
-    </h2>
+    <!-- Sección de bienvenida -->
+    <div class="welcome-container">
+        <div class="welcome-content">
+            <h2 class="dashboard-title">
+                <i class="fas fa-user-graduate"></i> Bienvenido, <span class="user-name">@UsuarioAutenticado?.Nombre</span>
+            </h2>
+            <p class="welcome-message">
+                <i class="fas fa-calendar-alt"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("es-ES"))
+            </p>
+        </div>
+        <div class="welcome-icon">
+            <i class="fas fa-book-reader"></i>
+        </div>
+    </div>
 
+    <!-- Estadísticas similares al maestro -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon-container" style="background-color: rgba(74, 137, 220, 0.1);">
+                <i class="fas fa-book-open stat-icon" style="color: #4a89dc;"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">@Clases.Count</span>
+                <span class="stat-label">Clases inscritas</span>
+                <span class="stat-trend"><i class="fas fa-arrow-up"></i> +5% este mes</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon-container" style="background-color: rgba(255, 193, 7, 0.1);">
+                <i class="fas fa-tasks stat-icon" style="color: #ffc107;"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">12</span>
+                <span class="stat-label">Tareas pendientes</span>
+                <span class="stat-trend"><i class="fas fa-clock"></i> 3 esta semana</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon-container" style="background-color: rgba(76, 175, 80, 0.1);">
+                <i class="fas fa-clipboard-check stat-icon" style="color: #4caf50;"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">8</span>
+                <span class="stat-label">Exámenes realizados</span>
+                <span class="stat-trend"><i class="fas fa-check-circle"></i> +2 este mes</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon-container" style="background-color: rgba(244, 67, 54, 0.1);">
+                <i class="fas fa-envelope stat-icon" style="color: #f44336;"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">4</span>
+                <span class="stat-label">Mensajes nuevos</span>
+                <span class="stat-trend"><i class="fas fa-bell"></i> 1 importante</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de clases -->
     <div class="class-list-container">
-        <h3 class="class-list-title"><i class="fas fa-book-open"></i> Clases Inscritas</h3>
+        <div style="text-align: center;">
+            <h3 class="class-list-title-enhanced">
+                <i class="fas fa-book"></i> Clases Inscritas
+            </h3>
+        </div>
         @if (Clases.Count > 0)
         {
             <div class="class-grid">
-                @foreach (var clase in Clases.Select((valor, indice) => (valor, indice)))
+                @foreach (var clase in Clases.Select((valor, i) => (valor, i)))
                 {
-                    <div class="class-card"
-                         tabindex="@((clase.indice + 1) * 10)"
-                         @onclick="() => IrAClase(clase.valor.Id)">
+                    var colorClase = ObtenerClaseColorPorIndice(clase.i);
+                    var (icon, iconColor) = professorIcons[clase.i % professorIcons.Length];
+
+                    <div class="class-card @colorClase" tabindex="@((clase.i + 1) * 10)" @onclick="() => IrAClase(clase.valor.Id)">
                         <div class="class-header">
-                            <h4><i class="fas fa-chalkboard"></i> @clase.valor.Nombre</h4>
+                            <div class="professor-icon">
+                                <i class="@icon" style="color: @iconColor"></i>
+                            </div>
+                            <h4>@clase.valor.Nombre</h4>
+                            <hr class="card-divider" />
                         </div>
                         <div class="class-body">
                             <p><i class="fas fa-user-tie"></i> Profesor: @clase.valor.Profesor</p>
-                            <button class="btn-details" tabindex="-1">Ver Detalles <i class="fas fa-arrow-right"></i></button>
+                            <button class="btn-details" tabindex="-1">
+                                Ver Detalles <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
                 }
@@ -44,95 +113,321 @@
 <style>
     body {
         font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #d9f3ff, #a2dcff);
+        background: linear-gradient(135deg, #e6f2ff, #cce0ff);
         margin: 0;
         padding: 20px;
     }
 
-    .main-content {
-        background: #f0fbff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
+    /* Sección de bienvenida mejorada */
+    .welcome-container {
+        background: linear-gradient(135deg, #5da9ff, #439cff);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        box-shadow: 0 4px 15px rgba(63, 149, 246, 0.25);
+    }
+
+    .welcome-content {
+        flex: 1;
+    }
+
+    .welcome-icon {
+        font-size: 3.5rem;
+        color: black;
+        opacity: 0.4;
+        margin-left: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .welcome-container:hover .welcome-icon {
+        opacity: 0.4;
+        transform: scale(1.05);
+    }
 
     .dashboard-title {
-        color: #0077cc;
+        color: white;
         font-size: 1.8rem;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
+        text-align: left;
     }
 
+    .user-name {
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-message {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Estadísticas mejoradas */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: 1px solid #e1f0ff;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+    .stat-icon-container {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+
+    .stat-icon {
+        font-size: 1.5rem;
+    }
+
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin: 5px 0;
+    }
+
+    .stat-trend {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+    }
+
+        .stat-trend i {
+            margin-right: 3px;
+        }
+
+    /* Resto de estilos permanece igual */
     .class-list-container {
         margin-top: 20px;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e1f0ff;
     }
 
     .class-list-title {
-        color: #0088dd;
+        color: #4a89dc;
         font-size: 1.5rem;
         margin-bottom: 15px;
+        text-align: center;
     }
 
     .class-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
     }
 
     .class-card {
-        background: #e3f4ff;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         cursor: pointer;
-        transition: transform 0.2s, background 0.3s;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
     }
 
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
         .class-card:hover {
-            transform: scale(1.05);
-            background: #d1edff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            filter: brightness(1.05);
         }
 
     .class-header {
         font-size: 1.2rem;
         font-weight: bold;
-        color: #0088cc;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        text-align: center;
+        padding-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .professor-icon {
+        font-size: 2.5rem;
         margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .class-body p {
         font-size: 0.9rem;
-        color: #005a99;
+        color: #34495e;
+        margin: 8px 0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 6px 10px;
+        border-radius: 6px;
     }
-
 
     .btn-details {
         display: block;
-        margin-top: 10px;
-        background: #0099ee;
-        color: white;
-        padding: 8px;
+        width: 100%;
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #2c3e50;
+        padding: 10px;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-weight: bold;
     }
 
         .btn-details:hover {
-            background: #007acc;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-details i {
+            margin-left: 5px;
+            transition: transform 0.3s;
+        }
+
+        .btn-details:hover i {
+            transform: translateX(3px);
         }
 
     .no-classes {
         font-size: 1rem;
-        color: #4b6a88;
+        color: #7f9bc1;
+        text-align: center;
+        padding: 20px;
+        background: #f8fbff;
+        border-radius: 8px;
+        border: 1px dashed #cce0ff;
     }
 
-    .class-card:focus {
-        outline: 2px solid #007acc;
-        background: #cdefff;
-        transform: scale(1.03);
+    .class-list-title-enhanced {
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: #ffffff;
+        text-align: center;
+        padding: 12px 20px;
+        margin-bottom: 25px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #42a5f5, #29b6f6);
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 10px rgba(0, 132, 255, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        border-bottom: none; /* ya no hace falta con el fondo colorido */
+    }
+
+
+    .card-divider {
+        width: 70%;
+        height: 2px;
+        background: linear-gradient(to right, transparent, #5ba2ff, transparent);
+        margin: 8px auto 14px;
+        border: none;
+        opacity: 0.9;
+    }
+
+    /* Colores pastel para tarjetas del dashboard */
+    .tarjeta-rojo {
+        background: #ffebee;
+        border-left: 6px solid #ef5350;
+    }
+
+    .tarjeta-naranja {
+        background: #fff3e0;
+        border-left: 6px solid #ffa726;
+    }
+
+    .tarjeta-amarillo {
+        background: #fffde7;
+        border-left: 6px solid #ffee58;
+    }
+
+    .tarjeta-verde {
+        background: #e8f5e9;
+        border-left: 6px solid #66bb6a;
+    }
+
+    .tarjeta-azul {
+        background: #e3f2fd;
+        border-left: 6px solid #42a5f5;
+    }
+
+    .tarjeta-celeste {
+        background: #e0f7fa;
+        border-left: 6px solid #26c6da;
+    }
+
+    .tarjeta-lila {
+        background: #f3e5f5;
+        border-left: 6px solid #ab47bc;
+    }
+
+    .tarjeta-rosada {
+        background: #fce4ec;
+        border-left: 6px solid #ec407a;
     }
 </style>
 
@@ -140,7 +435,6 @@
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
 
-    
     protected override async Task OnInitializedAsync()
     {
         var usuario = await AuthService.VerificarSesion();
@@ -155,6 +449,45 @@
         }
     }
 
-
     private void IrAClase(int claseId) => Navigation.NavigateTo($"/clase-estudiante/{claseId}");
+
+    private string ObtenerClaseColorPorIndice(int index)
+    {
+        var colores = new List<string>
+        {
+            "tarjeta-rojo",
+            "tarjeta-naranja",
+            "tarjeta-amarillo",
+            "tarjeta-verde",
+            "tarjeta-azul",
+            "tarjeta-celeste",
+            "tarjeta-lila",
+            "tarjeta-rosada"
+        };
+        return colores[index % colores.Count];
+    }
+
+    private (string icon, string color)[] professorIcons = new[]
+    {
+    ("fas fa-user", "#5d9cec"),
+    ("fas fa-user-graduate", "#4a89dc"),
+    ("fas fa-user-tie", "#37bc9b"),
+    ("fas fa-user-ninja", "#8cc152"),
+    ("fas fa-user-md", "#da4453"),
+    ("fas fa-user-secret", "#3bafda"),
+    ("fas fa-user-edit", "#ed5565"),
+    ("fas fa-user-friends", "#4fc1e9"),
+    ("fas fa-user-clock", "#ffce54"),
+    ("fas fa-user-check", "#a0d468"),
+    ("fas fa-user-tag", "#fc6e51"),
+    ("fas fa-user-shield", "#e6e9ed"),
+    ("fas fa-user-lock", "#4a89dc"),
+    ("fas fa-user-minus", "#f6bb42"),
+    ("fas fa-user-plus", "#48cfad"),
+    ("fas fa-user-slash", "#d770ad"),
+    ("fas fa-user-circle", "#967adc"),
+    ("fas fa-user-cog", "#e9573f"),
+    ("fas fa-user-group", "#3b5998")
+};
+
 }

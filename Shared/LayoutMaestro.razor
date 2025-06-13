@@ -56,44 +56,34 @@
     }
 
     <nav class="sub-nav">
-        <div class="nav-item" @onclick="IrHorarios" tabindex="4">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Horarios</span>
-        </div>
-        <div class="nav-item" @onclick="IrNotas" tabindex="5">
-            <i class="fas fa-file-alt"></i>
-            <span>Notas</span>
-        </div>
-        <div class="nav-item" @onclick="IrAsistencia" tabindex="6">
-            <i class="fas fa-user-check"></i>
-            <span>Asistencia</span>
-        </div>
-        <div class="nav-item" @onclick="IrTareas" tabindex="7">
-            <i class="fas fa-tasks"></i>
-            <span>Tareas</span>
-        </div>
-        <div class="nav-item" @onclick="IrExamenes" tabindex="8">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Exámenes</span>
-        </div>
+        <div class="nav-item" @onclick="IrHorarios" tabindex="4"><i class="fas fa-calendar-alt"></i><span>Horarios</span></div>
+        <div class="nav-item" @onclick="IrNotas" tabindex="5"><i class="fas fa-file-alt"></i><span>Notas</span></div>
+        <div class="nav-item" @onclick="IrAsistencia" tabindex="6"><i class="fas fa-user-check"></i><span>Asistencia</span></div>
+        <div class="nav-item" @onclick="IrTareas" tabindex="7"><i class="fas fa-tasks"></i><span>Tareas</span></div>
+        <div class="nav-item" @onclick="IrExamenes" tabindex="8"><i class="fas fa-clipboard-list"></i><span>Exámenes</span></div>
     </nav>
 
     <div class="content-container">
-        <main class="main-content">
-            @Body
-        </main>
+        <main class="main-content">@Body</main>
 
         @if (MostrarSidebar)
         {
             <aside class="sidebar @(SidebarAnimado ? "animated" : "")">
-                <h4><i class="fas fa-chalkboard"></i> Clases Creadas</h4>
+                <div class="sidebar-header">
+                    <h4 class="sidebar-title"><i class="fas fa-chalkboard"></i> Mis Clases</h4>
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" @bind="FiltroBusquedaClase" class="search-box" placeholder="Buscar clase..." />
+                    </div>
+                </div>
                 <button class="btn-add-class" @onclick="AbrirModal" tabindex="9">
                     <i class="fas fa-plus"></i> Crear Clase
                 </button>
                 <ul class="course-list">
-                    @foreach (var clase in Clases.Select((valor, i) => (valor, i)))
+                    @foreach (var clase in ClasesFiltradas.Select((valor, i) => (valor, i)))
                     {
-                        <li class="course-item">
+                        var colorClase = ObtenerClaseColorPorIndice(clase.i);
+                        <li class="course-item @colorClase">
                             <a href="javascript:void(0);" @onclick="() => IrAClase(clase.valor.Id)" tabindex="@((clase.i + 10) * 10)">
                                 <i class="fas fa-chalkboard-teacher"></i> @clase.valor.Nombre
                             </a>
@@ -127,13 +117,14 @@
     </div>
 }
 
+
 <style>
     .sub-nav {
         display: flex;
         justify-content: center;
         gap: 40px;
         padding: 15px;
-        background: linear-gradient(135deg, #16A085, #1ABC9C);
+        background: linear-gradient(135deg, #2d91ff, #50a3ff);
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
         border-bottom-left-radius: 20px;
         border-bottom-right-radius: 20px;
@@ -156,12 +147,12 @@
 
         .nav-item:hover {
             transform: scale(1.1);
-            color: #FFD700;
+            color: #d4e6ff;
         }
 
     body {
         font-family: 'Arial', sans-serif;
-        background-color: #f4f7f6;
+        background-color: #f5f9ff;
         margin: 0;
         padding: 0;
     }
@@ -173,7 +164,7 @@
     }
 
     .top-bar {
-        background: linear-gradient(135deg, #2ECC71, #1ABC9C);
+        background: linear-gradient(135deg, #1e60d8, #2c72e9);
         color: white;
         display: flex;
         justify-content: space-between;
@@ -181,8 +172,8 @@
         padding: 15px 20px;
         font-size: 1.4rem;
         font-weight: bold;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        border-bottom: 1px solid #0E8F57;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid #2a92c5;
     }
 
     .top-buttons {
@@ -200,15 +191,15 @@
     }
 
     .toggle-sidebar-btn:hover {
-        color: #FFD700;
+        color: #d4e6ff;
     }
 
     .btn-home:hover {
-        color: #FFA500;
+        color: #a0d1ff;
     }
 
     .btn-logout:hover {
-        color: #FF4D4D;
+        color: #ffb4b4;
     }
 
     .content-container {
@@ -216,6 +207,7 @@
         flex: 1;
         padding: 20px;
         gap: 20px;
+        background-color: #f0f7ff;
     }
 
     .main-content {
@@ -223,7 +215,8 @@
         background: white;
         padding: 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e1f0ff;
     }
 
     .sidebar {
@@ -231,8 +224,9 @@
         background: white;
         padding: 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         text-align: center;
+        border: 1px solid #e1f0ff;
     }
 
     .animated {
@@ -254,13 +248,13 @@
     }
 
     .sidebar h4 {
-        color: #E67E22;
+        color: #4a89dc;
         font-size: 1.2rem;
         margin-bottom: 15px;
     }
 
     .btn-add-class {
-        background: #E67E22;
+        background: #4a89dc;
         color: white;
         padding: 10px;
         border: none;
@@ -272,7 +266,7 @@
     }
 
         .btn-add-class:hover {
-            background: #D35400;
+            background: #3b72c1;
             transform: scale(1.05);
         }
 
@@ -283,7 +277,7 @@
     }
 
     .course-item {
-        background: #F9E79F;
+        background: #e8f4ff;
         padding: 10px;
         margin-bottom: 10px;
         border-radius: 8px;
@@ -292,13 +286,13 @@
 
         .course-item a {
             text-decoration: none;
-            color: #E67E22;
+            color: #4a89dc;
             font-weight: bold;
             display: block;
         }
 
         .course-item:hover {
-            background: #F4D03F;
+            background: #d4e6ff;
             transform: scale(1.05);
         }
 
@@ -353,22 +347,22 @@
     }
 
     .confirm {
-        background: #16A085;
+        background: #4CAF50 !important;
         color: white;
     }
 
         .confirm:hover {
-            background: #138D75;
+            background: #73ff79;
             transform: scale(1.05);
         }
 
     .cancel {
-        background: #E74C3C;
+        background: #ed5565;
         color: white;
     }
 
         .cancel:hover {
-            background: #C0392B;
+            background: #da4453;
             transform: scale(1.05);
         }
 
@@ -379,7 +373,7 @@
     }
 
     .btn-ai {
-        background: #F39C12;
+        background: #5d9cec;
         color: white;
         font-weight: bold;
         padding: 10px 18px;
@@ -387,12 +381,12 @@
         border-radius: 10px;
         font-size: 1rem;
         cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         transition: background 0.3s, transform 0.2s;
     }
 
         .btn-ai:hover {
-            background: #D68910;
+            background: #4a89dc;
             transform: scale(1.05);
         }
 
@@ -404,7 +398,7 @@
         position: absolute;
         top: -4px;
         right: -6px;
-        background: #E74C3C;
+        background: #ed5565;
         color: white;
         border-radius: 50%;
         padding: 2px 6px;
@@ -415,21 +409,25 @@
         position: absolute;
         top: 70px;
         right: 20px;
-        background: #ffffff;
-        color: #333;
+        background: #FFFFFF; /* Blanco puro */
+        color: #2E3A59; /* Azul grisáceo sobrio */
         padding: 15px;
         border-radius: 10px;
         width: 320px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
         z-index: 1001;
+        border: 1px solid #E0E0E0; /* Borde gris claro neutro */
+        backdrop-filter: blur(3px); /* Sutileza de vidrio */
     }
+
 
         .notification-panel h4 {
             margin-top: 0;
-            color: #27AE60;
+            color: #2E3A59; /* Azul grisáceo elegante */
             font-size: 1.2rem;
             margin-bottom: 10px;
         }
+
 
     .notification-list {
         list-style: none;
@@ -439,8 +437,8 @@
     }
 
     .noti-bubble {
-        background: #E9F7EF;
-        color: #117A65;
+        background: #dcf0ff; /* Azul muy claro, casi blanco */
+        color: #2E3A59; /* Azul sobrio para el texto */
         padding: 10px;
         border-radius: 12px;
         margin-bottom: 8px;
@@ -449,7 +447,28 @@
         font-size: 0.95rem;
         gap: 6px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: background-color 0.3s ease;
     }
+
+        .noti-bubble:hover {
+            background: #b4dfff; /* Azul pastel al hacer hover */
+        }
+
+        .noti-bubble i {
+            color: #81C784; /* Ícono verde menta */
+        }
+
+    .badge {
+        position: absolute;
+        top: -4px;
+        right: -6px;
+        background: #FF6F61; /* Rojo coral suave */
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+    }
+
 
     .empty-msg {
         font-size: 0.9rem;
@@ -465,10 +484,10 @@
         color: white;
         position: relative;
         animation: scaleIn 0.5s ease-out;
-        background: linear-gradient(270deg, #ffcc70, #32e0c4, #4facfe);
+        background: linear-gradient(270deg, #a5d8ff, #4facfe, #5d9cec);
         background-size: 800% 800%;
         animation: gradientFlow 6s ease infinite;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(255, 255, 255, 0.08);
     }
 
     @@keyframes gradientFlow {
@@ -494,13 +513,13 @@
 
     .modal-icon {
         font-size: 2.5rem;
-        color: #2ECC71;
+        color: #d4e6ff;
         animation: pulse 1s infinite alternate;
         margin-bottom: 10px;
     }
 
     .modal-subtitle {
-        color: #555;
+        color: #e1f0ff;
         font-size: 1rem;
         margin-bottom: 20px;
     }
@@ -508,14 +527,15 @@
     .enhanced-input {
         font-size: 1.05rem;
         padding: 12px;
-        border: 2px solid #2ECC71;
+        border: 2px solid #a5d8ff;
         border-radius: 12px;
         transition: border 0.3s, box-shadow 0.3s;
+        background-color: rgba(255, 255, 255, 0.9);
     }
 
         .enhanced-input:focus {
-            border-color: #1ABC9C;
-            box-shadow: 0 0 6px rgba(26, 188, 156, 0.4);
+            border-color: #4facfe;
+            box-shadow: 0 0 6px rgba(79, 172, 254, 0.4);
             outline: none;
         }
 
@@ -528,11 +548,11 @@
     }
 
     .confirm.enhanced-btn {
-        background: #2ECC71;
+        background: #4facfe;
     }
 
     .cancel.enhanced-btn {
-        background: #E74C3C;
+        background: #ed5565;
     }
 
     .enhanced-btn:hover {
@@ -562,11 +582,95 @@
             transform: scale(1.1);
         }
     }
+
+    .sidebar-header {
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .sidebar-title {
+        font-size: 1.4rem;
+        color: #4a89dc;
+        margin-bottom: 10px;
+    }
+
+    .search-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        font-size: 1rem;
+        color: #999;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 10px 12px 10px 36px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background-color: #f8faff;
+    }
+
+        .search-box:focus {
+            border-color: #4a89dc;
+            outline: none;
+            box-shadow: 0 0 8px rgba(74, 137, 220, 0.2);
+            background-color: white;
+        }
+
+    /* Colores pastel para tarjetas del dashboard */
+    .tarjeta-rojo {
+        background: #ffebee;
+        border-left: 6px solid #ef5350;
+    }
+
+    .tarjeta-naranja {
+        background: #fff3e0;
+        border-left: 6px solid #ffa726;
+    }
+
+    .tarjeta-amarillo {
+        background: #fffde7;
+        border-left: 6px solid #ffee58;
+    }
+
+    .tarjeta-verde {
+        background: #e8f5e9;
+        border-left: 6px solid #66bb6a;
+    }
+
+    .tarjeta-azul {
+        background: #e3f2fd;
+        border-left: 6px solid #42a5f5;
+    }
+
+    .tarjeta-celeste {
+        background: #e0f7fa;
+        border-left: 6px solid #26c6da;
+    }
+
+    .tarjeta-lila {
+        background: #f3e5f5;
+        border-left: 6px solid #ab47bc;
+    }
+
+    .tarjeta-rosada {
+        background: #fce4ec;
+        border-left: 6px solid #ec407a;
+    }
 </style>
 
 @code {
     private Usuario? UsuarioAutenticado;
     private List<Clase> Clases = new();
+    private string FiltroBusquedaClase = "";
     private bool MostrarSidebar = true;
     private bool MostrarModal = false;
     private bool SidebarAnimado = false;
@@ -574,11 +678,32 @@
     private bool MostrarNotificaciones = false;
     private bool MostrarBadge = true;
     private List<string> Notificaciones = new();
+    private Random random = new Random();
+
+    private IEnumerable<Clase> ClasesFiltradas =>
+        string.IsNullOrWhiteSpace(FiltroBusquedaClase)
+            ? Clases
+            : Clases.Where(c => c.Nombre.Contains(FiltroBusquedaClase, StringComparison.OrdinalIgnoreCase));
+
+    private string ObtenerClaseColorPorIndice(int index)
+{
+    var colores = new List<string>
+    {
+        "tarjeta-rojo",
+        "tarjeta-naranja",
+        "tarjeta-amarillo",
+        "tarjeta-verde",
+        "tarjeta-azul",
+        "tarjeta-celeste",
+        "tarjeta-lila",
+        "tarjeta-rosada"
+    };
+    return colores[index % colores.Count];
+}
 
     private void ToggleNotificaciones()
     {
         MostrarNotificaciones = !MostrarNotificaciones;
-
         if (MostrarNotificaciones)
             MostrarBadge = false;
     }
@@ -589,12 +714,15 @@
     private void IrAsistencia() => Navigation.NavigateTo("/asistencia-maestro");
     private void IrTareas() => Navigation.NavigateTo("/tareas-maestro");
     private void IrExamenes() => Navigation.NavigateTo("/examenes-maestro");
+    private void IrIA() => Navigation.NavigateTo("/eduaimaestro");
+
     private async Task CerrarSesion()
     {
         await AuthService.EliminarSesion(UsuarioAutenticado.Id);
         UsuarioAutenticado = null;
         Navigation.NavigateTo("/", true);
     }
+
     protected override async Task OnInitializedAsync()
     {
         await CargarDatos();
@@ -627,7 +755,6 @@
             await DashboardMaestroService.CrearClaseAsync(NuevaClaseNombre, UsuarioAutenticado.Nombre);
             NuevaClaseNombre = "";
             MostrarModal = false;
-
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
     }
@@ -638,8 +765,7 @@
         MostrarModal = true;
         StateHasChanged();
     }
-    private void CerrarModal() { MostrarModal = false; StateHasChanged(); }
-    private void ToggleSidebar() { MostrarSidebar = !MostrarSidebar; }
 
-    private void IrIA() => Navigation.NavigateTo("/eduaimaestro");
+    private void CerrarModal() => MostrarModal = false;
+    private void ToggleSidebar() => MostrarSidebar = !MostrarSidebar;
 }

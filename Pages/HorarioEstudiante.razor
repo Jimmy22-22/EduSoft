@@ -7,73 +7,145 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2 class="horario-title"><i class="fas fa-calendar-alt"></i> Mis Horarios</h2>
+<div class="horarios-wrapper">
+    <h2 class="horario-titulo">
+        <i class="fas fa-calendar-alt"></i> Mis Horarios
+    </h2>
 
-@if (Horarios.Count == 0)
-{
-        <p class="no-horario"><i class="fas fa-calendar-times"></i> Aún no tienes horarios asignados en tus clases.</p>
-}
-else
-{
-        <div class="horario-container">
-        @foreach (var horario in Horarios)
-        {
-                    <div class="horario-item">
+    @if (Horarios.Count == 0)
+    {
+        <div class="no-horario-box">
+            <i class="fas fa-calendar-times icono-no"></i>
+            <p>Aún no tienes horarios asignados en tus clases.</p>
+        </div>
+    }
+    else
+    {
+        <div class="horario-grid">
+            @foreach (var horario in Horarios.OrderBy(h => h.Fecha).ThenBy(h => h.HoraInicio))
+            {
+                <div class="horario-card">
+                    <div class="horario-header">
+                        <i class="fas fa-clock header-icon"></i>
                         <div class="horario-fecha">
-                            <i class="fas fa-calendar-day"></i> @horario.Fecha.ToString("dddd, dd MMMM yyyy")
-                        </div>
-                        <div class="horario-info">
-                            <p><strong>Hora:</strong> @horario.HoraInicio - @horario.HoraFin</p>
-                            <p><strong>Clase:</strong> @horario.NombreClase</p>
-                            <p><strong>Profesor:</strong> @horario.Profesor</p>
-                            <p><strong>Aula:</strong> @horario.Aula</p>
+                            @horario.Fecha.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("es-ES"))
                         </div>
                     </div>
-        }
+
+                    <div class="horario-info">
+                        <p><i class="fas fa-book"></i> <strong>Clase:</strong> @horario.NombreClase</p>
+                        <p><i class="fas fa-chalkboard-teacher"></i> <strong>Profesor:</strong> @horario.Profesor</p>
+                        <p><i class="fas fa-clock"></i> <strong>Hora:</strong> @horario.HoraInicio - @horario.HoraFin</p>
+                        <p><i class="fas fa-door-open"></i> <strong>Aula:</strong> @horario.Aula</p>
+                    </div>
+                </div>
+            }
         </div>
-}
+    }
+</div>
 
 <style>
-    .horario-title {
+    .horarios-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .horario-titulo {
+        font-size: 2rem;
         text-align: center;
-        font-size: 1.8rem;
-        color: #0052D4;
-        margin-bottom: 25px;
-        font-weight: bold;
-    }
-
-    .horario-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .horario-item {
-        background: #eaf0ff;
-        border-left: 6px solid #0052D4;
-        border-radius: 10px;
+        margin-bottom: 30px;
+        color: white;
+        background: linear-gradient(135deg, #4facfe, #00f2fe); /* Azul vivo degradado */
         padding: 15px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     }
 
-    .horario-fecha {
-        font-weight: bold;
-        color: #0033a0;
-        margin-bottom: 8px;
+    .no-horario-box {
+        text-align: center;
+        padding: 30px;
+        background: #fef4f4;
+        color: #e74c3c;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         font-size: 1.1rem;
     }
 
-    .horario-info p {
-        margin: 4px 0;
-        font-size: 0.95rem;
-        color: #333;
+    .icono-no {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
     }
 
-    .no-horario {
-        text-align: center;
-        font-size: 1.2rem;
-        color: #999;
+    .horario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
     }
+
+    .horario-card {
+        background: #e8f7ff; /* fondo más celeste */
+        border-left: 6px solid #00bfff; /* azul vibrante */
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.06);
+        transition: transform 0.2s ease;
+    }
+
+        .horario-card:hover {
+            transform: translateY(-4px);
+        }
+
+    .horario-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0077ff;
+        margin-bottom: 12px;
+    }
+
+    .header-icon {
+        font-size: 1.4rem;
+        color: #00b0ff;
+    }
+
+    .horario-info p {
+        font-size: 0.95rem;
+        color: #1f3c88;
+        margin: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .horario-info i {
+        color: #00bfff;
+    }
+
+    .horario-info p {
+        font-size: 0.95rem;
+        color: #1f3c88;
+        margin: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        padding-bottom: 8px;
+    }
+
+        .horario-info p:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            background: #d0eaff; /* azul suave como línea divisora */
+            opacity: 0.6;
+        }
+
 </style>
 
 @code {

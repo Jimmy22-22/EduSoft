@@ -8,104 +8,156 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h2 class="tarea-titulo">@Tarea?.Titulo</h2>
+<div class="tarea-detalle-container">
+    <div class="tarea-box">
+        <h2 class="tarea-titulo"><i class="fas fa-book"></i> @Tarea?.Titulo</h2>
 
-@if (Tarea != null)
-{
-    <div class="tarea-detalle-box">
-        <p><strong>Descripción:</strong> @Tarea.Descripcion</p>
-        <p><strong>Fecha de Entrega:</strong> @Tarea.FechaEntrega.ToString("dd MMM yyyy")</p>
-
-        @{
-            string? linkFinal = null;
-            if (!string.IsNullOrWhiteSpace(Tarea?.Link))
-            {
-                linkFinal = Tarea.Link.StartsWith("http://") || Tarea.Link.StartsWith("https://")
-                ? Tarea.Link
-                : $"https://{Tarea.Link}";
-            }
-        }
-
-        @if (!string.IsNullOrWhiteSpace(linkFinal))
+        @if (Tarea != null)
         {
-            <p><strong>Enlace:</strong> <a href="@linkFinal" target="_blank">@linkFinal</a></p>
-        }
+            <div class="detalle-tarea-card">
+                <h4><i class="fas fa-info-circle"></i> Detalles de la Tarea</h4>
 
-        @if (Tarea.ArchivoNombre != null && Tarea.ArchivoContenido != null)
-        {
-            <p>
-                <strong>Archivo:</strong>
-                <button class="descargar-btn" @onclick="DescargarOVisualizar">
-                    <i class="fas fa-file-alt"></i> Abrir @Tarea.ArchivoNombre
+                <div class="detalle-item">
+                    <i class="fas fa-align-left iconito"></i>
+                    <strong>Descripción:</strong>
+                    <span>@Tarea.Descripcion</span>
+                </div>
+
+                <div class="detalle-item">
+                    <i class="fas fa-calendar-alt iconito"></i>
+                    <strong>Fecha de Entrega:</strong>
+                    <span>@Tarea.FechaEntrega.ToString("dd MMM yyyy")</span>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Tarea?.Link))
+                {
+                    string linkFinal = Tarea.Link.StartsWith("http") ? Tarea.Link : $"https://{Tarea.Link}";
+                    <div class="detalle-item">
+                        <i class="fas fa-link iconito"></i>
+                        <strong>Enlace:</strong>
+                        <a href="@linkFinal" target="_blank">@linkFinal</a>
+                    </div>
+                }
+
+                @if (Tarea.ArchivoNombre != null && Tarea.ArchivoContenido != null)
+                {
+                    <div class="detalle-item">
+                        <i class="fas fa-file-alt iconito"></i>
+                        <strong>Archivo:</strong>
+                        <button class="descargar-btn" @onclick="DescargarOVisualizar">
+                            <i class="fas fa-file-download"></i> Abrir @Tarea.ArchivoNombre
+                        </button>
+                    </div>
+                }
+
+                <button class="btn-volver" @onclick="VolverAClase">
+                    <i class="fas fa-arrow-left"></i> Volver a la clase
                 </button>
-            </p>
-        }
+            </div>
 
-        <button class="btn-volver" @onclick="VolverAClase">
-            <i class="fas fa-arrow-left"></i> Volver a la clase
-        </button>
-    </div>
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <i class="fas fa-user-check"></i>
+                    <div>
+                        <p class="stat-label">Entregas Recibidas</p>
+                        <p class="stat-value">@Entregas.Count</p>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <p class="stat-label">Pendientes</p>
+                        <p class="stat-value">@(Entregas.Count(e => e.Nota == null))</p>
+                    </div>
+                </div>
+            </div>
 
-    <hr />
+            <div class="entrega-section">
+                <button class="toggle-entregas-btn" @onclick="() => MostrarEntregas = !MostrarEntregas">
+                    <i class="fas @(MostrarEntregas ? "fa-chevron-up" : "fa-chevron-down")"></i>
+                    @(MostrarEntregas ? "Ocultar Entregas de Estudiantes" : "Mostrar Entregas de Estudiantes")
+                </button>
 
-    <h3 class="entregas-titulo"><i class="fas fa-user-check"></i> Entregas de Estudiantes</h3>
-    @if (Entregas.Count > 0)
-    {
-        @foreach (var entrega in Entregas)
-        {
-            <div class="entrega-card">
-                <p><strong>Estudiante:</strong> @entrega.Usuario.Nombre</p>
-                <p><strong>Fecha de Entrega:</strong> @entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
-
-                @if (!string.IsNullOrEmpty(entrega.Comentario))
+                @if (MostrarEntregas)
                 {
-                    <p><strong>Comentario:</strong> @entrega.Comentario</p>
+                    <h3 class="entregas-titulo"><i class="fas fa-users"></i> Entregas</h3>
+
+                    @if (Entregas.Count > 0)
+                    {
+                        <div class="entregas-grid">
+                            @foreach (var entrega in Entregas)
+                            {
+                                <div class="entrega-card">
+                                    <p><strong><i class="fas fa-user"></i> Estudiante:</strong> @entrega.Usuario.Nombre</p>
+                                    <p><strong><i class="fas fa-clock"></i> Fecha de Entrega:</strong> @entrega.FechaEntrega.ToString("dd MMM yyyy HH:mm")</p>
+
+                                    @if (!string.IsNullOrEmpty(entrega.Comentario))
+                                    {
+                                        <p><strong><i class="fas fa-comment-dots"></i> Comentario:</strong> @entrega.Comentario</p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(entrega.Link))
+                                    {
+                                        string linkEntrega = entrega.Link.StartsWith("http") ? entrega.Link : $"https://{entrega.Link}";
+                                        <p><strong><i class="fas fa-link"></i> Enlace:</strong> <a href="@linkEntrega" target="_blank">@linkEntrega</a></p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(entrega.ArchivoNombre))
+                                    {
+                                        <button class="descargar-btn" @onclick="() => DescargarOVisualizarEntrega(entrega.ArchivoNombre, entrega.ArchivoContenido)">
+                                            <i class="fas fa-file-download"></i> @entrega.ArchivoNombre
+                                        </button>
+                                    }
+
+                                    <textarea class="input-textarea" placeholder="Retroalimentación" @bind="entrega.Retroalimentacion"></textarea>
+                                    <input class="input-nota" type="number" step="0.1" min="0" max="100" @bind="entrega.Nota" placeholder="Nota (0-100)" />
+                                    <button class="btn-guardar" @onclick="() => GuardarRetroalimentacion(entrega)">
+                                        <i class="fas fa-save"></i> Guardar
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="no-data">Aún no hay entregas.</p>
+                    }
                 }
-                @if (!string.IsNullOrEmpty(entrega.Link))
-                {
-                    string linkEntrega = entrega.Link.StartsWith("http") ? entrega.Link : $"https://{entrega.Link}";
-                    <p><strong>Enlace:</strong> <a href="@linkEntrega" target="_blank">@linkEntrega</a></p>
-                }
-                @if (!string.IsNullOrEmpty(entrega.ArchivoNombre))
-                {
-                    <button class="descargar-btn" @onclick="() => DescargarOVisualizarEntrega(entrega.ArchivoNombre, entrega.ArchivoContenido)">
-                        <i class="fas fa-file-download"></i> Ver/Descargar @entrega.ArchivoNombre
-                    </button>
-                }
-                <textarea class="input-textarea" placeholder="Retroalimentación" @bind="entrega.Retroalimentacion"></textarea>
-                <input class="input-nota" type="number" step="0.1" min="0" max="100" @bind="entrega.Nota" placeholder="Nota (0-100)" />
-                <button class="btn-guardar" @onclick="() => GuardarRetroalimentacion(entrega)"><i class="fas fa-save"></i> Guardar</button>
             </div>
         }
-    }
-    else
-    {
-        <p class="no-data">Aún no hay entregas.</p>
-    }
-}
-else
-{
-    <p class="no-data">Tarea no encontrada.</p>
-}
+        else
+        {
+            <p class="no-data">Tarea no encontrada.</p>
+        }
+    </div>
+</div>
 
 <style>
-    .tarea-titulo {
-        color: #1e88e5;
-        text-align: center;
-        margin-top: 20px;
-        font-size: 2.2rem;
-        font-weight: bold;
-        letter-spacing: 0.5px;
+    .tarea-detalle-container {
+        background: #f7faff;
+        padding: 30px 15px;
     }
 
-    .tarea-detalle-box {
+    .tarea-box {
         background: #ffffff;
-        padding: 25px;
-        max-width: 700px;
-        margin: 30px auto;
+        padding: 30px;
+        max-width: 1100px;
+        margin: 0 auto;
         border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border-left: 6px solid #1e88e5;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .tarea-titulo {
+        color: #1976d2;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .tarea-info p {
+        font-size: 1rem;
+        margin-bottom: 10px;
     }
 
     .btn-volver, .btn-guardar {
@@ -117,35 +169,73 @@ else
         border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
-        transition: background 0.3s ease;
     }
-
-        .btn-volver:hover, .btn-guardar:hover {
-            background: #1565c0;
-        }
 
     .descargar-btn {
-        background: #43a047;
+        background: #4a89dc;
         color: white;
-        border: none;
-        padding: 10px 20px;
+        padding: 8px 20px;
         border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: background 0.3s ease;
+        border: none;
+        margin-top: 10px;
     }
 
-        .descargar-btn:hover {
-            background: #388e3c;
+    .stats-bar {
+        display: flex;
+        justify-content: space-evenly;
+        background: #eef7ff;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+    }
+
+    .stat-box {
+        text-align: center;
+    }
+
+        .stat-box i {
+            font-size: 1.8rem;
+            color: #1976d2;
+            margin-bottom: 5px;
         }
 
+    .stat-label {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: bold;
+    }
+
+    .toggle-entregas-btn {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        color: #1976d2;
+        margin-bottom: 20px;
+        cursor: pointer;
+    }
+
+    .entregas-titulo {
+        color: #0d47a1;
+        font-size: 1.5rem;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .entregas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
     .entrega-card {
-        background: #f5f5f5;
+        background: #f9fbfe;
         padding: 20px;
-        margin: 20px auto;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        max-width: 750px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .input-textarea, .input-nota {
@@ -153,25 +243,54 @@ else
         padding: 10px;
         margin-top: 12px;
         border-radius: 8px;
-        border: 1px solid #bbb;
-        font-size: 0.95rem;
-    }
-
-    .entregas-titulo {
-        text-align: center;
-        color: #1565c0;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        font-size: 1.6rem;
-        font-weight: 700;
+        border: 1px solid #ccc;
     }
 
     .no-data {
         text-align: center;
-        margin-top: 40px;
-        color: #999;
-        font-size: 1.1rem;
+        margin-top: 20px;
+        color: #888;
         font-style: italic;
+    }
+
+    .detalle-tarea-card {
+        background: #f0f7ff;
+        border-left: 5px solid #1976d2;
+        border-radius: 12px;
+        padding: 20px 25px;
+        margin: 25px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .detalle-tarea-card h4 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+    .detalle-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+
+        .detalle-item strong {
+            margin-right: 6px;
+            min-width: 150px;
+            color: #333;
+        }
+
+        .detalle-item span, .detalle-item a {
+            color: #555;
+        }
+
+    .iconito {
+        margin-right: 8px;
+        color: #1e88e5;
+        font-size: 1.1rem;
+        width: 20px;
     }
 </style>
 
@@ -179,6 +298,7 @@ else
     [Parameter] public int TareaId { get; set; }
     private Tarea? Tarea;
     private List<EntregaTareaEstudiante> Entregas = new();
+    private bool MostrarEntregas = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -198,13 +318,9 @@ else
             using var dotNetStream = new DotNetStreamReference(stream);
 
             if (EsPreviewable(Tarea.ArchivoNombre))
-            {
                 await JS.InvokeVoidAsync("previewFileFromStream", mime, dotNetStream);
-            }
             else
-            {
                 await JS.InvokeVoidAsync("downloadFileFromStream", Tarea.ArchivoNombre, mime, dotNetStream);
-            }
         }
     }
 
@@ -215,13 +331,9 @@ else
         using var dotNetStream = new DotNetStreamReference(stream);
 
         if (EsPreviewable(nombreArchivo))
-        {
             await JS.InvokeVoidAsync("previewFileFromStream", mime, dotNetStream);
-        }
         else
-        {
             await JS.InvokeVoidAsync("downloadFileFromStream", nombreArchivo, mime, dotNetStream);
-        }
     }
 
     private bool EsPreviewable(string nombre)

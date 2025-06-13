@@ -84,7 +84,22 @@ Mantén siempre un tono profesional, respetuoso y útil.";
                             .GetProperty("text")
                             .GetString();
 
-            var responseText = result ?? "No hubo respuesta";
+            var markdown = result ?? "No hubo respuesta";
+
+            // Elimina caracteres de formato Markdown comunes
+            var plainText = markdown
+                .Replace("*", "")
+                .Replace("_", "")
+                .Replace("**", "")
+                .Replace("`", "")
+                .Replace("•", "-")
+                .Replace(">", "")
+                .Replace("#", "")
+                .Replace("[", "")
+                .Replace("]", "")
+                .Trim();
+
+            var responseText = plainText;
 
             Messages.Add(new ChatMessage { Role = "assistant", Content = responseText });
 

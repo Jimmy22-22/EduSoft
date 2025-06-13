@@ -22,6 +22,12 @@
     </div>
 </div>
 
+<div class="video-call-button-container">
+    <button class="btn-video-call" @onclick="() => Navigation.NavigateTo(VideoLlamadaUrl, true)">
+        <i class="fas fa-video"></i> Unirse a la Videollamada
+    </button>
+</div>
+
 <div class="tareas-container">
     <h2><i class="fas fa-users"></i> Estudiantes</h2>
     <div class="students-list">
@@ -481,6 +487,29 @@
         .switch input:checked + .slider:before {
             transform: translateX(24px);
         }
+
+    .video-call-button-container {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .btn-video-call {
+        background: linear-gradient(to right, #1e88e5, #42a5f5);
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+        .btn-video-call:hover {
+            background: linear-gradient(to right, #1565c0, #1e88e5);
+            transform: scale(1.05);
+        }
 </style>
 
 @code {
@@ -499,6 +528,8 @@
     private byte[]? ContenidoArchivo;
     private bool MostrarModal = false;
     private bool EsExamen = false;
+
+    private string VideoLlamadaUrl = "https://meet.google.com/mfy-tbgg-jyw?authuser=5";
 
     protected override async Task OnInitializedAsync()
     {

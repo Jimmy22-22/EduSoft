@@ -8,12 +8,14 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="ElectronNET.API" Version="23.6.2" />
+    <PackageReference Include="Markdig" Version="0.41.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Toolbelt.Blazor.SpeechSynthesis" Version="10.3.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="electron.manifest.json">
@@ -22,5 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Script BD\" />
+    <Folder Include="wwwroot\icons\" />
+    <Folder Include="wwwroot\js\" />
   </ItemGroup>
 </Project>
